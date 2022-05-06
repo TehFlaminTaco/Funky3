@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# CSharp build files
+Compiler/bin
+Compiler/obj
+
+# VSCode
+.vscode
