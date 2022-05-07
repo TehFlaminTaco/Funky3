@@ -1,0 +1,5 @@
+print("Hello, World!");
+$ print(12.31542)
+$*for key in math {
+    print(key, math[key])
+}*$

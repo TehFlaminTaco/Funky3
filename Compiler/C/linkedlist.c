@@ -94,6 +94,17 @@ Var* LinkedListRemove(LinkedVarList* list, int index){
     return var;
 }
 
+Var* LinkedListRemoveByValue(LinkedVarList* list, Var* var){
+    int i = 0;
+    for(Linklett* current = list->first; current != NULL; current = current->next){
+        if(current->var == var){
+            return LinkedListRemove(list, i);
+        }
+        i++;
+    }
+    return &NIL;
+}
+
 void LinkedListFree(LinkedVarList* list){
     Linklett* current = list->first;
     Linklett* toRemove;

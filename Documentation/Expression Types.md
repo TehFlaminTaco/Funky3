@@ -20,6 +20,20 @@ Many expressions that are all executed, and then the final value is returned.
 **Special Notes:**\
 The final bracket being excluded does not constitute a syntax error.
 
+## Call
+
+
+**Description:**\
+Calls a function.
+
+**Forms:**
+* Expression: `method`, Expression: `(`, Expression: `Any`*, Punctuation: `)`
+
+**Special Notes:**\
+The final bracket being excluded does not constitute a syntax error.
+Arguments may optionally be seperated by commas.
+Arguments may be "splat"ed, any number of times, by appending a `...` to the end of the argument.
+
 ## Crementor
 
 **Description:**\

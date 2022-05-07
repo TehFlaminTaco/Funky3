@@ -2,29 +2,45 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 
+#include "funky3.h"
+
+#include "linkedkvlist.h"
 #include "linkedlist.h"
 #include "var.h"
+#include "gc.h"
+
+#include "hashmap.h"
+#include "metatable.h"
+
 #include "var.c"
+#include "linkedkvlist.c"
 #include "linkedlist.c"
 #include "gc.c"
 
+#include "hashmap.c"
+#include "metatable.c"
 
-GarbageCollector gc = {NULL};
-
-
-Var UNDEFINED   = {0x00, 0, NULL, NULL, 0};
-Var NIL         = {0x00, 1, NULL, NULL, 0};
+#include "header.c"
 
 int main(int argc, char** argv){
     gc.toCleanup = LinkedListNew();
 
-    Var* StringA    = VarNew(0x02, (long long)"Henlo!", NULL);
-    Var* StringB    = VarNew(0x02, (long long)"Henlo!", NULL);
-    printf("??? %p", ((char*)StringA->value));
-    if(VarEquals(StringA, StringB))
-        printf("They are equal!\n");
+    DebugPrint("PreSetup\n");
+    SetupMetaTables();
+    DebugPrint("A\n");
 
-    printf("Hello, World!");
+    Var* var = VarNewNumber(145.82);
+    Var* numAsString = VarAsString(var);
+    DebugPrint("%s\n", (char*)numAsString->value);
+    DebugPrint("B\n");
+
+    GarbageCollect();
+
+#include "main.c"
+
+    GarbageCollect();
+    
     return 0;
 }

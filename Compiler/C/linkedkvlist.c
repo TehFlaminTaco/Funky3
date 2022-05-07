@@ -13,36 +13,20 @@ LinkedKVList* LinkedKVListNew(){
     return list;
 }
 
-Var* LinkedKVListGet(LinkedKVList* list, int index){
+Var* LinkedKVListGet(LinkedKVList* list, Var* key){
     KVLinklett* current = list->first;
     if(current == NULL){
-        return NULL;
-    }
-
-    for(int i = 0; i < index; i++){
-        current = current->next;
-        if(current == NULL){
-            return NULL;
-        }
-    }
-
-    return current->var;
-};
-
-Var* LinkedKVListGetKey(LinkedKVList* list, Var* key){
-    KVLinklett* current = list->first;
-    if(current == NULL){
-        return NULL;
+        return &NIL;
     }
     for(; current != NULL; current = current->next){
-        if(VarEquals(current->key, key) == 0){
+        if(VarEquals(current->key, key)){
             return current->var;
         }
     }
-    return NULL;
+    return &NIL;
 }
 
-void LinkedKVListInsert(LinkedKVList* list, Var* var, int index, Var* key){
+void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var){
     KVLinklett* current = list->first;
     if(current == NULL){
         list->first = calloc(1, sizeof(KVLinklett));
@@ -52,13 +36,18 @@ void LinkedKVListInsert(LinkedKVList* list, Var* var, int index, Var* key){
         return;
     }
 
-    for(int i = 0; i < index; i++){
-        current = current->next;
+    for(; current != NULL; current = current->next){
+        // If the list is over, insert it here.
         if(current == NULL){
             current->next = calloc(1, sizeof(KVLinklett));
             current->next->var = var;
             current->next->key = key;
             current->next->next = NULL;
+            return;
+        }
+        // If our key is equal, replace it.
+        if(VarEquals(current->key, key)){
+            current->var = var;
             return;
         }
     }
@@ -71,47 +60,7 @@ void LinkedKVListInsert(LinkedKVList* list, Var* var, int index, Var* key){
     return;
 }
 
-void LinkedKVListPush(LinkedKVList* list, Var* var, Var* key){
-    KVLinklett* new = calloc(1, sizeof(KVLinklett));
-    new->var = var;
-    new->key = VarNew(key);
-    new->next = list->first;
-    list->first = new;
-    return;
-}
-
-Var* LinkedKVListPop(LinkedKVList* list){
-    KVLinklett* current = list->first;
-    if(current == NULL){
-        return NULL;
-    }
-    list->first = current->next;
-    Var* var = current->var;
-    free(current);
-    return var;
-}
-
-Var* LinkedKVListRemove(LinkedKVList* list, int index){
-    KVLinklett* current = list->first;
-    if(current == NULL){
-        return NULL;
-    }
-
-    for(int i = 0; i < index; i++){
-        current = current->next;
-        if(current == NULL){
-            return NULL;
-        }
-    }
-
-    KVLinklett* toRemove = current->next;
-    current->next = toRemove->next;
-    Var* var = toRemove->var;
-    free(toRemove);
-    return var;
-}
-
-Var* LinkedKVListKeyRemove(LinkedKVList* list, Var* key){
+Var* LinkedKVListRemove(LinkedKVList* list, Var* key){
     KVLinklett* current = list->first;
     if(current == NULL){
         return NULL;
