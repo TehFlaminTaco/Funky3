@@ -48,6 +48,16 @@ Arguments may be "splat"ed, any number of times, by appending a `...` to the end
 **Special Notes:**\
 When the operator precedes the variable, the new value is returned. Otherwise, the old value is returned.
 
+## Function
+
+**Description:**\
+Defines a function.
+
+**Forms:**
+* Keyword: `function`, Expression: `Variable`?, Punctuation: `(`, Expression: `Any`*, Punctuation: `)`, Expression: `Any`
+* Expression: `Variable`, Punctuation: `=>`, Expression: `Any`
+* Punctuation: `(`, Expression: `Variable`*, Punctuation: `)`, Punctuation: `=>`, Expression: `Any`
+
 ## Math
 
 **Description:**\
@@ -83,13 +93,25 @@ A binary operator is an operator that takes two operands. This expression in par
 * Punctuation: `!=`
 * Punctuation: `&&`
 * Punctuation: `||`
-* Punctuation: `and`
-* Punctuation: `or`
+* Keyword: `and`
+* Keyword: `or`
 
 **Special Notes:**\
 `^` is the Expentiation operator.\
 `~` is the Bitwise XOR operator.\
 `and`, `or`, `&&`, and `||` are the logical operators. They allow for short-circuit evaluation.
+
+## Operator, Unary
+
+**Description:**\
+A unary operator is an operator that takes one operand. This expression in particular is meant to be used with a Math Expression or Crementor expression.
+
+**Forms:**
+* Punctuation: `+`
+* Punctuation: `-`
+* Punctuation: `!`
+* Punctuation: `~`
+* Keyowrd: `not`
 
 ## Variable
 

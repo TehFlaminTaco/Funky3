@@ -12,7 +12,7 @@
 
 ## Bitwise Math
 * `&`: Bitwise AND.
-* `|`: Bitwise OR.
+* `|`: Bitwise OR.g
 * `~`: Bitwise NOT, Bitwise XOR.
 * `<<`: Bitwise Left Shift.
 * `>>`: Bitwise Right Shift.

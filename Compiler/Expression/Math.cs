@@ -85,7 +85,7 @@ public class Math : Expression {
                 string leftHolder = UniqueValueName("left");
                 string rightHolder = UniqueValueName("right");
                 string s = $"Var* {leftHolder} = &NIL;\n";
-                s += Left.Generate(leftHolder, header);
+                s += Left!.Generate(leftHolder, header);
                 s += $"Var* {rightHolder} = &NIL;\n";
                 s += Right.Generate(rightHolder, header);
                 s += $"{stackName} = {leftHolder};\n";
@@ -104,6 +104,5 @@ public class Math : Expression {
         }else{
             throw new Exception($"Unary math not implemented {OperatorUnary!.Operator}");
         }
-        return "";
     }
 }
