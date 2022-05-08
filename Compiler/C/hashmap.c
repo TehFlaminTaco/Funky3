@@ -41,9 +41,12 @@ int CalculateHash(Var* val){
 }
 
 void HashMapSet(HashMap* map, Var* key, Var* value){
+    DebugPrint("HashMapSet:\n");
     int hash = CalculateHash(key);
     if(hash < 0)hash = -hash;
+    DebugPrint("HashMapSet: hash is %d\n", hash);
     LinkedKVListInsert(map->values[hash % map->capacity], key, value);
+    DebugPrint("HashMapSet: done\n");
     return;
 }
 
@@ -53,6 +56,14 @@ Var* HashMapGet(HashMap* map, Var* key){
     if(hash < 0)hash = -hash;
     DebugPrint("HashMapGet: hash is %d\n", hash);
     return LinkedKVListGet(map->values[hash % map->capacity], key);
+}
+
+Var* HashMapGetKey(HashMap* map, Var* key){
+    DebugPrint("HashMapGetKey\n");
+    int hash = CalculateHash(key);
+    if(hash < 0)hash = -hash;
+    DebugPrint("HashMapGetKey: hash is %d\n", hash);
+    return LinkedKVListGetKey(map->values[hash % map->capacity], key);
 }
 
 Var* HashMapRemove(HashMap* map, Var* key){

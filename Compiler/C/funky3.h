@@ -1,6 +1,8 @@
 #ifndef FUNKY3_H
 #define FUNKY3_H
 
+//#define DEBUG
+
 #include "var.h"
 #include "gc.h"
 

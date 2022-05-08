@@ -110,7 +110,7 @@ Var* VarRawGet(Var* table, Var* key){
     DebugPrint("VarRawGet\n");
     if(table->type != VAR_LIST){
         DebugPrint("VarRawGet: table is not a list\n");
-        return &NIL;
+        return &UNDEFINED;
     }
 
     DebugPrint("VarRawGet: table is a list\n");
@@ -123,8 +123,9 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet\n");
     if(table->type != VAR_LIST){
         DebugPrint("VarRawSet: table is not a list\n");
-        return &NIL;
+        return &UNDEFINED;
     }
+    HashMap* map = (HashMap*)table->value;
     // Remove any currently set var from the referencedby list.
     DebugPrint("VarRawSet: removing old value\n");
     Var* oldValue = VarRawGet(table, key);
@@ -139,8 +140,26 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
         DebugPrint("VarRawSet: adding new value to referencedby list\n");
         LinkedListPush(value->referencedBy, table);
     }
+
+    // Remove any currently set key from the referencedby list.
+    DebugPrint("VarRawSet: removing old key\n");
+    Var* oldKey = HashMapGetKey(map, key);
+    DebugPrint("VarRawSet: old key is %p\n", oldKey);
+    if(!ISUNDEFINED(oldKey)){
+        DebugPrint("VarRawSet: removing old key from referencedby list\n");
+        if(oldKey -> referencedBy != NULL){
+            LinkedListRemoveByValue(oldKey->referencedBy, table);
+        }
+    }
+
+    // Adding to key's referencedby list
+    DebugPrint("VarRawSet: adding new key to referencedby list\n");
+    if(key->referencedBy != NULL){
+        DebugPrint("VarRawSet: adding new key to referencedby list\n");
+        LinkedListPush(key->referencedBy, table);
+    }
+
     DebugPrint("VarRawSet: setting value\n");
-    HashMap* map = (HashMap*)table->value;
     HashMapSet(map, key, value);
     DebugPrint("VarRawSet: done\n");
     return value;
@@ -157,7 +176,7 @@ Var* VarGet(Var* table, Var* key){
     Var* getter = VarGetMeta(table, "get");
     if(getter->type != VAR_FUNCTION){
         DebugPrint("VarGet: No getter\n");
-        return &NIL;
+        return &UNDEFINED;
     }
     // Call the getter
     Var* args = VarNewList();
@@ -194,11 +213,13 @@ Var* ArgVarGet(Var* args, int index, char* key){
     DebugPrint("ArgVarGet\n");
     if(args->type != VAR_LIST){
         DebugPrint("ArgVarGet: args is not a list\n");
-        return &NIL;
+        return &UNDEFINED;
     }
 
     DebugPrint("ArgVarGet: args is a list\n");
-    Var* v = VarRawGet(args, VarNewString(key));
+    Var* v = &UNDEFINED;
+    if(key != NULL)
+        v = VarRawGet(args, VarNewString(key));
     DebugPrint("ArgVarGet: v is %p\n", v);
     if ISUNDEFINED(v){
         DebugPrint("ArgVarGet: v is undefined\n");
@@ -209,7 +230,7 @@ Var* ArgVarGet(Var* args, int index, char* key){
 
 // Attempts to ensure the output type is a string
 Var* VarAsString(Var* var){
-    DebugPrint("VarAsString\n");
+    DebugPrint("VarAsString (%i)\n", var->type);
     if(var->type == VAR_STRING){
         DebugPrint("VarAsString: already a string\n");
         return var;
@@ -227,6 +248,31 @@ Var* VarAsString(Var* var){
     }
     DebugPrint("VarAsString: done\n");
     return result;
+}
+
+int VarTruthy(Var* var){
+    // If a number is non-zero, it's truthy.
+    if(var->type == VAR_NUMBER){
+        double j;
+        memcpy(&j, &var->value, sizeof(double));
+        return fabs(j - 0) > 0.00001;
+    }
+
+    // Otherwise, check the metatable.
+    Var* argList = VarNewList();
+    VarRawSet(argList, VarNewString("obj"), var);
+    VarRawSet(argList, VarNewNumber(0), var);
+    Var* truthy = VarGetMeta(var, "truthy");
+    if(truthy->type != VAR_FUNCTION){
+        return 0;
+    }
+    Var* result = VarFunctionCall(truthy, argList);
+    if(result->type != VAR_NUMBER){
+        return 0;
+    }
+    double j;
+    memcpy(&j, &result->value, sizeof(double));
+    return fabs(j - 0) > 0.00001;
 }
 
 #endif

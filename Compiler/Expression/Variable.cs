@@ -12,6 +12,7 @@ public class Variable : Expression {
         bool isLocal = false;
         if(tokens[index].Type == TokenType.Keyword) {
             if(tokens[index].Value == "var" || tokens[index].Value == "local") {
+                Parser.RegisterFurthest(i);
                 i++;
                 isLocal = true;
             }else{
@@ -26,7 +27,11 @@ public class Variable : Expression {
         return (variable, i);
     }
 
-    public override void Generate(StreamWriter body, StreamWriter header) {
-        body.Write($"{Name}");
+    public override string Generate(string stackName, StreamWriter header) {
+        return $"{stackName} = VarGet(scope, VarNewString(\"{Name}\"));\n";
+    }
+
+    public virtual string GenerateSetter(string stackName, string stackValue, StreamWriter header) {
+        return $"{stackName} = VarSet(scope, VarNewString(\"{Name}\"), {stackValue});\n";
     }
 }

@@ -16,19 +16,34 @@ LinkedKVList* LinkedKVListNew(){
 Var* LinkedKVListGet(LinkedKVList* list, Var* key){
     KVLinklett* current = list->first;
     if(current == NULL){
-        return &NIL;
+        return &UNDEFINED;
     }
     for(; current != NULL; current = current->next){
         if(VarEquals(current->key, key)){
             return current->var;
         }
     }
-    return &NIL;
+    return &UNDEFINED;
+}
+
+Var* LinkedKVListGetKey(LinkedKVList* list, Var* key){
+    KVLinklett* current = list->first;
+    if(current == NULL){
+        return &UNDEFINED;
+    }
+    for(; current != NULL; current = current->next){
+        if(VarEquals(current->key, key)){
+            return current->key;
+        }
+    }
+    return &UNDEFINED;
 }
 
 void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var){
+    DebugPrint("LinkedKVListInsert\n");
     KVLinklett* current = list->first;
     if(current == NULL){
+        DebugPrint("LinkedKVListInsert: first is null\n");
         list->first = calloc(1, sizeof(KVLinklett));
         list->first->var = var;
         list->first->key = key;
@@ -36,27 +51,24 @@ void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var){
         return;
     }
 
+    KVLinklett* last = current;
     for(; current != NULL; current = current->next){
-        // If the list is over, insert it here.
-        if(current == NULL){
-            current->next = calloc(1, sizeof(KVLinklett));
-            current->next->var = var;
-            current->next->key = key;
-            current->next->next = NULL;
-            return;
-        }
         // If our key is equal, replace it.
         if(VarEquals(current->key, key)){
+            DebugPrint("LinkedKVListInsert: found key\n");
             current->var = var;
             return;
         }
+        last = current;
     }
 
+    DebugPrint("LinkedKVListInsert: reached end of list\n");
     KVLinklett* new = calloc(1, sizeof(KVLinklett));
     new->var = var;
     new->key = key;
-    new->next = current->next;
-    current->next = new;
+    new->next = NULL;
+    last->next = new;
+    DebugPrint("LinkedKVListInsert: done\n");
     return;
 }
 

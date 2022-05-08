@@ -14,7 +14,7 @@ public class StringLiteral : Expression {
         return (literal, i);
     }
 
-    public override void Generate(StreamWriter body, StreamWriter header) {
-        
+    public override string Generate(string stackName, StreamWriter header) {
+        return $"{stackName} = VarNewString({Value});\n";
     }
 }

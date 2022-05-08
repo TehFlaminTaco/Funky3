@@ -1,3 +1,9 @@
+print("Before setting");
+var x = 1;
+var y = 2;
+print("After setting");
+print(x + y);
+print(x or y);
 print("Hello, World!");
 $ print(12.31542)
 $*for key in math {

@@ -1,7 +1,7 @@
 #ifndef VAR_H
 #define VAR_H
 
-#define ISUNDEFINED(var) (var->type == VAR_NULL && var->value == 0)
+#define ISUNDEFINED(var) (var == NULL || var->type == VAR_NULL && var->value == 0)
 
 typedef struct _VAR {
     char type;
@@ -26,5 +26,6 @@ Var* VarSet(Var* table, Var* key, Var* value);
 
 int VarEquals(Var* var1, Var* var2);
 Var* VarAsString(Var* var);
+int VarTruthy(Var* var);
 
 #endif

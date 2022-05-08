@@ -35,6 +35,11 @@ public static class Compiler
                 }
             }
 
+            // For debugging, print the main.c
+            using (StreamReader reader = new StreamReader(Path.Combine(folder, "main.c"))) {
+                Console.WriteLine(reader.ReadToEnd());
+            }
+
             // Compile the C code
             var compiler = new Process();
             compiler.StartInfo.FileName = "gcc";
@@ -57,6 +62,7 @@ public static class Compiler
                 File.Delete(Path.Combine("Funky3.exe"));
             }
             File.Copy(Path.Combine(folder, "program.exe"), Path.Combine("Funky3.exe"));
+            Console.WriteLine("Compilation successful");
         }finally{
             Directory.Delete(temp, true);
         }
@@ -65,7 +71,7 @@ public static class Compiler
     public static void Compile(string codePath, StreamWriter bodyOutput, StreamWriter headerOutput){
         using (StreamReader codeStream = new StreamReader(codePath)) {
             var tokens = Tokenizer.Tokenize(codeStream.ReadToEnd());
-            Parser.Parse(tokens);
+            Parser.Parse(tokens, bodyOutput, headerOutput);
             
 
         }

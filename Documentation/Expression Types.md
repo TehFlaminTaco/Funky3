@@ -48,6 +48,49 @@ Arguments may be "splat"ed, any number of times, by appending a `...` to the end
 **Special Notes:**\
 When the operator precedes the variable, the new value is returned. Otherwise, the old value is returned.
 
+## Math
+
+**Description:**\
+Performs math on one or two expressions with an operator.
+
+**Forms:**
+* Expression: `Expression`, Expression: `Operator, Binary`, Expression: `Expression`
+* Expression: `Operator, Unary`, Expression: `Expression`
+
+## Operator, Binary
+
+**Description:**\
+A binary operator is an operator that takes two operands. This expression in particular is meant to be used with a Math expression, or an assignment.
+
+**Forms:**
+* Punctuation: `+`
+* Punctuation: `-`
+* Punctuation: `*`
+* Punctuation: `//`
+* Punctuation: `/`
+* Punctuation: `%`
+* Punctuation: `^`
+* Punctuation: `&`
+* Punctuation: `|`
+* Punctuation: `~`
+* Punctuation: `<<`
+* Punctuation: `>>`
+* Punctuation: `<`
+* Punctuation: `>`
+* Punctuation: `<=`
+* Punctuation: `>=`
+* Punctuation: `==`
+* Punctuation: `!=`
+* Punctuation: `&&`
+* Punctuation: `||`
+* Punctuation: `and`
+* Punctuation: `or`
+
+**Special Notes:**\
+`^` is the Expentiation operator.\
+`~` is the Bitwise XOR operator.\
+`and`, `or`, `&&`, and `||` are the logical operators. They allow for short-circuit evaluation.
+
 ## Variable
 
 **Description:**\

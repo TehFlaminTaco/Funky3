@@ -2,7 +2,9 @@ using System.Text.RegularExpressions;
 public static class Tokenizer {
     // To be expanded as keywords are added/reserved
     private static readonly string[] keywords = new string[] {
-        "for", "if"
+        "for", "if",
+        "var", "local",
+        "and", "or", "not",
     };
 
     private static readonly Regex NUMBER = new(@"^(?<negative>-?)(?:(?<integer>0(?:x(?<hex_val>[0-9A-Fa-f]+)|b(?<bin_val>[01]+)))|(?:(?<float>(?<int_comp>\d*)\.(?<float_comp>\d+))|(?<int>\d+))(?:e(?<expon>-?\d+))?)");

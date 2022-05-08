@@ -102,7 +102,7 @@ Var* LinkedListRemoveByValue(LinkedVarList* list, Var* var){
         }
         i++;
     }
-    return &NIL;
+    return &UNDEFINED;
 }
 
 void LinkedListFree(LinkedVarList* list){

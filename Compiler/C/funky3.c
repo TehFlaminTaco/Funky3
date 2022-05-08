@@ -14,6 +14,8 @@
 #include "hashmap.h"
 #include "metatable.h"
 
+#include "globals.h"
+
 #include "var.c"
 #include "linkedkvlist.c"
 #include "linkedlist.c"
@@ -22,6 +24,8 @@
 #include "hashmap.c"
 #include "metatable.c"
 
+#include "globals.c"
+
 #include "header.c"
 
 int main(int argc, char** argv){
@@ -29,16 +33,26 @@ int main(int argc, char** argv){
 
     DebugPrint("PreSetup\n");
     SetupMetaTables();
-    DebugPrint("A\n");
 
-    Var* var = VarNewNumber(145.82);
-    Var* numAsString = VarAsString(var);
-    DebugPrint("%s\n", (char*)numAsString->value);
+    NIL.metatable = &MetatableNull;
+    UNDEFINED.metatable = &MetatableNull;
+
+    Var* scope = VarNewList();
+    // Ensure it's a global!!!
+    free(scope -> referencedBy);
+    scope -> referencedBy = NULL;
+
+    PopulateGlobals(scope);
     DebugPrint("B\n");
+
 
     GarbageCollect();
 
+    Var* _;
+
+    DebugPrint("USER GENERATED CODE:\n");
 #include "main.c"
+    DebugPrint("USER GENERATED CODE END\n");
 
     GarbageCollect();
     

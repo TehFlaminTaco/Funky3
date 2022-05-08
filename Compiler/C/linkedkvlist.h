@@ -13,6 +13,7 @@ typedef struct _LinkedKVList {
 
 LinkedKVList* LinkedKVListNew();
 Var* LinkedKVListGet(LinkedKVList* list, Var* key);
+Var* LinkedKVListGetKey(LinkedKVList* list, Var* key);
 void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var);
 Var* LinkedKVListRemove(LinkedKVList* list, Var* key);
 void LinkedKVListFree(LinkedKVList* list);
