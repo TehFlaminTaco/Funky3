@@ -1,3 +1,4 @@
+using System.Text;
 public class Assignment : Expression {
     public Variable Name { get; set; }
     public Expression Value { get; set; }
@@ -48,9 +49,10 @@ public class Assignment : Expression {
     public override string Generate(string stackName, StreamWriter header)
     {
         string valueHolder = UniqueValueName("value");
-        string s = $"Var* {valueHolder} = &NIL;\n";
-        s += Value.Generate(valueHolder, header);
-        s += Name.GenerateSetter(stackName, valueHolder, header);
-        return s;
+        StringBuilder sb = new($"// Assignment");
+        sb.AppendLine($"\tVar* {valueHolder} = &NIL;");
+        sb.Append("\t"+Value.GenerateTabbed(valueHolder, header));
+        sb.Append("\t"+Name.GenerateSetterTabbed(stackName, valueHolder, header));
+        return sb.ToString();
     }
 }

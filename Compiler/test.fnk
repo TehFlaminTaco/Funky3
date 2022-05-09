@@ -1,11 +1,7 @@
-print("Before setting");
-var x = 1;
-var y = 2;
-print("After setting");
-print(x + y);
-print(x or y);
-print("Hello, World!");
-$ print(12.31542)
-$*for key in math {
-    print(key, math[key])
-}*$
+print("Henlo.");
+function DoHelloWorld(a, b=3, c...){
+    print("Hello, World!");
+}
+print("Wrld..?");
+DoHelloWorld();
+DoHelloWorld();

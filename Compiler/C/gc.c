@@ -7,17 +7,24 @@
 #include "hashmap.h"
 
 void DerefferenceVar(Var* var, Var* from){
-    LinkedVarList* list = var->referencedBy;
-    if(list == NULL){
+    if(var->referencedBy == NULL){
         // Root var, ignore.
         return;
     }
-    for(int i=0; i<LinkedListLength(list); i++){
-        if(LinkedListGet(list, i) == from){
-            LinkedListRemove(list, i);
-            break;
+    // IF From is a list, check for any other references to this
+    if(from->type == VAR_LIST){
+        HashMap* map = (HashMap*)from->value;
+        if(map -> parent == var){
+            // We're still referneced here, so don't dereference
+            return;
+        }
+        // Check the list's values for references to this var
+        if(HashMapHasValue(map, var)){
+            // We're still referenced here, so don't dereference
+            return;
         }
     }
+    LinkedListRemoveByValue(from->referencedBy, var);
     VarFreeLater(var);
     return;
 }
@@ -49,6 +56,15 @@ Var* VarFreeLater(Var* var){
     LinkedVarList* list = gc.toCleanup;
     LinkedListPush(list, var);
     return var;
+}
+
+void DoReferenceBy(Var* var, Var* from){
+    if(var->referencedBy == NULL){
+        return;
+    }
+    LinkedListRemoveByValue(var->referencedBy, from);
+    LinkedListPush(var->referencedBy, from);
+    return;
 }
 
 void GarbageCollect(){

@@ -18,5 +18,6 @@ void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var);
 Var* LinkedKVListRemove(LinkedKVList* list, Var* key);
 void LinkedKVListFree(LinkedKVList* list);
 int LinkedKVListLength(LinkedKVList* list);
+int LinkedKVListHasValue(LinkedKVList* list, Var* var);
 
 #endif

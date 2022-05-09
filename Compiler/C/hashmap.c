@@ -9,6 +9,7 @@ HashMap* HashMapNew(int capacity){
     HashMap* map = calloc(1, sizeof(HashMap));
     map->capacity = capacity;
     map->values = calloc(capacity, sizeof(LinkedKVList*));
+    map->parent = &NIL;
     for(int i = 0; i < capacity; i++){
         map->values[i] = LinkedKVListNew();
     }
@@ -64,6 +65,16 @@ Var* HashMapGetKey(HashMap* map, Var* key){
     if(hash < 0)hash = -hash;
     DebugPrint("HashMapGetKey: hash is %d\n", hash);
     return LinkedKVListGetKey(map->values[hash % map->capacity], key);
+}
+
+int HashMapHasValue(HashMap* map, Var* value){
+    DebugPrint("HashMapHasValue\n");
+    for(int i=0; i<map->capacity; i++){
+        if(LinkedKVListHasValue(map->values[i], value)){
+            return 1;
+        }
+    }
+    return 0;
 }
 
 Var* HashMapRemove(HashMap* map, Var* key){

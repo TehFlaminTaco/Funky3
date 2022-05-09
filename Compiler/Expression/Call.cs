@@ -1,3 +1,4 @@
+using System.Text;
 public class Call : Expression {
     public Expression Method { get; set; }
     public List<Expression> Arguments { get; set; }
@@ -39,20 +40,21 @@ public class Call : Expression {
     public override string Generate(string stackName, StreamWriter header) {
         string vArgs = UniqueValueName("args");
         string vMethod = UniqueValueName("method");
-
-        string s = $"{{Var* {vArgs} = VarNewList();\n";
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("// Call");
+        sb.AppendLine($"\tVar* {vArgs} = VarNewList();");
         // Assemble arguments
         int i = 0;
         foreach(var argument in Arguments) {
             string argName = UniqueValueName($"arg{i}");
-            s += $"Var* {argName} = &NIL;\n";
-            s += argument.Generate(argName, header);
-            s += $"VarRawSet({vArgs}, VarNewNumber({i++}), {argName});\n";
+            sb.AppendLine($"\tVar* {argName} = &NIL;");
+            sb.Append(argument.GenerateTabbed(argName, header));
+            sb.AppendLine($"\tVarRawSet({vArgs}, VarNewNumber({i++}), {argName});");
         }
-        s += $"Var* {vMethod} = &NIL;\n";
-        s += Method.Generate(vMethod, header);
+        sb.AppendLine($"\tVar* {vMethod} = &NIL;");
+        sb.Append(Method.GenerateTabbed(vMethod, header));
         // Call method
-        s += $"{stackName} = VarFunctionCall({vMethod}, {vArgs});}}\n";
-        return s;
+        sb.AppendLine($"\t{stackName} = VarFunctionCall({vMethod}, {vArgs});");
+        return sb.ToString();
     }
 }

@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 public static class Tokenizer {
     // To be expanded as keywords are added/reserved
     private static readonly string[] keywords = new string[] {
-        "for", "if",
+        "for", "if", "function",
         "var", "local",
         "and", "or", "not",
     };
@@ -48,7 +48,7 @@ public static class Tokenizer {
 
             // Keywords or Identifiers
             } else if (char.IsLetter(firstChar) || firstChar == '_') {
-                var matchedKeywords = keywords.Where(c=>c.StartsWith(firstChar.ToString())).OrderByDescending(c=>c.Length);
+                var matchedKeywords = keywords.Where(c=>c.StartsWith(firstChar.ToString())).OrderByDescending(c=>c.Length).Where(c=>code.Substring(k).StartsWith(c));
                 if (matchedKeywords.Any()) {
                     // Return the *longest* matched keyword
                     int line = code[..k].Split('\n').Length;

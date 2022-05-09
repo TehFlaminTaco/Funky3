@@ -10,5 +10,6 @@ typedef struct {
 void DerefferenceVar(Var* var, Var* from);
 Var* VarFreeLater(Var* var);
 void GarbageCollect();
+void DoReferenceBy(Var* var, Var* from);
 
 #endif

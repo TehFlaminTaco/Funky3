@@ -138,7 +138,7 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet: adding new value to referencedby list\n");
     if(value->referencedBy != NULL){
         DebugPrint("VarRawSet: adding new value to referencedby list\n");
-        LinkedListPush(value->referencedBy, table);
+        DoReferenceBy(value, table);
     }
 
     // Remove any currently set key from the referencedby list.
@@ -156,11 +156,16 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet: adding new key to referencedby list\n");
     if(key->referencedBy != NULL){
         DebugPrint("VarRawSet: adding new key to referencedby list\n");
-        LinkedListPush(key->referencedBy, table);
+        DoReferenceBy(key, table);
     }
 
-    DebugPrint("VarRawSet: setting value\n");
-    HashMapSet(map, key, value);
+    if(ISUNDEFINED(value)){
+        DebugPrint("VarRawSet: removing key\n");
+        HashMapRemove(map, key);
+    }else{
+        DebugPrint("VarRawSet: setting value\n");
+        HashMapSet(map, key, value);
+    }
     DebugPrint("VarRawSet: done\n");
     return value;
 }
@@ -273,6 +278,92 @@ int VarTruthy(Var* var){
     double j;
     memcpy(&j, &result->value, sizeof(double));
     return fabs(j - 0) > 0.00001;
+}
+
+Var* VarListCopy(Var* list){
+    DebugPrint("VarListCopy\n");
+    if(list->type != VAR_LIST){
+        DebugPrint("VarListCopy: not a list\n");
+        return &NIL;
+    }
+    Var* newList = VarNewList();
+    newList -> metatable = list -> metatable;
+    HashMap* map = list -> value;
+    HashMap* newMap = newList -> value;
+    newMap -> parent = map -> parent;
+
+    // Copy all values over
+    for(int i=0; i < map -> capacity; i++){
+        KVLinklett* current = map->values[i]->first;
+        while(current != NULL){
+            DoReferenceBy(current->key, newList);
+            DoReferenceBy(current->var, newList);
+            HashMapSet(newMap, current->key, current->var);
+            current = current->next;
+        }
+    }
+
+    return newList;
+}
+
+Var* VarListCopyLShifted(Var* list, int shift){
+    DebugPrint("VarListCopy\n");
+    if(list->type != VAR_LIST){
+        DebugPrint("VarListCopy: not a list\n");
+        return &NIL;
+    }
+    Var* newList = VarNewList();
+    newList -> metatable = list -> metatable;
+    HashMap* map = list -> value;
+    HashMap* newMap = newList -> value;
+    newMap -> parent = map -> parent;
+
+    // Copy all values over
+    for(int i=0; i < map -> capacity; i++){
+        KVLinklett* current = map->values[i]->first;
+        while(current != NULL){
+            if(current->key -> type == VAR_NUMBER){
+                // If it's an integer, shift it
+                double j;
+                memcpy(&j, &current->key->value, sizeof(double));
+                if(fmod(j,1) < 0.00001){
+                    j = j - shift;
+                    if(j >= 0){
+                        DoReferenceBy(current->key, newList);
+                        DoReferenceBy(current->var, newList);
+                        HashMapSet(newMap, VarNewNumber(j), current->var);
+                    }
+                }else{
+                    DoReferenceBy(current->key, newList);
+                    DoReferenceBy(current->var, newList);
+                    HashMapSet(newMap, current->key, current->var);
+                }
+            }else{
+                DoReferenceBy(current->key, newList);
+                DoReferenceBy(current->var, newList);
+                HashMapSet(newMap, current->key, current->var);
+            }
+            current = current->next;
+        }
+    }
+
+    return newList;
+}
+
+
+// Generate a Scope using the previous scope as a parent.
+Var* VarSubScope(Var* scope){
+    DebugPrint("VarSubScope\n");
+    if(scope->type != VAR_LIST){
+        DebugPrint("VarSubScope: not a list\n");
+        return &NIL;
+    }
+    Var* newScope = VarNewList();
+    HashMap* map = newScope -> value;
+    map -> parent = scope;
+    DoReferenceBy(scope, newScope);
+    
+    return newScope;
 }
 
 #endif

@@ -1,5 +1,5 @@
 public static class Parser {
-    public static int FurthestToken = 0;
+    public static int FurthestToken = -1;
     public static void Parse(List<Token> tokens, StreamWriter body, StreamWriter header) {
         int index = 0;
         while(index < tokens.Count) {
@@ -13,7 +13,7 @@ public static class Parser {
                 }
                 FurthestToken = index;
             }else{
-                throw new Exception($"Unexpected token {tokens[FurthestToken]} at line {tokens[FurthestToken].Line} column {tokens[FurthestToken].Column}");
+                throw new Exception($"Unexpected token {tokens[FurthestToken+1]} at line {tokens[FurthestToken+1].Line} column {tokens[FurthestToken+1].Column}");
             }
         }
     }

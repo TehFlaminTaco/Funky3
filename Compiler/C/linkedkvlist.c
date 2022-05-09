@@ -111,6 +111,17 @@ int LinkedKVListLength(LinkedKVList* list){
     return length;
 }
 
+int LinkedKVListHasValue(LinkedKVList* list, Var* var){
+    KVLinklett* current = list->first;
+    while(current != NULL){
+        if(VarEquals(current->var, var)){
+            return 1;
+        }
+        current = current->next;
+    }
+    return 0;
+}
+
 #define ForeachInLinkedKVList(list, i) for(KVLinklett* i = list->first; i != NULL; i = var->next)
 
 #endif

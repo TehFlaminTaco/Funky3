@@ -75,33 +75,51 @@ Var* LinkedListPop(LinkedVarList* list){
 }
 
 Var* LinkedListRemove(LinkedVarList* list, int index){
+    DebugPrint("LinkedListRemove: start\n");
     Linklett* current = list->first;
     if(current == NULL){
+        DebugPrint("LinkedListRemove: Empty list\n");
         return NULL;
     }
 
+    if(index == 0){
+        list->first = current->next;
+        Var* var = current->var;
+        free(current);
+        DebugPrint("LinkedListRemove: done\n");
+        return var;
+    }
+
     for(int i = 0; i < index; i++){
+        DebugPrint("LinkedListRemove: i = %d\n", i);
         current = current->next;
         if(current == NULL){
+            DebugPrint("LinkedListRemove: index out of range\n");
             return NULL;
         }
     }
-
+    DebugPrint("LinkedListRemove: current = %p\n", current);
     Linklett* toRemove = current->next;
     current->next = toRemove->next;
     Var* var = toRemove->var;
+    DebugPrint("LinkedListRemove: Finshed removing.");
     free(toRemove);
+    DebugPrint("LinkedListRemove: Finshed freeing.");
     return var;
 }
 
 Var* LinkedListRemoveByValue(LinkedVarList* list, Var* var){
+    DebugPrint("LinkedListRemoveByValue: start\n");
     int i = 0;
     for(Linklett* current = list->first; current != NULL; current = current->next){
+        DebugPrint("LinkedListRemoveByValue: current = %d\n", i);
         if(current->var == var){
+            DebugPrint("LinkedListRemoveByValue: found\n");
             return LinkedListRemove(list, i);
         }
         i++;
     }
+    DebugPrint("LinkedListRemoveByValue: not found\n");
     return &UNDEFINED;
 }
 

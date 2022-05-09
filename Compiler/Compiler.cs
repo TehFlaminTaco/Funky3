@@ -34,7 +34,11 @@ public static class Compiler
                     Compile("test.fnk", bodyStream, headerStream);
                 }
             }
-
+            
+            // And also the header.c
+            using (StreamReader reader = new StreamReader(Path.Combine(folder, "header.c"))) {
+                Console.WriteLine(reader.ReadToEnd());
+            }
             // For debugging, print the main.c
             using (StreamReader reader = new StreamReader(Path.Combine(folder, "main.c"))) {
                 Console.WriteLine(reader.ReadToEnd());

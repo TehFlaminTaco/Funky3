@@ -28,4 +28,8 @@ int VarEquals(Var* var1, Var* var2);
 Var* VarAsString(Var* var);
 int VarTruthy(Var* var);
 
+Var* VarListCopy(Var* list);
+Var* VarListCopyLShifted(Var* list, int shift);
+Var* VarSubScope(Var* scope);
+
 #endif

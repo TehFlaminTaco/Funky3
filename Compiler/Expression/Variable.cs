@@ -1,3 +1,5 @@
+using System.Text;
+
 public class Variable : Expression {
     public string Name { get; set; }
     public bool IsLocal { get; set; }
@@ -28,10 +30,14 @@ public class Variable : Expression {
     }
 
     public override string Generate(string stackName, StreamWriter header) {
-        return $"{stackName} = VarGet(scope, VarNewString(\"{Name}\"));\n";
+        return $"// Get {Name}\n\t{stackName} = VarGet(scope, VarNewString(\"{Name}\"));\n";
+    }
+
+    public virtual string GenerateSetterTabbed(string stackName, string stackValue, StreamWriter header) {
+        return Lines.Replace(GenerateSetter(stackName, stackValue, header),  "\t$0");
     }
 
     public virtual string GenerateSetter(string stackName, string stackValue, StreamWriter header) {
-        return $"{stackName} = VarSet(scope, VarNewString(\"{Name}\"), {stackValue});\n";
+        return $"// Set {Name}\n\t{stackName} = VarSet(scope, VarNewString(\"{Name}\"), {stackValue});\n";
     }
 }

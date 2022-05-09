@@ -16,6 +16,6 @@ public class NumberLiteral : Expression {
     }
 
     public override string Generate(string stackName, StreamWriter header) {
-        return $"{stackName} = VarNewNumber({Value});\n";
+        return $"// {Value}\n\t{stackName} = VarNewNumber({Value});\n";
     }
 }
