@@ -1,6 +1,1 @@
-function List(a...){
-    a;
-}
-
-
-print(List("Hello, World!"));
+print ( 4 + 8 )

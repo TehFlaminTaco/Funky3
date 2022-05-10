@@ -11,6 +11,9 @@ public static class Parser {
                 }
                 body.WriteLine($"_ = {stackName};");
                 index = result.index;
+                if(index >= tokens.Count) {
+                    break;
+                }
                 // Skip semicolons
                 if(tokens[index].Type == TokenType.Punctuation && tokens[index].Value == ";") {
                     index++;

@@ -58,13 +58,13 @@ public class Math : Expression {
         stackName = resultName;
         if(OperatorBinary != null) {
             sb.AppendLine($"// {OperatorBinary.Operator}");
-            sb.AppendLine($"Var* {resultName} = &NIL;");
+            sb.AppendLine($"\tVar* {resultName} = &NIL;");
             // Custom behaviour for && and ||
             if(OperatorBinary.Operator == "&&") {
                 string leftHolder;
                 string leftBody = Left!.GenerateInline(header, out leftHolder);
                 if(!String.IsNullOrEmpty(leftBody)) {
-                    sb.AppendLine(leftBody);
+                    sb.AppendLine(Tabbed(leftBody));
                 }else{
                     string leftName = UniqueValueName("left");
                     sb.AppendLine($"\tVar* {leftName} = {leftHolder};");
@@ -76,7 +76,7 @@ public class Math : Expression {
                 string rightHolder;
                 string rightBody = Right!.GenerateInline(header, out rightHolder);
                 if(!String.IsNullOrEmpty(rightBody)) {
-                    sb.AppendLine(rightBody);
+                    sb.AppendLine(Tabbed(rightBody));
                 }else{
                     string rightName = UniqueValueName("right");
                     sb.AppendLine($"\tVar* {rightName} = {rightHolder};");
@@ -88,7 +88,7 @@ public class Math : Expression {
                 string leftHolder;
                 string leftBody = Left!.GenerateInline(header, out leftHolder);
                 if(!String.IsNullOrEmpty(leftBody)) {
-                    sb.AppendLine(leftBody);
+                    sb.AppendLine(Tabbed(leftBody));
                 }else{
                     string leftName = UniqueValueName("left");
                     sb.AppendLine($"\tVar* {leftName} = {leftHolder};");
@@ -110,21 +110,23 @@ public class Math : Expression {
                 sb.AppendLine($"\t}}");
             }else{
                 string leftHolder;
+                sb.AppendLine("\t// Left");
                 string leftBody = Left!.GenerateInline(header, out leftHolder);
                 if(!String.IsNullOrEmpty(leftBody)) {
-                    sb.AppendLine(leftBody);
+                    sb.AppendLine(Tabbed(leftBody));
                 }else{
                     string leftName = UniqueValueName("left");
-                    sb.AppendLine($"\tVar* {leftName} = {leftHolder};");
+                    sb.AppendLine($"\t\tVar* {leftName} = {leftHolder};");
                     leftHolder = leftName;
                 }
                 string rightHolder;
                 string rightBody = Right!.GenerateInline(header, out rightHolder);
+                sb.AppendLine("\t// Right");
                 if(!String.IsNullOrEmpty(rightBody)) {
-                    sb.AppendLine(rightBody);
+                    sb.AppendLine(Tabbed(rightBody));
                 }else{
                     string rightName = UniqueValueName("right");
-                    sb.AppendLine($"\tVar* {rightName} = {rightHolder};");
+                    sb.AppendLine($"\t\tVar* {rightName} = {rightHolder};");
                     rightHolder = rightName;
                 }
                 string metamethodHolder = $"VarGetMeta({leftHolder}, \"{BinaryOperator.OperatorMetamethods[OperatorBinary.Operator]}\")";

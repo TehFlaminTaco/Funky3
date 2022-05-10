@@ -48,10 +48,11 @@ public class Call : Expression {
         // Assemble arguments
         int i = 0;
         foreach(var argument in Arguments) {
+            sb.AppendLine($"\t// Arg {i}");
             string argName;
             string argBody = argument.GenerateInline(header, out argName);
             if(!String.IsNullOrEmpty(argBody)) {
-                sb.Append(Tabbed($"\t" + argBody));
+                sb.Append(Tabbed(argBody));
             }
             sb.AppendLine($"\tVarRawSet({vArgs}, VarNewNumber({i++}), {argName});");
         }

@@ -44,6 +44,8 @@ public abstract class Expression {
     public static (Expression? expression, int index) RightParse((Expression? expression, int index) result, List<Token> tokens) {
         if(result.expression == null)
             return result;
+        if(result.index >= tokens.Count)
+            return result;
         
         switch (tokens[result.index].Type) {
             case TokenType.Punctuation:
