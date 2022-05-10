@@ -56,7 +56,7 @@ public class Function : Expression {
         return (new Function(storeVariable.Item1, arguments, body.expression), body.index);
     }
 
-    public override string Generate(string stackName, StreamWriter header) {
+    public override string GenerateInline(StreamWriter header, out string stackName) {
         // Write the method to the header.
         string methodName = UniqueValueName("method");
         string argIndex = UniqueValueName($"argIndex");
@@ -79,7 +79,12 @@ public class Function : Expression {
                 header.WriteLine($"\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
                 header.WriteLine($"\tif(ISUNDEFINED({argName})) {{");
                 if(Arguments[i].DefaultValue != null) {
-                    header.WriteLine("\t" + Arguments[i].DefaultValue!.GenerateTabbed(argName, header));
+                    string argOut;
+                    string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
+                    if(!String.IsNullOrEmpty(argBody)){
+                        header.WriteLine(Tabbed($"\t{argBody}"));
+                    }
+                    header.WriteLine($"\t{argName} = {argOut};");
                 }else{
                     header.WriteLine($"\t{argName} = &NIL;");
                 }
@@ -87,23 +92,20 @@ public class Function : Expression {
             }
             header.WriteLine($"\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
         }
-        header.WriteLine("\tVar* result = &NIL;");
-        header.WriteLine(Body.GenerateTabbed("result", header));
+        string retVal;
+        string body = Body.GenerateInline(header, out retVal);
+        if(!String.IsNullOrEmpty(body)) {
+            header.WriteLine(Tabbed(body));
+        }
+        header.WriteLine($"\treturn {retVal};");
         header.WriteLine($"}}");
 
-        string functionScope = UniqueValueName("functionScope");
-        string functionHolder = UniqueValueName("functionHolder");
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("// Add Function to Scope");
-        sb.AppendLine($"\tVar* {functionScope} = VarSubScope(scope);");
-        sb.AppendLine($"\tVar* {functionHolder} = VarNewFunction({methodName});"); 
-        sb.AppendLine($"\t((VarFunction*)({functionHolder} -> value)) -> scope = {functionScope};");
-        sb.AppendLine($"\tDoReferenceBy({functionScope}, {functionHolder});");
         if(StoreVariable != null) {
-            sb.AppendLine($"\tVarRawSet(scope, VarNewString(\"{StoreVariable.Name}\"), {functionHolder});");
+            stackName = $"VarSet(scope, VarNewString(\"{StoreVariable!.Name}\"), VarNewFunctionWithScope(scope, {methodName}))";
+        }else{
+            stackName = $"VarNewFunctionWithScope(scope, {methodName})";
         }
-        sb.AppendLine($"\t{stackName} = {functionHolder};");
-        return sb.ToString();
+        return "";
     }
 
 }

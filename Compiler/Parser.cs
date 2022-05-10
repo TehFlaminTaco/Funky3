@@ -5,7 +5,11 @@ public static class Parser {
         while(index < tokens.Count) {
             (Expression? expression, int index) result = Expression.TryParseAny(tokens, index);
             if(result.expression != null) {
-                body.WriteLine(result.expression.Generate("_", header));
+                string lineBody = result.expression.GenerateInline(header, out string stackName);
+                if(!String.IsNullOrEmpty(lineBody)) {
+                    body.WriteLine(lineBody);
+                }
+                body.WriteLine($"_ = {stackName};");
                 index = result.index;
                 // Skip semicolons
                 if(tokens[index].Type == TokenType.Punctuation && tokens[index].Value == ";") {

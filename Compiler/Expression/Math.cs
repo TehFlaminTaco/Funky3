@@ -52,52 +52,82 @@ public class Math : Expression {
         return (new Math(left, expression, operatorBinary, null), i);
     }
 
-    public override string Generate(string stackName, StreamWriter header) {
-        // Binary math
+    public override string GenerateInline(StreamWriter header, out string stackName) {
+        StringBuilder sb = new();
+        string resultName = UniqueValueName("result");
+        stackName = resultName;
         if(OperatorBinary != null) {
+            sb.AppendLine($"// {OperatorBinary.Operator}");
+            sb.AppendLine($"Var* {resultName} = &NIL;");
             // Custom behaviour for && and ||
             if(OperatorBinary.Operator == "&&") {
-                string leftHolder = UniqueValueName("left");
-                StringBuilder sb = new();
-                sb.AppendLine($"// &&");
-                sb.AppendLine($"\tVar* {leftHolder} = &NIL);");
-                sb.Append("\t"+Left!.GenerateTabbed(leftHolder, header));
+                string leftHolder;
+                string leftBody = Left!.GenerateInline(header, out leftHolder);
+                if(!String.IsNullOrEmpty(leftBody)) {
+                    sb.AppendLine(leftBody);
+                }else{
+                    string leftName = UniqueValueName("left");
+                    sb.AppendLine($"\tVar* {leftName} = {leftHolder};");
+                    leftHolder = leftName;
+                }
                 sb.AppendLine($"\tif(!VarTruthy({leftHolder})){{");
-                sb.AppendLine($"\t\t{stackName} = {leftHolder};");
+                sb.AppendLine($"\t\t{resultName} = {leftHolder};");
                 sb.AppendLine($"\t}}else{{");
-                string rightHolder = UniqueValueName("right");
-                sb.AppendLine($"\tVar* {rightHolder} = &NIL;");
-                sb.Append("\t"+Right.GenerateTabbed(rightHolder, header));
-                sb.AppendLine($"\t\t{stackName} = {rightHolder};");
+                string rightHolder;
+                string rightBody = Right!.GenerateInline(header, out rightHolder);
+                if(!String.IsNullOrEmpty(rightBody)) {
+                    sb.AppendLine(rightBody);
+                }else{
+                    string rightName = UniqueValueName("right");
+                    sb.AppendLine($"\tVar* {rightName} = {rightHolder};");
+                    rightHolder = rightName;
+                }
+                sb.AppendLine($"\t\t{resultName} = {rightHolder};");
                 sb.AppendLine($"\t}}");
-                return sb.ToString();
             }else if(OperatorBinary.Operator == "||") {
-                string leftHolder = UniqueValueName("left");
-                StringBuilder sb = new();
-                sb.AppendLine($"// ||");
-                sb.AppendLine($"\tVar* {leftHolder} = &NIL);");
-                sb.Append("\t"+Left!.GenerateTabbed(leftHolder, header));
+                string leftHolder;
+                string leftBody = Left!.GenerateInline(header, out leftHolder);
+                if(!String.IsNullOrEmpty(leftBody)) {
+                    sb.AppendLine(leftBody);
+                }else{
+                    string leftName = UniqueValueName("left");
+                    sb.AppendLine($"\tVar* {leftName} = {leftHolder};");
+                    leftHolder = leftName;
+                }
                 sb.AppendLine($"\tif(VarTruthy({leftHolder})){{");
-                sb.AppendLine($"\t\t{stackName} = {leftHolder};");
+                sb.AppendLine($"\t\t{resultName} = {leftHolder};");
                 sb.AppendLine($"\t}}else{{");
-                string rightHolder = UniqueValueName("right");
-                sb.AppendLine($"\tVar* {rightHolder} = &NIL;");
-                sb.Append("\t"+Right.GenerateTabbed(rightHolder, header));
-                sb.AppendLine($"\t\t{stackName} = {rightHolder};");
+                string rightHolder;
+                string rightBody = Right!.GenerateInline(header, out rightHolder);
+                if(!String.IsNullOrEmpty(rightBody)) {
+                    sb.AppendLine(rightBody);
+                }else{
+                    string rightName = UniqueValueName("right");
+                    sb.AppendLine($"\tVar* {rightName} = {rightHolder};");
+                    rightHolder = rightName;
+                }
+                sb.AppendLine($"\t\t{resultName} = {rightHolder};");
                 sb.AppendLine($"\t}}");
-                return sb.ToString();
             }else{
-                string leftHolder = UniqueValueName("left");
-                string rightHolder = UniqueValueName("right");
-                StringBuilder sb = new();
-                sb.AppendLine($"// {OperatorBinary.Operator}");
-                sb.AppendLine($"\tVar* {leftHolder} = &NIL);");
-                sb.Append("\t"+Left!.GenerateTabbed(leftHolder, header));
-                sb.AppendLine($"\tVar* {rightHolder} = &NIL;");
-                sb.Append("\t"+Right.GenerateTabbed(rightHolder, header));
-                sb.AppendLine($"\t{stackName} = {leftHolder};");
-                string metamethodHolder = UniqueValueName("metamethod");
-                sb.AppendLine($"\tVar* {metamethodHolder} = VarGetMeta({leftHolder}, \"{BinaryOperator.OperatorMetamethods[OperatorBinary.Operator]}\");");            
+                string leftHolder;
+                string leftBody = Left!.GenerateInline(header, out leftHolder);
+                if(!String.IsNullOrEmpty(leftBody)) {
+                    sb.AppendLine(leftBody);
+                }else{
+                    string leftName = UniqueValueName("left");
+                    sb.AppendLine($"\tVar* {leftName} = {leftHolder};");
+                    leftHolder = leftName;
+                }
+                string rightHolder;
+                string rightBody = Right!.GenerateInline(header, out rightHolder);
+                if(!String.IsNullOrEmpty(rightBody)) {
+                    sb.AppendLine(rightBody);
+                }else{
+                    string rightName = UniqueValueName("right");
+                    sb.AppendLine($"\tVar* {rightName} = {rightHolder};");
+                    rightHolder = rightName;
+                }
+                string metamethodHolder = $"VarGetMeta({leftHolder}, \"{BinaryOperator.OperatorMetamethods[OperatorBinary.Operator]}\")";
                 string argsHolder = UniqueValueName("args");
                 sb.AppendLine($"\tVar* {argsHolder} = &NIL;");
                 sb.AppendLine($"\t{argsHolder} = VarNewList({rightHolder});");
@@ -105,11 +135,12 @@ public class Math : Expression {
                 sb.AppendLine($"\tVarRawSet({argsHolder}, VarNewString(\"left\"), {leftHolder});");
                 sb.AppendLine($"\tVarRawSet({argsHolder}, VarNewNumber(1), {rightHolder});");
                 sb.AppendLine($"\tVarRawSet({argsHolder}, VarNewString(\"right\"), {rightHolder});");
-                sb.AppendLine($"\t{stackName} = VarFunctionCall({metamethodHolder}, {argsHolder});");
-                return sb.ToString();
+                sb.AppendLine($"\t{resultName} = VarFunctionCall({metamethodHolder}, {argsHolder});");
             }
-        }else{
+            return sb.ToString();
+        }else if(OperatorUnary != null) {
             throw new Exception($"Unary math not implemented {OperatorUnary!.Operator}");
         }
+        return "";  
     }
 }

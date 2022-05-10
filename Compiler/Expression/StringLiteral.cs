@@ -14,7 +14,8 @@ public class StringLiteral : Expression {
         return (literal, i);
     }
 
-    public override string Generate(string stackName, StreamWriter header) {
-        return $"// String: {Value}\n\t{stackName} = VarNewString({Value});\n";
+    public override string GenerateInline(StreamWriter header, out string stackName) {
+        stackName = $"/* String: {Value} */ VarNewString({Value})";
+        return "";
     }
 }

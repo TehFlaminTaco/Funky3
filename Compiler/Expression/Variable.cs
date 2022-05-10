@@ -29,15 +29,15 @@ public class Variable : Expression {
         return (variable, i);
     }
 
-    public override string Generate(string stackName, StreamWriter header) {
-        return $"// Get {Name}\n\t{stackName} = VarGet(scope, VarNewString(\"{Name}\"));\n";
+    public override string GenerateInline(StreamWriter header, out string stackName) {
+        // Can always be inlined.
+        stackName = $"/*Get {Name}*/ VarGet(scope, VarNewString(\"{Name}\"))";
+        return "";
     }
 
-    public virtual string GenerateSetterTabbed(string stackName, string stackValue, StreamWriter header) {
-        return Lines.Replace(GenerateSetter(stackName, stackValue, header),  "\t$0");
-    }
-
-    public virtual string GenerateSetter(string stackName, string stackValue, StreamWriter header) {
-        return $"// Set {Name}\n\t{stackName} = VarSet(scope, VarNewString(\"{Name}\"), {stackValue});\n";
+    public virtual string GenerateSetterInline(StreamWriter header, out string stackName, string value) {
+        // Can always be inlined.
+        stackName = $"/*Set {Name}*/ VarSet(scope, VarNewString(\"{Name}\"), {value})";
+        return "";
     }
 }

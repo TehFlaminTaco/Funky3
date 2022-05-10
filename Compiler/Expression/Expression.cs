@@ -1,12 +1,10 @@
 using System.Text;
 using System.Text.RegularExpressions;
 public abstract class Expression {
-    public abstract string Generate(string stackName, StreamWriter header);
-
+    public abstract string GenerateInline(StreamWriter header, out string stackName);
     protected static Regex Lines = new Regex(@".+", RegexOptions.Multiline);
-    public virtual string GenerateTabbed(string stackName, StreamWriter header) {
-        // Repeated tabs
-        return Lines.Replace(Generate(stackName, header),  "\t$0");
+    public static string Tabbed(string text){
+        return Lines.Replace(text,  "\t$0");
     }
 
     public static HashSet<string> TakenNames = new HashSet<string>();

@@ -1,12 +1,6 @@
-print("Henlo.");
-function DoHelloWorld(a, b=3, c...){
-    print("Hello, World!");
-    print(a, b, c)
+function List(a...){
+    a;
 }
-print("Wrld..?");
-DoHelloWorld();
-DoHelloWorld(1);
-DoHelloWorld(2, 8);
-DoHelloWorld(3, 9, 10, 11);
-DoHelloWorld("This", "Is", "Some Strings", "That", "I Really", "Hope", "Work!");
-DoHelloWorld(1,1,10,9,8,7,6,5,4,3,2,1);
+
+
+print(List("Hello, World!"));

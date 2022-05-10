@@ -57,6 +57,16 @@ Var* VarNewFunction(Var* (value)(Var*, Var*)){
     return VarFreeLater(VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction));
 }
 
+Var* VarNewFunctionWithScope(Var* scope, Var* (value)(Var*, Var*)){
+    VarFunction* func = calloc(1, sizeof(VarFunction));
+    Var* vFunc = VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
+    func->method = value;
+    func->scope = VarSubScope(scope);
+    DoReferenceBy(func->scope, vFunc);
+    func->name = NULL;
+    return VarFreeLater(vFunc);
+}
+
 Var* VarTrue(){
     return VarNewNumber(1.0);
 }

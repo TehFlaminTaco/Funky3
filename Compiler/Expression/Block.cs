@@ -36,14 +36,24 @@ public class Block : Expression {
         return (new Block(expressions), i);
     }
 
-    public override string Generate(string stackName, StreamWriter header) {
+    public override string GenerateInline(StreamWriter header, out string stackName) {
+        // Never inline. :(
+        string BlockReturnValue = UniqueValueName("blockReturnValue");
+        stackName = BlockReturnValue;
+
         var sb = new StringBuilder();
         sb.AppendLine("// Block");
+        sb.AppendLine($"Var* {BlockReturnValue} = &NIL;");
         sb.AppendLine("{");
         sb.AppendLine("\tVar* oldScope = scope;");
         sb.AppendLine("\tVar* scope = VarSubScope(oldScope);");
         foreach(var expression in Expressions) {
-            sb.AppendLine(expression.GenerateTabbed(stackName, header));
+            string retVal;
+            string lineBody = expression.GenerateInline(header, out retVal);
+            if(!string.IsNullOrEmpty(lineBody)) {
+                sb.AppendLine("\t"+lineBody);
+            };
+            sb.AppendLine($"\t{BlockReturnValue} = {retVal};");
         }
         sb.AppendLine("}");
         return sb.ToString();

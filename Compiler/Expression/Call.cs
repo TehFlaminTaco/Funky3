@@ -36,25 +36,32 @@ public class Call : Expression {
         return (call, i);
     }
 
-
-    public override string Generate(string stackName, StreamWriter header) {
+    public override string GenerateInline(StreamWriter header, out string stackName) {
+        // Impossible to inline.
+        string retValue = UniqueValueName("retValue");
         string vArgs = UniqueValueName("args");
-        string vMethod = UniqueValueName("method");
+        string vMethod;
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("// Call");
+        sb.AppendLine($"\tVar* {retValue};");
         sb.AppendLine($"\tVar* {vArgs} = VarNewList();");
         // Assemble arguments
         int i = 0;
         foreach(var argument in Arguments) {
-            string argName = UniqueValueName($"arg{i}");
-            sb.AppendLine($"\tVar* {argName} = &NIL;");
-            sb.Append(argument.GenerateTabbed(argName, header));
+            string argName;
+            string argBody = argument.GenerateInline(header, out argName);
+            if(!String.IsNullOrEmpty(argBody)) {
+                sb.AppendLine(Tabbed($"\t" + argBody));
+            }
             sb.AppendLine($"\tVarRawSet({vArgs}, VarNewNumber({i++}), {argName});");
         }
-        sb.AppendLine($"\tVar* {vMethod} = &NIL;");
-        sb.Append(Method.GenerateTabbed(vMethod, header));
+        string methodBody = Method.GenerateInline(header, out vMethod);
+        if(!String.IsNullOrEmpty(methodBody)) {
+            sb.AppendLine(Tabbed(methodBody));
+        }
         // Call method
-        sb.AppendLine($"\t{stackName} = VarFunctionCall({vMethod}, {vArgs});");
+        sb.AppendLine($"\t{retValue} = VarFunctionCall({vMethod}, {vArgs});");
+        stackName = retValue;
         return sb.ToString();
     }
 }

@@ -46,13 +46,10 @@ public class Assignment : Expression {
         }
     }
 
-    public override string Generate(string stackName, StreamWriter header)
-    {
-        string valueHolder = UniqueValueName("value");
-        StringBuilder sb = new($"// Assignment");
-        sb.AppendLine($"\tVar* {valueHolder} = &NIL;");
-        sb.Append("\t"+Value.GenerateTabbed(valueHolder, header));
-        sb.Append("\t"+Name.GenerateSetterTabbed(stackName, valueHolder, header));
-        return sb.ToString();
+    public override string GenerateInline(StreamWriter header, out string stackName){
+        string valueHolder;
+        string valueBody = Value.GenerateInline(header, out valueHolder);
+        Name.GenerateSetterInline(header, out stackName, valueHolder); // KNOWN to always be inline
+        return valueBody;
     }
 }
