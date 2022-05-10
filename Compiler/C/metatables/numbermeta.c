@@ -74,6 +74,7 @@ Var* NumberAdd(Var* scope, Var* args){
 void PopulateNumberMeta(Var* metatable){
     DebugPrint("!");
     VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(NumberToString));
+    VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(NumberToString));
     VarRawSet(metatable, VarNewString("add"), VarNewFunction(NumberAdd));
     DebugPrint("@");
 }

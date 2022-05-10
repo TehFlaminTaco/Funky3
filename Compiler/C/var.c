@@ -108,6 +108,9 @@ Var* VarFunctionCall(Var* function, Var* args){
 
 Var* VarRawGet(Var* table, Var* key){
     DebugPrint("VarRawGet\n");
+    if(key -> type == VAR_STRING){
+        DebugPrint("VarRawGet: key is \"%s\"\n", (char*)(intptr_t)key->value);
+    }
     if(table->type != VAR_LIST){
         DebugPrint("VarRawGet: table is not a list\n");
         return &UNDEFINED;
@@ -116,7 +119,11 @@ Var* VarRawGet(Var* table, Var* key){
     DebugPrint("VarRawGet: table is a list\n");
     HashMap* map = (HashMap*)table->value;
     DebugPrint("VarRawGet: map is %p\n", map);
-    return HashMapGet(map, key);
+    Var* result = HashMapGet(map, key);
+    if(ISUNDEFINED(result) && !ISUNDEFINED(map -> parent)){
+        return VarGet(map -> parent, key);
+    }
+    return result;
 }
 
 Var* VarRawSet(Var* table, Var* key, Var* value){
@@ -252,6 +259,21 @@ Var* VarAsString(Var* var){
         return VarNewString("");
     }
     DebugPrint("VarAsString: done\n");
+    return result;
+}
+
+Var* VarAsCode(Var* var){
+    DebugPrint("VarAsCode\n");
+    Var* argList = VarNewList();
+    VarRawSet(argList, VarNewString("obj"), var);
+    VarRawSet(argList, VarNewNumber(0), var);
+    DebugPrint("VarAsCode: calling tocode\n");
+    Var* result = VarFunctionCall(VarGetMeta(var, "tocode"), argList);
+    if(result->type != VAR_STRING){
+        DebugPrint("VarAsCode: tocode did not return string\n");
+        return VarNewString("");
+    }
+    DebugPrint("VarAsCode: done\n");
     return result;
 }
 

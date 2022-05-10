@@ -17,6 +17,11 @@ typedef struct _VARFUNCTION {
     char* name;
 } VarFunction;
 
+Var* VarNewNumber(double value);
+Var* VarNewString(char* value);
+Var* VarNewList();
+Var* VarNewFunction(Var* (value)(Var*, Var*));
+
 Var* VarRawGet(Var* table, Var* key);
 Var* VarRawSet(Var* table, Var* key, Var* value);
 Var* ArgVarGet(Var* args, int index, char* key);
@@ -26,6 +31,7 @@ Var* VarSet(Var* table, Var* key, Var* value);
 
 int VarEquals(Var* var1, Var* var2);
 Var* VarAsString(Var* var);
+Var* VarAsCode(Var* var);
 int VarTruthy(Var* var);
 
 Var* VarListCopy(Var* list);

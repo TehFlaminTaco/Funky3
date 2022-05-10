@@ -7,13 +7,17 @@
 #include "hashmap.h"
 
 #include "metatables/basemeta.c"
+#include "metatables/listmeta.c"
+#include "metatables/nullmeta.c"
 #include "metatables/numbermeta.c"
+#include "metatables/stringmeta.c"
 
 void SetupMetaTables(){
     // Initialize metatables with new HashMaps.
     MetatableNull.value = (long long)HashMapNew(16);
     MetatableNull.metatable = &MetatableList;
     PopulateBaseMeta(&MetatableNull);
+    PopulateNullMeta(&MetatableNull);
 
     MetatableNumber.value = (long long)HashMapNew(16);
     MetatableNumber.metatable = &MetatableList;
@@ -23,6 +27,7 @@ void SetupMetaTables(){
     MetatableString.value = (long long)HashMapNew(16);
     MetatableString.metatable = &MetatableList;
     PopulateBaseMeta(&MetatableString);
+    PopulateStringMeta(&MetatableString);
 
     MetatableFunction.value = (long long)HashMapNew(16);
     MetatableFunction.metatable = &MetatableList;
@@ -31,6 +36,7 @@ void SetupMetaTables(){
     MetatableList.value = (long long)HashMapNew(16);
     MetatableList.metatable = &MetatableList;
     PopulateBaseMeta(&MetatableList);
+    PopulateListMeta(&MetatableList);
 }
 
 Var* VarGetMeta(Var* var, char* key){
@@ -39,7 +45,7 @@ Var* VarGetMeta(Var* var, char* key){
     DebugPrint("VarGetMeta: Made Key\n");
     if(var->metatable == NULL){
         DebugPrint("VarGetMeta: No metatable\n");
-        return NULL;
+        return &UNDEFINED;
     }
     // Assert the Var's metatable is a list
     if(var->metatable->type != 0x04){

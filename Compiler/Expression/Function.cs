@@ -77,11 +77,13 @@ public class Function : Expression {
                 }
             }else{
                 header.WriteLine($"\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
+                header.WriteLine($"\tif(ISUNDEFINED({argName})) {{");
                 if(Arguments[i].DefaultValue != null) {
-                    header.WriteLine($"\tif(ISUNDEFINED({argName})) {{");
                     header.WriteLine("\t" + Arguments[i].DefaultValue!.GenerateTabbed(argName, header));
-                    header.WriteLine("\t}");
+                }else{
+                    header.WriteLine($"\t{argName} = &NIL;");
                 }
+                header.WriteLine("\t}");
             }
             header.WriteLine($"\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
         }

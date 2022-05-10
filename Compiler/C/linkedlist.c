@@ -79,7 +79,7 @@ Var* LinkedListRemove(LinkedVarList* list, int index){
     Linklett* current = list->first;
     if(current == NULL){
         DebugPrint("LinkedListRemove: Empty list\n");
-        return NULL;
+        return &UNDEFINED;
     }
 
     if(index == 0){
@@ -90,17 +90,23 @@ Var* LinkedListRemove(LinkedVarList* list, int index){
         return var;
     }
 
-    for(int i = 0; i < index; i++){
-        DebugPrint("LinkedListRemove: i = %d\n", i);
+    for(int i = 0; i < (index-1); i++){
+        DebugPrint("LinkedListRemove: (%i, %p)\n", i, current);
         current = current->next;
         if(current == NULL){
             DebugPrint("LinkedListRemove: index out of range\n");
-            return NULL;
+            return &UNDEFINED;
         }
+    }
+    if(current->next == NULL){
+        DebugPrint("LinkedListRemove: index out of range\n");
+        return &UNDEFINED;
     }
     DebugPrint("LinkedListRemove: current = %p\n", current);
     Linklett* toRemove = current->next;
+    DebugPrint("LinkedListRemove: toRemove = %p\n", toRemove);
     current->next = toRemove->next;
+    DebugPrint("LinkedListRemove: current->next = %p\n", current->next);
     Var* var = toRemove->var;
     DebugPrint("LinkedListRemove: Finshed removing.");
     free(toRemove);
@@ -112,9 +118,9 @@ Var* LinkedListRemoveByValue(LinkedVarList* list, Var* var){
     DebugPrint("LinkedListRemoveByValue: start\n");
     int i = 0;
     for(Linklett* current = list->first; current != NULL; current = current->next){
-        DebugPrint("LinkedListRemoveByValue: current = %d\n", i);
+        DebugPrint("LinkedListRemoveByValue: current = (%i, %p)\n", i, current);
         if(current->var == var){
-            DebugPrint("LinkedListRemoveByValue: found\n");
+            DebugPrint("LinkedListRemoveByValue: found (%i, %p)\n", i, current);
             return LinkedListRemove(list, i);
         }
         i++;
