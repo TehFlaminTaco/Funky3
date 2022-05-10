@@ -7,7 +7,7 @@ public static class Parser {
             if(result.expression != null) {
                 string lineBody = result.expression.GenerateInline(header, out string stackName);
                 if(!String.IsNullOrEmpty(lineBody)) {
-                    body.WriteLine(lineBody);
+                    body.Write(lineBody);
                 }
                 body.WriteLine($"_ = {stackName};");
                 index = result.index;

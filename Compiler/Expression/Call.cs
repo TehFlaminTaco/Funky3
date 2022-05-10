@@ -51,13 +51,13 @@ public class Call : Expression {
             string argName;
             string argBody = argument.GenerateInline(header, out argName);
             if(!String.IsNullOrEmpty(argBody)) {
-                sb.AppendLine(Tabbed($"\t" + argBody));
+                sb.Append(Tabbed($"\t" + argBody));
             }
             sb.AppendLine($"\tVarRawSet({vArgs}, VarNewNumber({i++}), {argName});");
         }
         string methodBody = Method.GenerateInline(header, out vMethod);
         if(!String.IsNullOrEmpty(methodBody)) {
-            sb.AppendLine(Tabbed(methodBody));
+            sb.Append(Tabbed(methodBody));
         }
         // Call method
         sb.AppendLine($"\t{retValue} = VarFunctionCall({vMethod}, {vArgs});");

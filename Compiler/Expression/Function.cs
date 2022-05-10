@@ -82,7 +82,7 @@ public class Function : Expression {
                     string argOut;
                     string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
                     if(!String.IsNullOrEmpty(argBody)){
-                        header.WriteLine(Tabbed($"\t{argBody}"));
+                        header.Write(Tabbed($"\t{argBody}"));
                     }
                     header.WriteLine($"\t{argName} = {argOut};");
                 }else{
@@ -95,7 +95,7 @@ public class Function : Expression {
         string retVal;
         string body = Body.GenerateInline(header, out retVal);
         if(!String.IsNullOrEmpty(body)) {
-            header.WriteLine(Tabbed(body));
+            header.Write(Tabbed(body));
         }
         header.WriteLine($"\treturn {retVal};");
         header.WriteLine($"}}");
