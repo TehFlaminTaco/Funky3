@@ -7,6 +7,7 @@
 #include "hashmap.h"
 
 #include "metatables/basemeta.c"
+#include "metatables/functionmeta.c"
 #include "metatables/listmeta.c"
 #include "metatables/nullmeta.c"
 #include "metatables/numbermeta.c"
@@ -32,6 +33,7 @@ void SetupMetaTables(){
     MetatableFunction.value = (long long)HashMapNew(16);
     MetatableFunction.metatable = &MetatableList;
     PopulateBaseMeta(&MetatableFunction);
+    PopulateFunctionMeta(&MetatableFunction);
 
     MetatableList.value = (long long)HashMapNew(16);
     MetatableList.metatable = &MetatableList;

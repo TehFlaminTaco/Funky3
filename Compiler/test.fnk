@@ -1,6 +1,3 @@
-function DoSomething(method, argument, j = print(3)){
-    method(argument)
-}
-
-
-DoSomething(print, "Hello, World!");
+function Quine(){
+    print(Quine,"Quine();");
+}Quine();

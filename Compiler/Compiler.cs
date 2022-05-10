@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 public static class Compiler
 {
+    public static string CurrentCode { get; set; } = "";
     public static void Main(){
         // Generate a Temporary folder for compiling
         var temp = Path.Combine(Path.GetTempPath(), "Funky3Compiler");
@@ -74,7 +75,8 @@ public static class Compiler
 
     public static void Compile(string codePath, StreamWriter bodyOutput, StreamWriter headerOutput){
         using (StreamReader codeStream = new StreamReader(codePath)) {
-            var tokens = Tokenizer.Tokenize(codeStream.ReadToEnd());
+            CurrentCode = codeStream.ReadToEnd();
+            var tokens = Tokenizer.Tokenize(CurrentCode);
             Parser.Parse(tokens, bodyOutput, headerOutput);
             
 

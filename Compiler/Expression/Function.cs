@@ -4,10 +4,13 @@ public class Function : Expression {
     public List<FunctionArgument> Arguments { get; set; }
     public Expression Body { get; set; }
 
-    public Function(Variable? storeVariable, List<FunctionArgument> arguments, Expression body) {
+    public string Code { get; set; }
+
+    public Function(Variable? storeVariable, List<FunctionArgument> arguments, Expression body, string code) {
         StoreVariable = storeVariable;
         Arguments = arguments;
         Body = body;
+        Code = code;
     }
 
     public static (Function?, int) TryParse(List<Token> tokens, int index) {
@@ -53,7 +56,10 @@ public class Function : Expression {
         if(body.expression == null) {
             return (null, index);
         }
-        return (new Function(storeVariable.Item1, arguments, body.expression), body.index);
+        int start = tokens[index].Index;
+        int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
+        string code = Compiler.CurrentCode[start..end];
+        return (new Function(storeVariable.Item1, arguments, body.expression, code), body.index);
     }
 
     public override string GenerateInline(StreamWriter header, out string stackName) {
@@ -100,10 +106,48 @@ public class Function : Expression {
         header.WriteLine($"\treturn {retVal};");
         header.WriteLine($"}}");
 
+        StringBuilder sb = new StringBuilder();
+        sb.Append('\"');
+        foreach(char c in Code) {
+            switch(c){
+                case '\a':
+                    sb.Append("\\a"); break;
+                case '\b':
+                    sb.Append("\\b"); break;
+                case '\x1B':
+                    sb.Append("\\e"); break;
+                case '\f':
+                    sb.Append("\\f"); break;
+                case '\n':
+                    sb.Append("\\n"); break;
+                case '\r':
+                    sb.Append("\\r"); break;
+                case '\t':
+                    sb.Append("\\t"); break;
+                case '\v':
+                    sb.Append("\\v"); break;
+                case '\\':
+                    sb.Append("\\\\"); break;
+                case '\'':
+                    sb.Append("\\'"); break;
+                case '\"':
+                    sb.Append("\\\""); break;
+                default:
+                    if(c < 32 || c > 126){
+                        sb.Append($"\\x{c:X2}");
+                    }else{
+                        sb.Append(c);
+                    }
+                    break;
+            }
+        }
+        sb.Append('\"');
+        string constFunctionBody = sb.ToString();
+
         if(StoreVariable != null) {
-            stackName = $"VarSet(scope, VarNewString(\"{StoreVariable!.Name}\"), VarNewFunctionWithScope(scope, {methodName}))";
+            stackName = $"VarSet(scope, VarNewString(\"{StoreVariable!.Name}\"), VarNewFunctionWithScope({methodName}, scope, {constFunctionBody}))";
         }else{
-            stackName = $"VarNewFunctionWithScope(scope, {methodName})";
+            stackName = $"VarNewFunctionWithScope({methodName}, scope,  {constFunctionBody})";
         }
         return "";
     }

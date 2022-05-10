@@ -53,17 +53,17 @@ Var* VarNewFunction(Var* (value)(Var*, Var*)){
     VarFunction* func = calloc(1, sizeof(VarFunction));
     func->method = value;
     func->scope = &NIL;
-    func->name = NULL;
+    func->name = "<C Function>";
     return VarFreeLater(VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction));
 }
 
-Var* VarNewFunctionWithScope(Var* scope, Var* (value)(Var*, Var*)){
+Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     VarFunction* func = calloc(1, sizeof(VarFunction));
     Var* vFunc = VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
     func->method = value;
     func->scope = VarSubScope(scope);
     DoReferenceBy(func->scope, vFunc);
-    func->name = NULL;
+    func->name = name;
     return VarFreeLater(vFunc);
 }
 

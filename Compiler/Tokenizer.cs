@@ -53,7 +53,7 @@ public static class Tokenizer {
                     // Return the *longest* matched keyword
                     int line = code[..k].Split('\n').Length;
                     int column = k - code[..k].LastIndexOf('\n');
-                    tokens.Add(new Token(TokenType.Keyword, matchedKeywords.First(), line, column));
+                    tokens.Add(new Token(TokenType.Keyword, matchedKeywords.First(), line, column, k, matchedKeywords.First().Length));
                     k += matchedKeywords.First().Length;
                 }else{
                     // Identifier
@@ -65,7 +65,7 @@ public static class Tokenizer {
                     // Generate the token
                     int line = code[..k].Split('\n').Length;
                     int column = k - code[..k].LastIndexOf('\n');
-                    tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column));
+                    tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column, k, end - k));
                     // Move the index to the end of the identifier
                     k = end;
                 }
@@ -78,7 +78,7 @@ public static class Tokenizer {
                 // Generate the token
                 int line = code[..k].Split('\n').Length;
                 int column = k - code[..k].LastIndexOf('\n');
-                tokens.Add(new Token(TokenType.Number, match.Value, line, column));
+                tokens.Add(new Token(TokenType.Number, match.Value, line, column, k, match.Value.Length));
                 // Move the index to the end of the number
                 k += match.Value.Length;
 
@@ -96,7 +96,7 @@ public static class Tokenizer {
                 // Generate the token
                 int line = code[..k].Split('\n').Length;
                 int column = k - code[..k].LastIndexOf('\n');
-                tokens.Add(new Token(TokenType.String, code.Substring(k, end - k + 1), line, column));
+                tokens.Add(new Token(TokenType.String, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
                 // Move the index to the end of the string
                 k = end + 1;
 
@@ -116,7 +116,7 @@ public static class Tokenizer {
                 // Generate the token
                 int line = code[..k].Split('\n').Length;
                 int column = k - code[..k].LastIndexOf('\n');
-                tokens.Add(new Token(TokenType.InterpolatedStringSTART, code.Substring(k, end - k + 1), line, column));
+                tokens.Add(new Token(TokenType.InterpolatedStringSTART, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
                 // Move the index to the end of the string
                 k = end + 1;
                 throw new NotImplementedException("Interpolated Strings are not yet implemented.");
@@ -125,7 +125,7 @@ public static class Tokenizer {
                 // Generate the token
                 int line = code[..k].Split('\n').Length;
                 int column = k - code[..k].LastIndexOf('\n');
-                tokens.Add(new Token(TokenType.Punctuation, firstChar.ToString(), line, column));
+                tokens.Add(new Token(TokenType.Punctuation, firstChar.ToString(), line, column, k, 1));
                 // Move the index to the end of the punctuation
                 k++;
             }
@@ -151,15 +151,19 @@ public class Token {
     public string Value { get; set; }
     public int Line { get; set; }
     public int Column { get; set; }
+    public int Index { get; set; }
+    public int Length { get; set; }
 
     public override string ToString() {
         return $"{Type} {Value}";
     }
 
-    public Token(TokenType type, string value, int line, int column) {
+    public Token(TokenType type, string value, int line, int column, int index, int length) {
         Type = type;
         Value = value;
         Line = line;
         Column = column;
+        Index = index;
+        Length = length;
     }
 }
