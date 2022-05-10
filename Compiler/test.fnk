@@ -1,1 +1,6 @@
-print ( 4 + 8 )
+function DoSomething(method, argument, j = print(3)){
+    method(argument)
+}
+
+
+DoSomething(print, "Hello, World!");

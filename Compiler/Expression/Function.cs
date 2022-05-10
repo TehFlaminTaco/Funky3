@@ -70,27 +70,27 @@ public class Function : Expression {
             header.WriteLine($"\t// Argument: {Arguments[i].Name} ");
             // If it's splatted, Dump the rest of the arguments into this in particular.
             if(Arguments[i].Splat) {
-                header.WriteLine($"\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
+                header.WriteLine($"\t\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
                 // Remove all arguments by name from the list.
                 for(int j = 0; j < Arguments.Count; j++) {
-                    header.WriteLine($"\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
+                    header.WriteLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
                 }
             }else{
-                header.WriteLine($"\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
-                header.WriteLine($"\tif(ISUNDEFINED({argName})) {{");
+                header.WriteLine($"\t\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
+                header.WriteLine($"\t\tif(ISUNDEFINED({argName})) {{");
                 if(Arguments[i].DefaultValue != null) {
                     string argOut;
                     string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
                     if(!String.IsNullOrEmpty(argBody)){
-                        header.Write(Tabbed($"\t{argBody}"));
+                        header.Write(Tabbed(Tabbed(Tabbed($"{argBody}"))));
                     }
-                    header.WriteLine($"\t{argName} = {argOut};");
+                    header.WriteLine($"\t\t\t{argName} = {argOut};");
                 }else{
-                    header.WriteLine($"\t{argName} = &NIL;");
+                    header.WriteLine($"\t\t\t{argName} = &NIL;");
                 }
-                header.WriteLine("\t}");
+                header.WriteLine("\t\t}");
             }
-            header.WriteLine($"\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
+            header.WriteLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
         }
         string retVal;
         string body = Body.GenerateInline(header, out retVal);
