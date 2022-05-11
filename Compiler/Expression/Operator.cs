@@ -80,31 +80,27 @@ public class BinaryOperator {
         }
         switch(firstChar){
             case "/":
-                if(tokens[i].Value == "/") {
-                    return (new BinaryOperator("//"), i + 1);
-                }
-                return (new BinaryOperator(firstChar), index);
+                if(tokens[i].Value == "/") return (new BinaryOperator("//"), i + 1);
+                break;
             case "<":
                 if(tokens[i].Value == "=") {
                     return (new BinaryOperator("<="), i + 1);
                 }
-                if(tokens[i].Value == "<") {
-                    return (new BinaryOperator("<<"), i + 1);
-                }
-                return (new BinaryOperator(firstChar), index);
+                if(tokens[i].Value == "<") return (new BinaryOperator("<<"), i + 1);
+                break;
             case ">":
-                if(tokens[i].Value == "=") {
-                    return (new BinaryOperator(">="), i + 1);
-                }
-                if(tokens[i].Value == ">") {
-                    return (new BinaryOperator(">>"), i + 1);
-                }
-                return (new BinaryOperator(firstChar), index);
+                if(tokens[i].Value == "=") return (new BinaryOperator(">="), i + 1);
+                if(tokens[i].Value == ">") return (new BinaryOperator(">>"), i + 1);
+                break;
             case "=":
-                if(tokens[i].Value == "=") {
-                    return (new BinaryOperator("=="), i + 1);
-                }
-                return (new BinaryOperator(firstChar), index);
+                if(tokens[i].Value == "=") return (new BinaryOperator("=="), i + 1);
+                break;
+            case "&":
+                if(tokens[i].Value == "&") return (new BinaryOperator("&&"), i + 1);
+                break;
+            case "|":
+                if(tokens[i].Value == "|") return (new BinaryOperator("||"), i + 1);
+                break;
         }
         return (new BinaryOperator(firstChar), i);
     }

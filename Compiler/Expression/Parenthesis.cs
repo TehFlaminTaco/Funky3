@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-public static class Parenthesis {
+public static class Parentheses {
     public static (Expression?, int) TryParse(List<Token> tokens, int index) {
         int i = index;
         if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "(") {

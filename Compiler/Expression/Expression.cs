@@ -21,24 +21,43 @@ public abstract class Expression {
         if(index == tokens.Count) {
             return (null, index);
         }
-        return tokens[index].Type switch
-        {
-            TokenType.Number => RightParse(NumberLiteral.TryParse(tokens, index), tokens),
-            TokenType.String => RightParse(StringLiteral.TryParse(tokens, index), tokens),
-            TokenType.Identifier => RightParse(Variable.TryParse(tokens, index), tokens),
-            TokenType.Keyword => tokens[index].Value switch {
-                "var" or "local" => RightParse(Variable.TryParse(tokens, index), tokens),
-                "not" => RightParse(Math.TryParse(tokens, index), tokens),
-                "function" => RightParse(Function.TryParse(tokens, index), tokens),
-                _ => (null, index),
-            },
-            TokenType.Punctuation => tokens[index].Value switch {
-                "{" => RightParse(Block.TryParse(tokens, index), tokens),
-                "(" => RightParse(Parenthesis.TryParse(tokens, index), tokens),
-                _ => (null, index),
-            },
-            _ => (null, index),
-        };
+
+        switch (tokens[index].Type) {
+            case TokenType.Number:      return RightParse(NumberLiteral.TryParse(tokens, index), tokens);
+            case TokenType.String:      return RightParse(StringLiteral.TryParse(tokens, index), tokens);
+            case TokenType.Identifier:
+                // Check if this is a function first.
+                if(tokens.Count > index+3 && tokens[index+1].Type==TokenType.Punctuation && tokens[index+1].Value=="=" && tokens[index+2].Type==TokenType.Punctuation && tokens[index+2].Value==">") {
+                    (Expression? expression, int index) result = Function.TryParse(tokens, index);
+                    if(result.expression != null) {
+                        return result;
+                    }
+                }
+                // Otherwise, it's a variable.
+                return RightParse(Variable.TryParse(tokens, index), tokens);
+            case TokenType.Keyword:
+                switch (tokens[index].Value) {
+                    case "var": case "local":   return RightParse(Variable.TryParse(tokens, index), tokens);
+                    case "not":                 return RightParse(Math.TryParse(tokens, index), tokens);
+                    case "function":            return RightParse(Function.TryParse(tokens, index), tokens);
+                    default:                    return (null, index);
+                }
+            case TokenType.Punctuation:
+                switch (tokens[index].Value) {
+                    case "{":   return RightParse(Block.TryParse(tokens, index), tokens);
+                    case "(":
+                        // Try a function first
+                        var function = Function.TryParse(tokens, index);
+                        if(function.Item1 != null) {
+                            return RightParse(function, tokens);
+                        }
+                        // Otherwise, try a parenthesized expression
+                        return RightParse(Parentheses.TryParse(tokens, index), tokens);
+                    default:    return (null, index);
+                }
+            default:
+                return (null, index);
+        }
     }
 
     public static (Expression? expression, int index) RightParse((Expression? expression, int index) result, List<Token> tokens) {

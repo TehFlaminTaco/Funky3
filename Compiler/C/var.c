@@ -250,6 +250,10 @@ Var* ArgVarGet(Var* args, int index, char* key){
     return v;
 }
 
+Var* ArgVarSet(Var* args, int index, char* key, Var* value){
+    return VarRawSet(args, VarNewString(key), VarRawSet(args, VarNewNumber(index), value));
+}
+
 // Attempts to ensure the output type is a string
 Var* VarAsString(Var* var){
     DebugPrint("VarAsString (%i)\n", var->type);

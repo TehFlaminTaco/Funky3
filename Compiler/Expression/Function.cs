@@ -15,14 +15,31 @@ public class Function : Expression {
 
     public static (Function?, int) TryParse(List<Token> tokens, int index) {
         int i = index;
-        if(tokens[i].Type != TokenType.Keyword || tokens[i].Value != "function") {
-            return (null, index);
+        if(tokens[i].Type == TokenType.Keyword && tokens[i].Value == "function") {
+            Parser.RegisterFurthest(i);
+            i++;
+            return TryParseKeyword(tokens, i);
         }
-        Parser.RegisterFurthest(i);
-        i++;
-        if(tokens[i].Type != TokenType.Identifier) {
-            return (null, index);
+
+        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "(") {
+            Parser.RegisterFurthest(i);
+            i++;
+            return TryParseParentheses(tokens, i);
         }
+
+        // Try and get a single argument
+        (FunctionArgument? argument, int index) argument = FunctionArgument.TryParse(tokens, i);
+        if(argument.argument != null) {
+            Parser.RegisterFurthest(argument.index);
+            i = argument.index;
+            return TryParseSingleArgument(argument.argument, tokens, i);
+        }
+
+        return (null, index);
+    }
+
+    public static (Function?, int) TryParseKeyword(List<Token> tokens, int index) {
+        int i = index;
         // Try to get a Variable.
         var storeVariable = Variable.TryParse(tokens, i);
         if(storeVariable.Item1 != null) {
@@ -56,47 +73,111 @@ public class Function : Expression {
         if(body.expression == null) {
             return (null, index);
         }
-        int start = tokens[index].Index;
+        int start = tokens[index-1].Index;
         int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
         string code = Compiler.CurrentCode[start..end];
         return (new Function(storeVariable.Item1, arguments, body.expression, code), body.index);
     }
 
+    // In the form (a, b) => body
+    public static (Function?, int) TryParseParentheses(List<Token> tokens, int index) {
+        int i = index;
+        var arguments = new List<FunctionArgument>();
+        while(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")") {
+            var argument = FunctionArgument.TryParse(tokens, i);
+            if(argument.Item1 == null) {
+                return (null, index);
+            }
+            arguments.Add(argument.Item1);
+            i = argument.Item2;
+            // Skip over a comma.
+            if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ",") {
+                Parser.RegisterFurthest(i);
+                i++;
+            }
+        }
+        Parser.RegisterFurthest(i);
+        i++;
+        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "=") {
+            return (null, index);
+        }
+        Parser.RegisterFurthest(i);
+        i++;
+        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ">") {
+            return (null, index);
+        }
+        Parser.RegisterFurthest(i);
+        i++;
+        var body = TryParseAny(tokens, i);
+        if(body.expression == null) {
+            return (null, index);
+        }
+        int start = tokens[index-1].Index;
+        int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
+        string code = Compiler.CurrentCode[start..end];
+        return (new Function(null, arguments, body.expression, code), body.index);
+    }
+
+    // In the form a => body
+    public static (Function?, int) TryParseSingleArgument(FunctionArgument argument, List<Token> tokens, int index) {
+        int i = index;
+        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "=") {
+            return (null, index);
+        }
+        Parser.RegisterFurthest(i);
+        i++;
+        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ">") {
+            return (null, index);
+        }
+        Parser.RegisterFurthest(i);
+        i++;
+        var body = TryParseAny(tokens, i);
+        if(body.expression == null) {
+            return (null, index);
+        }
+        int start = tokens[index-1].Index;
+        int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
+        string code = Compiler.CurrentCode[start..end];
+        return (new Function(null, new List<FunctionArgument> { argument }, body.expression, code), body.index);
+    }
+
     public override string GenerateInline(StreamWriter header, out string stackName) {
         // Write the method to the header.
         string methodName = UniqueValueName("method");
-        string argIndex = UniqueValueName($"argIndex");
         header.WriteLine("// Function Definition");
         header.WriteLine($"Var* {methodName}(Var* scope, Var* args){{");
-        header.WriteLine($"\tint {argIndex} = 0;");
-        // Add the args to the scope.
-        // VarRawSet(scope, VarNewString( argument name ), args[i]);
-        for(int i = 0; i < Arguments.Count; i++) {
-            string argName = UniqueValueName($"arg{i}");
-            header.WriteLine($"\t// Argument: {Arguments[i].Name} ");
-            // If it's splatted, Dump the rest of the arguments into this in particular.
-            if(Arguments[i].Splat) {
-                header.WriteLine($"\t\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
-                // Remove all arguments by name from the list.
-                for(int j = 0; j < Arguments.Count; j++) {
-                    header.WriteLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
-                }
-            }else{
-                header.WriteLine($"\t\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
-                header.WriteLine($"\t\tif(ISUNDEFINED({argName})) {{");
-                if(Arguments[i].DefaultValue != null) {
-                    string argOut;
-                    string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
-                    if(!String.IsNullOrEmpty(argBody)){
-                        header.Write(Tabbed(Tabbed(Tabbed($"{argBody}"))));
+        if(Arguments.Count > 0) {
+            string argIndex = UniqueValueName($"argIndex");
+            header.WriteLine($"\tint {argIndex} = 0;");
+            // Add the args to the scope.
+            // VarRawSet(scope, VarNewString( argument name ), args[i]);
+            for(int i = 0; i < Arguments.Count; i++) {
+                string argName = UniqueValueName($"arg{i}");
+                header.WriteLine($"\t// Argument: {Arguments[i].Name} ");
+                // If it's splatted, Dump the rest of the arguments into this in particular.
+                if(Arguments[i].Splat) {
+                    header.WriteLine($"\t\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
+                    // Remove all arguments by name from the list.
+                    for(int j = 0; j < Arguments.Count; j++) {
+                        header.WriteLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
                     }
-                    header.WriteLine($"\t\t\t{argName} = {argOut};");
                 }else{
-                    header.WriteLine($"\t\t\t{argName} = &NIL;");
+                    header.WriteLine($"\t\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
+                    header.WriteLine($"\t\tif(ISUNDEFINED({argName})) {{");
+                    if(Arguments[i].DefaultValue != null) {
+                        string argOut;
+                        string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
+                        if(!String.IsNullOrEmpty(argBody)){
+                            header.Write(Tabbed(Tabbed(Tabbed($"{argBody}"))));
+                        }
+                        header.WriteLine($"\t\t\t{argName} = {argOut};");
+                    }else{
+                        header.WriteLine($"\t\t\t{argName} = &NIL;");
+                    }
+                    header.WriteLine("\t\t}");
                 }
-                header.WriteLine("\t\t}");
+                header.WriteLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
             }
-            header.WriteLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
         }
         string retVal;
         string body = Body.GenerateInline(header, out retVal);
@@ -173,7 +254,7 @@ public class FunctionArgument{
         var argument = new FunctionArgument(tokens[i].Value, null, false);
         Parser.RegisterFurthest(i);
         i++;
-        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "=") {
+        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "=" && (tokens[i+1].Type != TokenType.Punctuation || tokens[i+1].Value != ">")) {
             Parser.RegisterFurthest(i);
             i++;
             var defaultValue = Expression.TryParseAny(tokens, i);
