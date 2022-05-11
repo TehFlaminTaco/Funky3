@@ -1,30 +1,4 @@
-$cHeaderStart
-
-void SomeTest() {
-  printf("Wowee! C Headers at will!\n");
-}
-
-$cHeaderEnd
-
-function getMetaTable(t){
-    $cInlineStart
-    Var* t = ArgVarGet(args, 0, "t");
-    return t -> metatable;
-    $cInlineEnd
-}
-
-function VarSet(a, key, value){
-    $cInlineStart
-    SomeTest();
-    Var* a = ArgVarGet(args, 0, "a");
-    Var* key = ArgVarGet(args, 1, "key");
-    Var* value = ArgVarGet(args, 2, "value");
-    return VarSet(a, key, value);
-    $cInlineEnd
-}
-
-numberMeta = getMetaTable(0);
-
-VarSet(numberMeta, "tostring", ()=>"Hello, GUVNA");
-
-print(0);
+$define ep 900000
+$define silon 
+$define epsilon 0.00001
+print(epsilon)

@@ -17,6 +17,9 @@ public class Preprocessor {
                     case "cHeaderStart":
                         CHeader.Parse(reader, sb);
                         break;
+                    case "define":
+                        Define.Parse(body);
+                        break;
                     default:
                         sb.AppendLine(line);
                         break;

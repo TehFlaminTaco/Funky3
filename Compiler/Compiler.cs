@@ -76,6 +76,9 @@ public static class Compiler
     public static void Compile(string codePath, StreamWriter bodyOutput, StreamWriter headerOutput){
         using (StreamReader codeStream = new StreamReader(codePath)) {
             string preprocessedCode = Preprocessor.Process(codeStream);
+            foreach(var macro in Define.Macros){
+                preprocessedCode = macro.Match.Replace(preprocessedCode, macro.Replace);
+            }
             CurrentCode = preprocessedCode;
             var tokens = Tokenizer.Tokenize(preprocessedCode);
 
