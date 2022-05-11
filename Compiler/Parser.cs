@@ -1,5 +1,5 @@
 public static class Parser {
-    public static int FurthestToken = -1;
+    public static int FurthestToken = 0;
     public static void Parse(List<Token> tokens, StreamWriter body, StreamWriter header) {
         int index = 0;
         while(index < tokens.Count) {

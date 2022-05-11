@@ -5,6 +5,9 @@ public static class Tokenizer {
         "for", "if", "function",
         "var", "local",
         "and", "or", "not",
+
+        // Preprocessor stuff
+        "$CodeChunk",
     };
 
     private static readonly Regex NUMBER = new(@"^(?<negative>-?)(?:(?<integer>0(?:x(?<hex_val>[0-9A-Fa-f]+)|b(?<bin_val>[01]+)))|(?:(?<float>(?<int_comp>\d*)\.(?<float_comp>\d+))|(?<int>\d+))(?:e(?<expon>-?\d+))?)");
@@ -17,7 +20,7 @@ public static class Tokenizer {
             char firstChar = code[k];
             
             // Keywords or Identifiers
-            if (char.IsLetter(firstChar) || firstChar == '_') {
+            if (firstChar == '$' || char.IsLetter(firstChar) || firstChar == '_') {
                 var matchedKeywords = keywords.Where(c=>c.StartsWith(firstChar.ToString())).OrderByDescending(c=>c.Length).Where(c=>code.Substring(k).StartsWith(c));
                 if (matchedKeywords.Any()) {
                     // Return the *longest* matched keyword
@@ -25,7 +28,8 @@ public static class Tokenizer {
                     int column = k - code[..k].LastIndexOf('\n');
                     tokens.Add(new Token(TokenType.Keyword, matchedKeywords.First(), line, column, k, matchedKeywords.First().Length));
                     k += matchedKeywords.First().Length;
-                }else{
+                    continue;
+                }else if(firstChar != '$') {
                     // Identifier
                     // Continue until the next non-letter, digit, or underscore
                     int end = k;
@@ -38,11 +42,12 @@ public static class Tokenizer {
                     tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column, k, end - k));
                     // Move the index to the end of the identifier
                     k = end;
+                    continue;
                 }
-
+            }
 
             // Comments
-            } else if (firstChar == '$'){
+            if (firstChar == '$'){
                 if(code[k+1] == '*'){ // Multiline comment
                     // Find next instance of *$
                     int end = code.IndexOf("*$", k + 2);

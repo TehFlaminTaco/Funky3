@@ -75,11 +75,15 @@ public static class Compiler
 
     public static void Compile(string codePath, StreamWriter bodyOutput, StreamWriter headerOutput){
         using (StreamReader codeStream = new StreamReader(codePath)) {
-            CurrentCode = codeStream.ReadToEnd();
-            var tokens = Tokenizer.Tokenize(CurrentCode);
-            Parser.Parse(tokens, bodyOutput, headerOutput);
-            
+            string preprocessedCode = Preprocessor.Process(codeStream);
+            CurrentCode = preprocessedCode;
+            var tokens = Tokenizer.Tokenize(preprocessedCode);
 
+            foreach(var headCode in CHeader.HeaderCodeChunks){
+                headerOutput.WriteLine(headCode);
+            }
+
+            Parser.Parse(tokens, bodyOutput, headerOutput);
         }
     }
 }

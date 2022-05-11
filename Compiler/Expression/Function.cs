@@ -146,6 +146,7 @@ public class Function : Expression {
         string methodName = UniqueValueName("method");
         header.WriteLine("// Function Definition");
         header.WriteLine($"Var* {methodName}(Var* scope, Var* args){{");
+        header.WriteLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
         if(Arguments.Count > 0) {
             string argIndex = UniqueValueName($"argIndex");
             header.WriteLine($"\tint {argIndex} = 0;");

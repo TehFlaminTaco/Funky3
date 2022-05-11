@@ -40,6 +40,7 @@ public abstract class Expression {
                     case "var": case "local":   return RightParse(Variable.TryParse(tokens, index), tokens);
                     case "not":                 return RightParse(Math.TryParse(tokens, index), tokens);
                     case "function":            return RightParse(Function.TryParse(tokens, index), tokens);
+                    case "$CodeChunk":          return RightParse(CodeChunk.TryParse(tokens, index), tokens);
                     default:                    return (null, index);
                 }
             case TokenType.Punctuation:
