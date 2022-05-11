@@ -1,3 +1,10 @@
-print(0 || 1);
-print(0 && 1);
-print(0 + 1);
+$$ Singleline comment print("This is hidden")
+print("This will show")
+$* Multiline Comment *$ print("This is not hidden")
+$* Across
+    Two
+    Lines
+    print("This is hidden")
+*$
+print("This will show")
+$print("This is not a comment, and will probably error.");

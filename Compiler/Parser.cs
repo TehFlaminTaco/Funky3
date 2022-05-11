@@ -20,7 +20,7 @@ public static class Parser {
                 }
                 FurthestToken = index;
             }else{
-                throw new Exception($"Unexpected token {tokens[FurthestToken+1]} at line {tokens[FurthestToken+1].Line} column {tokens[FurthestToken+1].Column}");
+                throw new Exception($"Unexpected token {tokens[FurthestToken]} at line {tokens[FurthestToken].Line} column {tokens[FurthestToken].Column}");
             }
         }
     }

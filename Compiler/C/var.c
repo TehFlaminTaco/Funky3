@@ -130,9 +130,6 @@ Var* VarRawGet(Var* table, Var* key){
     HashMap* map = (HashMap*)table->value;
     DebugPrint("VarRawGet: map is %p\n", map);
     Var* result = HashMapGet(map, key);
-    if(ISUNDEFINED(result) && !ISUNDEFINED(map -> parent)){
-        return VarGet(map -> parent, key);
-    }
     return result;
 }
 
@@ -191,7 +188,7 @@ Var* VarGet(Var* table, Var* key){
     DebugPrint("VarGet\n");
     // Try Rawget first
     Var* value = VarRawGet(table, key);
-    if(!(value == NULL || (value -> type == VAR_NULL && value -> value == 0))){
+    if(!ISUNDEFINED(value)){
         return value;
     }
     // Use the "get" metamethod
@@ -206,7 +203,24 @@ Var* VarGet(Var* table, Var* key){
     VarRawSet(args, VarNewString("key"), key);
     VarRawSet(args, VarNewNumber(0), table);
     VarRawSet(args, VarNewNumber(1), key);
-    return VarFunctionCall(getter, args);
+    value = VarFunctionCall(getter, args);
+    if(!ISUNDEFINED(value)){
+        return value;
+    }
+
+    // Try and get from the Parent.
+    if(table -> type == VAR_LIST){
+        HashMap* map = (HashMap*)table->value;
+        if(map == NULL){
+            return &UNDEFINED;
+        }
+        Var* parent = HashMapGet(map, VarNewString("parent"));
+        if(!ISUNDEFINED(parent)){
+            return VarGet(parent, key);
+        }
+    }
+
+    return &UNDEFINED;
 }
 
 Var* VarSet(Var* table, Var* key, Var* value){

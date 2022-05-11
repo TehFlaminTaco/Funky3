@@ -16,38 +16,8 @@ public static class Tokenizer {
         while(k < code.Length) {
             char firstChar = code[k];
             
-             // Comments
-            if (firstChar == '$'){
-                if(code[k+1] == '*'){ // Multiline comment
-                    // Find next instance of *$
-                    int end = code.IndexOf("*$", k + 2);
-                    if(end == -1)
-                        end = code.Length - 2;
-                    // Generate the token
-                    //int line = code[..k].Split('\n').Length;
-                    //int column = k - code[..k].LastIndexOf('\n');
-                    //tokens.Add(new Token(TokenType.Comment, code.Substring(k, end - k + 2), line, column));
-                    // Move the index to the end of the comment
-                    k = end + 2;
-                }else{ // Singleline Comment
-                    // Find the next newline
-                    int end = code.IndexOf('\n', k + 1);
-                    if(end == -1)
-                        end = code.Length - 1;
-                    // Generate the token
-                    //int line = code[..k].Split('\n').Length;
-                    //int column = k - code[..k].LastIndexOf('\n');
-                    //tokens.Add(new Token(TokenType.Comment, code.Substring(k, end - k + 1), line, column));
-                    // Move the index to the end of the comment
-                    k = end + 1;
-                }
-            
-            // Ignore Whitespace
-            }else if (char.IsWhiteSpace(firstChar)) {
-                k++;
-
             // Keywords or Identifiers
-            } else if (char.IsLetter(firstChar) || firstChar == '_') {
+            if (char.IsLetter(firstChar) || firstChar == '_') {
                 var matchedKeywords = keywords.Where(c=>c.StartsWith(firstChar.ToString())).OrderByDescending(c=>c.Length).Where(c=>code.Substring(k).StartsWith(c));
                 if (matchedKeywords.Any()) {
                     // Return the *longest* matched keyword
@@ -70,6 +40,44 @@ public static class Tokenizer {
                     k = end;
                 }
 
+
+            // Comments
+            } else if (firstChar == '$'){
+                if(code[k+1] == '*'){ // Multiline comment
+                    // Find next instance of *$
+                    int end = code.IndexOf("*$", k + 2);
+                    if(end == -1)
+                        end = code.Length - 2;
+                    // Generate the token
+                    //int line = code[..k].Split('\n').Length;
+                    //int column = k - code[..k].LastIndexOf('\n');
+                    //tokens.Add(new Token(TokenType.Comment, code.Substring(k, end - k + 2), line, column));
+                    // Move the index to the end of the comment
+                    k = end + 2;
+                }else if(code[k+1] == '$'){ // Singleline Comment
+                    // Find the next newline
+                    int end = code.IndexOf('\n', k + 2);
+                    if(end == -1)
+                        end = code.Length - 1;
+                    // Generate the token
+                    //int line = code[..k].Split('\n').Length;
+                    //int column = k - code[..k].LastIndexOf('\n');
+                    //tokens.Add(new Token(TokenType.Comment, code.Substring(k, end - k + 1), line, column));
+                    // Move the index to the end of the comment
+                    k = end + 2;
+                }else{
+                    // Generate the token
+                    int line = code[..k].Split('\n').Length;
+                    int column = k - code[..k].LastIndexOf('\n');
+                    tokens.Add(new Token(TokenType.Punctuation, firstChar.ToString(), line, column, k, 1));
+                    // Move the index to the end of the punctuation
+                    k++;
+                }
+            
+            // Ignore Whitespace
+            }else if (char.IsWhiteSpace(firstChar)) {
+                k++;
+            
             // Number
             // No easy way to do this with how complex I like my numbers
             // Going to use an Old Regular Expression.
