@@ -1,10 +1,44 @@
-function TestFunction(){
-    return 2;
-    return 3;
-    1;
+true = 1;
+false = 0;
+
+function TEST1(a){
+    if (a){
+        print("TRUE")
+    }
 }
 
-print(TestFunction());
-return "Hello, World!";
-return "Huh";
-print("Never reached!");
+function TEST2(a){
+    if (a){
+        print("TRUE")
+    }else{
+        print("FALSE")
+    }
+}
+
+function TEST3(a){
+    print (a ? "TRUE")
+}
+
+function TEST4(a){
+    print (a ? "TRUE" : "FALSE")
+}
+
+TEST1(1); $$ TRUE
+print( "-> TRUE");
+TEST1(0); $$ nothing
+print( "...");
+
+TEST2(1); $$ TRUE
+print( "-> TRUE");
+TEST2(0); $$ FALSE
+print( "-> FALSE");
+
+TEST3(1); $$ TRUE
+print( "-> TRUE");
+TEST3(0); $$ nil
+print( "-> nil");
+
+TEST4(1); $$ TRUE
+print( "-> TRUE");
+TEST4(0); $$ FALSE
+print( "-> FALSE");
