@@ -134,6 +134,9 @@ Var* VarRawGet(Var* table, Var* key){
     HashMap* map = (HashMap*)table->value;
     // WithMeta hack
     if(table->metatable == &MetatableWith){
+        if(key->type == VAR_STRING && strcmp(key->value, "this") == 0){
+            return map -> withValue;
+        }
         return VarRawGet(map -> withValue, key);
     }
     DebugPrint("VarRawGet: map is %p\n", map);

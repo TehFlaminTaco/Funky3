@@ -1,44 +1,27 @@
-true = 1;
-false = 0;
+function List(a...){
+    return a;
+}
 
-function TEST1(a){
-    if (a){
-        print("TRUE")
+var list = List(1, 2, 3);
+
+with list {
+    print(this);
+
+    function this:Announce(){
+        print("Hi! I am:", this)
     }
 }
 
-function TEST2(a){
-    if (a){
-        print("TRUE")
-    }else{
-        print("FALSE")
-    }
+list:Announce();
+
+thief = List(4, 5, 6)
+thief.Announce = list.Announce;
+
+thief:Announce();
+
+anotherThief = List(7, 8, 9);
+with anotherThief {
+    Announce = list.Announce;
 }
 
-function TEST3(a){
-    print (a ? "TRUE")
-}
-
-function TEST4(a){
-    print (a ? "TRUE" : "FALSE")
-}
-
-TEST1(1); $$ TRUE
-print( "-> TRUE");
-TEST1(0); $$ nothing
-print( "...");
-
-TEST2(1); $$ TRUE
-print( "-> TRUE");
-TEST2(0); $$ FALSE
-print( "-> FALSE");
-
-TEST3(1); $$ TRUE
-print( "-> TRUE");
-TEST3(0); $$ nil
-print( "-> nil");
-
-TEST4(1); $$ TRUE
-print( "-> TRUE");
-TEST4(0); $$ FALSE
-print( "-> FALSE");
+anotherThief:Announce();
