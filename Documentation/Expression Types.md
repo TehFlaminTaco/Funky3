@@ -125,6 +125,21 @@ Allows one to access a stored value, typically from a scope.
 **Special Notes:**\
 When preceeded by `var` or `local`, the variable is declared as a local variable, and refer to the Top Most scope.
 
+## Variable Indexing
+
+**Description**\
+Access the stored value within a list. Can also be used to generate Curry Methods.
+
+**Forms:**
+* Expression: `Any`, Punctuation: `[`, Expression: `Any`, Punctuation: `]`
+* Expression: `Any`, Punctuation: `.`, Identifier: `Any`
+* Expression: `Any`, Punctuation: `:`, Identifier: `Any`
+
+**Special Notes**\
+The first form allows one to index with strange objects, like other lists, nil, or numbers.\
+The second form only allows one to index with a string.\
+The third form will always resolve to a special function which passes itself as the first argument automatically.
+
 ## With
 
 **Description:**\
