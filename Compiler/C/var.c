@@ -487,7 +487,7 @@ Var* VarCurryGet(Var* object, Var* index){
 Var* MethodWithoutCurry(Var* scope, Var* args){
     DebugPrint("MethodWithoutCurry\n");
     Var* method = VarRawGet(scope, VarNewString("method"));
-    Var* this = ArgVarGet(scope, 0, "this");
+    Var* this = ArgVarGet(args, 0, "this");
     DebugPrint("MethodWithoutCurry: Copying Args!\n");
     Var* callArgs = VarListCopyLShifted(args, 1);
     VarRawSet(callArgs, VarNewString("this"), this);

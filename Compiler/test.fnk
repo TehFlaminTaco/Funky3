@@ -8,3 +8,9 @@ function l:PrintSelf(){
 }
 
 l:PrintSelf();
+
+var j = List(5,6,7);
+
+j.PrintSelf = l.PrintSelf;
+
+j:PrintSelf();
