@@ -1,12 +1,16 @@
+using System.ComponentModel;
 using System.Text;
 
 public class Variable : Expression {
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public bool IsLocal { get; set; }
 
     public Variable(string name, bool isLocal) {
         Name = name;
         IsLocal = isLocal;
+    }
+
+    public Variable() {
     }
 
     public static (Variable?, int) TryParse(List<Token> tokens, int index) {
@@ -30,14 +34,172 @@ public class Variable : Expression {
     }
 
     public override string GenerateInline(StreamWriter header, out string stackName) {
-        // Can always be inlined.
-        stackName = $"/*Get {Name}*/ VarGet(scope, VarNewString(\"{Name}\"))";
+        if(IsLocal){
+            StringBuilder sb = new StringBuilder();
+            string varHolder = UniqueValueName("var");
+            sb.AppendLine($"// Get local:{Name}");
+            sb.AppendLine($"Var* {varHolder} = VarRawGet(scope, VarNewString(\"{Name}\"));");
+            sb.AppendLine($"if(ISUNDEFINED({varHolder})) {{");
+            sb.AppendLine($"\t{varHolder} = VarRawSet(scope, VarNewString(\"{Name}\"), &NIL);");
+            sb.AppendLine($"}}");
+            stackName = varHolder;
+        }else{
+            // Can always be inlined.
+            stackName = $"/* Get {Name} */ VarGet(scope, VarNewString(\"{Name}\"))";
+            return "";
+        }
+
         return "";
     }
 
     public virtual string GenerateSetterInline(StreamWriter header, out string stackName, string value) {
         // Can always be inlined.
-        stackName = $"/*Set {Name}*/ VarSet(scope, VarNewString(\"{Name}\"), {value})";
+        // The setter never needs to make the default check, because it always sets a value.
+        if(IsLocal)
+            stackName = $"/* Set local:{Name} */ VarRawSet(scope, VarNewString(\"{Name}\"), {value})";
+        else
+            stackName = $"/* Set {Name} */ VarSet(scope, VarNewString(\"{Name}\"), {value})";
         return "";
+    }
+}
+
+public class IndexVariable : Variable {
+    public Expression? Index { get; set; }
+    public string? Identifier { get; set; }
+    public Expression Value { get; set; }
+    public bool IsCurry { get; set; }
+
+    public IndexVariable(Expression index, Expression value) : base() {
+        Index = index;
+        Value = value;
+        IsCurry = false;
+    }
+
+    public IndexVariable(string identifier, Expression value, bool isCurry = false) : base() {
+        Identifier = identifier;
+        Value = value;
+        IsCurry = isCurry;
+    }
+
+
+    // Indexing, one of `[index]`, `.name`, or `:name`
+    public static (Variable?, int) TryParse(Expression left, List<Token> tokens, int index) {
+        int i = index;
+        if(tokens[i].Type != TokenType.Punctuation) {
+            return (null, index);
+        }
+        if(tokens[i].Value == "[") {
+            Parser.RegisterFurthest(i);
+            i++;
+            {
+                (Expression? expression, int index) result = Expression.TryParseAny(tokens, i);
+                if(result.expression == null) {
+                    return (null, index);
+                }
+                i = result.index;
+                var indexVariable = new IndexVariable(result.expression, left);
+                return (indexVariable, i);
+            }
+        }
+        if(tokens[i].Value == ".") {
+            Parser.RegisterFurthest(i);
+            i++;
+            if(tokens[i].Type != TokenType.Identifier) {
+                return (null, index);
+            }
+            var indexVariable = new IndexVariable(tokens[i].Value, left);
+            Parser.RegisterFurthest(i);
+            i++;
+            return (indexVariable, i);
+        }
+        if(tokens[i].Value == ":") {
+            Parser.RegisterFurthest(i);
+            i++;
+            if(tokens[i].Type != TokenType.Identifier) {
+                return (null, index);
+            }
+            var indexVariable = new IndexVariable(tokens[i].Value, left, true);
+            Parser.RegisterFurthest(i);
+            i++;
+            return (indexVariable, i);
+        }
+        return (null, index);
+    }
+
+    public override string GenerateInline(StreamWriter header, out string stackName) {
+        if(IsCurry) {
+            // TODO, Curried expressions.
+            throw new NotImplementedException();
+        }else{
+            // VarGet(Value, Index)
+            if(Identifier != null) {
+                string valueBody = Value.GenerateInline(header, out string valueStackName);
+                if(!String.IsNullOrEmpty(valueBody)) {
+                    string resultHolder = UniqueValueName("get");
+                    stackName = resultHolder;
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine($"// Get index: {Identifier}");
+                    sb.AppendLine(valueBody);
+                    sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, VarNewString(\"{Identifier}\"));");
+                    return sb.ToString();
+                }else{
+                    stackName = $"/* Get index: {Identifier} */ VarGet({valueStackName}, VarNewString(\"{Identifier}\"))";
+                    return "";
+                }
+            }else if(Index != null){
+                string indexBody = Index.GenerateInline(header, out string indexStackName);
+                string valueBody = Value.GenerateInline(header, out string valueStackName);
+                if(!String.IsNullOrEmpty(indexBody) && !String.IsNullOrEmpty(valueBody)) {
+                    stackName = $"/* Get index: {indexStackName} */ VarGet({valueStackName}, {indexStackName})";
+                    return $"{indexBody}\n{valueBody}";
+                }
+                string resultHolder = UniqueValueName("get");
+                stackName = resultHolder;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"// Get index: {Identifier}");
+                sb.AppendLine(valueBody);
+                sb.AppendLine(indexBody);
+                sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, {indexStackName});");
+                return sb.ToString();
+            }else{
+                throw new Exception("Invalid indexing");
+            }
+        }
+    }
+
+    public override string GenerateSetterInline(StreamWriter header, out string stackName, string value) {
+        if(Identifier != null) {
+            string valueBody = Value.GenerateInline(header, out string valueStackName);
+            if(!String.IsNullOrEmpty(valueBody)) {
+                string resultHolder = UniqueValueName("set");
+                stackName = resultHolder;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"// Set index: {Identifier}");
+                sb.AppendLine(valueBody);
+                sb.AppendLine($"Var* {resultHolder} = VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                return sb.ToString();
+            }else{
+                stackName = $"/* Set index: {Identifier} */ VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                return "";
+            }
+        }else if(Index != null){
+            string indexBody = Index.GenerateInline(header, out string indexStackName);
+            string valueBody = Value.GenerateInline(header, out string valueStackName);
+            if(!String.IsNullOrEmpty(indexBody) && !String.IsNullOrEmpty(valueBody)) {
+                stackName = $"/* Set index: {indexStackName} */ VarRawSet({valueStackName}, {indexStackName}, {value})";
+                return $"{indexBody}\n{valueBody}";
+            }else{
+                string resultHolder = UniqueValueName("set");
+                stackName = resultHolder;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"// Set index: {Identifier}");
+                sb.AppendLine(valueBody);
+                sb.AppendLine(indexBody);
+                sb.AppendLine($"Var* {resultHolder} = VarRawSet({valueStackName}, {indexStackName}, {value});");
+                return sb.ToString();
+            }
+        }else{
+            throw new Exception("Invalid indexing");
+        }
     }
 }

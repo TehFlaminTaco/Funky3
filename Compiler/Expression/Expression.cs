@@ -40,6 +40,7 @@ public abstract class Expression {
                     case "var": case "local":   return RightParse(Variable.TryParse(tokens, index), tokens);
                     case "not":                 return RightParse(Math.TryParse(tokens, index), tokens);
                     case "function":            return RightParse(Function.TryParse(tokens, index), tokens);
+                    case "with":                return RightParse(With.TryParse(tokens, index), tokens);
                     case "$CodeChunk":          return RightParse(CodeChunk.TryParse(tokens, index), tokens);
                     default:                    return (null, index);
                 }
@@ -95,7 +96,10 @@ public abstract class Expression {
                         (Expression? expression, int index) math3 = Math.TryParse(result.expression, tokens, result.index);
                         if(math3.expression != null) 
                             return RightParse(math3, tokens);
-                        // TODO: Indexer
+                        // try to get an indexer
+                        (Expression? expression, int index) indexer = IndexVariable.TryParse(result.expression, tokens, result.index);
+                        if(indexer.expression != null)
+                            return RightParse(indexer, tokens);
                         return result;
                 }
                 return result;

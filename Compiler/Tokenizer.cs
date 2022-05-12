@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 public static class Tokenizer {
     // To be expanded as keywords are added/reserved
     private static readonly string[] keywords = new string[] {
-        "for", "if", "function",
+        "for", "if", "function","with",
         "var", "local",
         "and", "or", "not",
 

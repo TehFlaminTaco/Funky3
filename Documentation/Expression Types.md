@@ -124,3 +124,16 @@ Allows one to access a stored value, typically from a scope.
 
 **Special Notes:**\
 When preceeded by `var` or `local`, the variable is declared as a local variable, and refer to the Top Most scope.
+
+## With
+
+**Description:**\
+Expose a list of variables to a scope.
+
+**Forms:**
+* Keyword: `with`, Expression: `Any`*, Punctuation: `{`, Expression: `Any`*, Punctuation: `}`
+* Keyword: `with`, Expression: `Any`*, Expression: `Any`
+
+**Special Notes:**\
+The final bracket being excluded does not constitute a syntax error.\
+A block is not treated as a seperate expression, and such local values are referrenced directly from the value.

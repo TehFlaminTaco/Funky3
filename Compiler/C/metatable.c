@@ -12,6 +12,7 @@
 #include "metatables/nullmeta.c"
 #include "metatables/numbermeta.c"
 #include "metatables/stringmeta.c"
+#include "metatables/withmeta.c"
 
 void SetupMetaTables(){
     // Initialize metatables with new HashMaps.
@@ -39,6 +40,12 @@ void SetupMetaTables(){
     MetatableList.metatable = &MetatableList;
     PopulateBaseMeta(&MetatableList);
     PopulateListMeta(&MetatableList);
+
+    MetatableWith.value = (long long)HashMapNew(16);
+    MetatableWith.metatable = &MetatableList;
+    PopulateBaseMeta(&MetatableWith);
+    PopulateListMeta(&MetatableWith);
+    PopulateWithMeta(&MetatableWith);
 }
 
 Var* VarGetMeta(Var* var, char* key){

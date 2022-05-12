@@ -8,6 +8,7 @@ typedef struct _HashMap {
     LinkedKVList** values;
     int capacity;
     Var* parent;
+    Var* withValue;
 } HashMap;
 
 HashMap* HashMapNew(int capacity);

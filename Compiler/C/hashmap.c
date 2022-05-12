@@ -10,6 +10,7 @@ HashMap* HashMapNew(int capacity){
     map->capacity = capacity;
     map->values = calloc(capacity, sizeof(LinkedKVList*));
     map->parent = &NIL;
+    map->withValue = &NIL;
     for(int i = 0; i < capacity; i++){
         map->values[i] = LinkedKVListNew();
     }

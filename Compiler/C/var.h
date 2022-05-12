@@ -38,5 +38,6 @@ int VarTruthy(Var* var);
 Var* VarListCopy(Var* list);
 Var* VarListCopyLShifted(Var* list, int shift);
 Var* VarSubScope(Var* scope);
+Var* VarWithScope(Var* scope, Var* with);
 
 #endif

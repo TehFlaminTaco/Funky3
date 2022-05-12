@@ -128,6 +128,10 @@ Var* VarRawGet(Var* table, Var* key){
 
     DebugPrint("VarRawGet: table is a list\n");
     HashMap* map = (HashMap*)table->value;
+    // WithMeta hack
+    if(table->metatable == &MetatableWith){
+        return VarRawGet(map -> withValue, key);
+    }
     DebugPrint("VarRawGet: map is %p\n", map);
     Var* result = HashMapGet(map, key);
     return result;
@@ -140,6 +144,11 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
         return &UNDEFINED;
     }
     HashMap* map = (HashMap*)table->value;
+    // WithMeta hack
+    if(table->metatable == &MetatableWith){
+        return VarRawSet(map -> withValue, key, value);
+    }
+
     // Remove any currently set var from the referencedby list.
     DebugPrint("VarRawSet: removing old value\n");
     Var* oldValue = VarRawGet(table, key);
@@ -416,6 +425,24 @@ Var* VarSubScope(Var* scope){
     map -> parent = scope;
     DoReferenceBy(scope, newScope);
     
+    return newScope;
+}
+
+// Entirely for usage with the with(e){} block
+Var* VarWithScope(Var* scope, Var* with){
+    DebugPrint("VarWithScope\n");
+    if(scope->type != VAR_LIST){
+        DebugPrint("VarWithScope: not a list\n");
+        return &NIL;
+    }
+    Var* newScope = VarNewList();
+    newScope -> metatable = &MetatableWith;
+    HashMap* map = newScope -> value;
+    map -> parent = scope;
+    DoReferenceBy(scope, newScope);
+    map -> withValue = with;
+    DoReferenceBy(with, newScope);
+
     return newScope;
 }
 
