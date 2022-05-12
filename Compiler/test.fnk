@@ -1,4 +1,25 @@
-$define ep 900000
-$define silon 
-$define epsilon 0.00001
-print(epsilon)
+function VarSet(table, key, value) {
+  $cInlineStart
+    Var* table = ArgVarGet(args, 0, "table");
+    Var* key = ArgVarGet(args, 1, "key");
+    Var* value = ArgVarGet(args, 2, "value");
+
+    return VarSet(table, key, value);
+  $cInlineEnd
+}
+
+function VarGet(table, key) {
+  $cInlineStart
+    Var* table = ArgVarGet(args, 0, "table");
+    Var* key = ArgVarGet(args, 1, "key");
+
+    return VarGet(table, key);
+  $cInlineEnd
+}
+
+function List(a...) {
+    a
+}
+
+$define/\[(((?<BR>\[)|(?<-BR>\])|[^[]]*)+)\]/List($1)
+print([1, 2, 3])

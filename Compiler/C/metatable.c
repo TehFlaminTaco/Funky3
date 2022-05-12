@@ -66,7 +66,7 @@ Var* VarGetMeta(Var* var, char* key){
     HashMap* metatable = (HashMap*)(intptr_t)var->metatable->value;
     DebugPrint("VarGetMeta: metatable: %p\n", metatable);
     Var* meta = HashMapGet(metatable, keyVar);
-    if(meta == NULL){
+    if(ISUNDEFINED(meta)){
         DebugPrint("VarGetMeta: Key not found.\n");
         return &UNDEFINED;
     }

@@ -14,21 +14,33 @@ public class Preprocessor {
 (?<unknown>          .                                  )  (?#Incase I missed something)",
 RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
 
+    public static bool Skipping = false;
+    public static StringBuilder PreprocBuffer = new();
     public static string Process(StreamReader reader) {
         StringBuilder sb = new();
         string allCode = reader.ReadToEnd();
         // For each chunk of code
         foreach (Match m in SuperTokenizer.Matches(allCode)) {
+            if(Skipping && !m.Groups["preprocessor"].Success){
+                PreprocBuffer.Append(m.Value);
+                continue;
+            }
             // If it's a preprocessor directive
             if (m.Groups["preprocessor"].Success) {
                 var directive = m.Groups["directive"].Value;
                 var body = m.Groups["body"].Value;
                 switch(directive) {
-                    case "cInlineStart":
-                        CInline.Parse(reader, sb);
+                    case "cInlineStart": case "cHeaderStart":
+                        Skipping = true;
+                        PreprocBuffer = new();
                         break;
-                    case "cHeaderStart":
-                        CHeader.Parse(reader, sb);
+                    case "cHeaderEnd":
+                        CHeader.Parse(PreprocBuffer.ToString(), sb);
+                        Skipping = false;
+                        break;
+                    case "cInlineEnd":
+                        CInline.Parse(PreprocBuffer.ToString(), sb);
+                        Skipping = false;
                         break;
                     case "define":
                         Define.Parse(body);

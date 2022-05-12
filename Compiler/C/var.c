@@ -193,31 +193,33 @@ Var* VarGet(Var* table, Var* key){
     }
     // Use the "get" metamethod
     Var* getter = VarGetMeta(table, "get");
-    if(getter->type != VAR_FUNCTION){
-        DebugPrint("VarGet: No getter\n");
-        return &UNDEFINED;
-    }
-    // Call the getter
-    Var* args = VarNewList();
-    VarRawSet(args, VarNewString("table"), table);
-    VarRawSet(args, VarNewString("key"), key);
-    VarRawSet(args, VarNewNumber(0), table);
-    VarRawSet(args, VarNewNumber(1), key);
-    value = VarFunctionCall(getter, args);
-    if(!ISUNDEFINED(value)){
-        return value;
+    if(getter->type == VAR_FUNCTION){
+        // Call the getter
+        Var* args = VarNewList();
+        VarRawSet(args, VarNewString("table"), table);
+        VarRawSet(args, VarNewString("key"), key);
+        VarRawSet(args, VarNewNumber(0), table);
+        VarRawSet(args, VarNewNumber(1), key);
+        value = VarFunctionCall(getter, args);
+        if(!ISUNDEFINED(value)){
+            return value;
+        }   
     }
 
     // Try and get from the Parent.
     if(table -> type == VAR_LIST){
+        DebugPrint("VarGet: table is a list\n");
         HashMap* map = (HashMap*)table->value;
         if(map == NULL){
+            DebugPrint("VarGet: map is NULL\n");
             return &UNDEFINED;
         }
-        Var* parent = HashMapGet(map, VarNewString("parent"));
+        Var* parent = map -> parent;
         if(!ISUNDEFINED(parent)){
+            DebugPrint("VarGet: parent is not undefined\n");
             return VarGet(parent, key);
         }
+        DebugPrint("VarGet: parent is undefined\n");
     }
 
     return &UNDEFINED;
@@ -226,8 +228,9 @@ Var* VarGet(Var* table, Var* key){
 Var* VarSet(Var* table, Var* key, Var* value){
     DebugPrint("VarSet\n");
     // Is there anything defined?
-    Var* oldValue = VarGet(table, key);
-    if(oldValue->type == VAR_NULL && oldValue->value == 0){
+    Var* oldValue = VarRawGet(table, key);
+    if(ISUNDEFINED(oldValue)){
+        DebugPrint("VarSet: nothing defined\n");
         // Use the "set" metamethod
         Var* setter = VarGetMeta(table, "set");
         if(setter->type == VAR_FUNCTION){
