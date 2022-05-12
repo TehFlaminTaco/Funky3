@@ -114,7 +114,17 @@ public class Math : Expression {
             }
             return sb.ToString();
         }else if(OperatorUnary != null) {
-            throw new Exception($"Unary math not implemented {OperatorUnary!.Operator}");
+            sb.AppendLine($"// {OperatorUnary.Operator}");
+            string expressionBody = Right!.GenerateInline(header, out string expressionHolder);
+            if(!String.IsNullOrEmpty(expressionBody)) {
+                sb.AppendLine(Tabbed(expressionBody));
+            }
+            string metamethodHolder = $"VarGetMeta({expressionHolder}, \"{UnaryOperator.OperatorMetamethods[OperatorUnary.Operator]}\")";
+            string argsHolder = UniqueValueName("args");
+            sb.AppendLine($"\tVar* {argsHolder} = VarNewList({expressionHolder});");
+            sb.AppendLine($"\tArgVarSet({argsHolder}, 0, \"value\", {expressionHolder});");
+            stackName = $"VarFunctionCall({metamethodHolder}, {argsHolder})";
+            return sb.ToString();
         }
         stackName = "&NIL";
         return "";  

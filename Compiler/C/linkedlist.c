@@ -115,7 +115,7 @@ Var* LinkedListRemove(LinkedVarList* list, int index){
 }
 
 Var* LinkedListRemoveByValue(LinkedVarList* list, Var* var){
-    DebugPrint("LinkedListRemoveByValue: start\n");
+    DebugPrint("LinkedListRemoveByValue: start(%p, %p)\n", list, var);
     int i = 0;
     for(Linklett* current = list->first; current != NULL; current = current->next){
         DebugPrint("LinkedListRemoveByValue: current = (%i, %p)\n", i, current);

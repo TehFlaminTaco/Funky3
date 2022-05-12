@@ -127,43 +127,48 @@ public class IndexVariable : Variable {
     }
 
     public override string GenerateInline(StreamWriter header, out string stackName) {
-        if(IsCurry) {
-            // TODO, Curried expressions.
-            throw new NotImplementedException();
-        }else{
-            // VarGet(Value, Index)
-            if(Identifier != null) {
-                string valueBody = Value.GenerateInline(header, out string valueStackName);
-                if(!String.IsNullOrEmpty(valueBody)) {
-                    string resultHolder = UniqueValueName("get");
-                    stackName = resultHolder;
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine($"// Get index: {Identifier}");
-                    sb.AppendLine(valueBody);
-                    sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, VarNewString(\"{Identifier}\"));");
-                    return sb.ToString();
-                }else{
-                    stackName = $"/* Get index: {Identifier} */ VarGet({valueStackName}, VarNewString(\"{Identifier}\"))";
-                    return "";
-                }
-            }else if(Index != null){
-                string indexBody = Index.GenerateInline(header, out string indexStackName);
-                string valueBody = Value.GenerateInline(header, out string valueStackName);
-                if(!String.IsNullOrEmpty(indexBody) && !String.IsNullOrEmpty(valueBody)) {
-                    stackName = $"/* Get index: {indexStackName} */ VarGet({valueStackName}, {indexStackName})";
-                    return $"{indexBody}\n{valueBody}";
-                }
+        // VarGet(Value, Index)
+        if(Identifier != null) {
+            string valueBody = Value.GenerateInline(header, out string valueStackName);
+            if(!String.IsNullOrEmpty(valueBody)) {
                 string resultHolder = UniqueValueName("get");
                 stackName = resultHolder;
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine($"// Get index: {Identifier}");
                 sb.AppendLine(valueBody);
-                sb.AppendLine(indexBody);
-                sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, {indexStackName});");
+                // Use VarCurryGet if curried
+                if(IsCurry) {
+                    sb.AppendLine($"{resultHolder} = VarCurryGet({valueStackName}, VarNewString(\"{Identifier}\"));");
+                }else{
+                    sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, VarNewString(\"{Identifier}\"));");
+                }
                 return sb.ToString();
             }else{
-                throw new Exception("Invalid indexing");
+                // Use VarCurryGet if curried
+                if(IsCurry) {
+                    stackName = $"/* Get index: {Identifier} */ VarCurryGet({valueStackName}, VarNewString(\"{Identifier}\"))";
+                }else{
+                    stackName = $"/* Get index: {Identifier} */ VarGet({valueStackName}, VarNewString(\"{Identifier}\"))";
+                }
+                return "";
             }
+        }else if(Index != null){
+            string indexBody = Index.GenerateInline(header, out string indexStackName);
+            string valueBody = Value.GenerateInline(header, out string valueStackName);
+            if(!String.IsNullOrEmpty(indexBody) && !String.IsNullOrEmpty(valueBody)) {
+                stackName = $"/* Get index: {indexStackName} */ VarGet({valueStackName}, {indexStackName})";
+                return $"{indexBody}\n{valueBody}";
+            }
+            string resultHolder = UniqueValueName("get");
+            stackName = resultHolder;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"// Get index: {Identifier}");
+            sb.AppendLine(valueBody);
+            sb.AppendLine(indexBody);
+            sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, {indexStackName});");
+            return sb.ToString();
+        }else{
+            throw new Exception("Invalid indexing");
         }
     }
 
@@ -176,10 +181,20 @@ public class IndexVariable : Variable {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine($"// Set index: {Identifier}");
                 sb.AppendLine(valueBody);
-                sb.AppendLine($"Var* {resultHolder} = VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                // Use VarCurrySet if curried
+                if(IsCurry) {
+                    sb.AppendLine($"Var* {resultHolder} = VarCurrySet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                }else{
+                    sb.AppendLine($"Var* {resultHolder} = VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                }
                 return sb.ToString();
             }else{
-                stackName = $"/* Set index: {Identifier} */ VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                // Use VarCurrySet if curried
+                if(IsCurry) {
+                    stackName = $"/* Set index: {Identifier} */ VarCurrySet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                }else{
+                    stackName = $"/* Set index: {Identifier} */ VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                }
                 return "";
             }
         }else if(Index != null){

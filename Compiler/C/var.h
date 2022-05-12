@@ -33,10 +33,15 @@ Var* VarSet(Var* table, Var* key, Var* value);
 int VarEquals(Var* var1, Var* var2);
 Var* VarAsString(Var* var);
 Var* VarAsCode(Var* var);
+Var* VarAsFunction(Var* var);
 int VarTruthy(Var* var);
 
 Var* VarListCopy(Var* list);
 Var* VarListCopyLShifted(Var* list, int shift);
+Var* CallCurried(Var* scope, Var* args);
+Var* VarCurryGet(Var* object, Var* index);
+Var* MethodWithoutCurry(Var* scope, Var* args);
+Var* VarCurrySet(Var* object, Var* index, Var* method);
 Var* VarSubScope(Var* scope);
 Var* VarWithScope(Var* scope, Var* with);
 

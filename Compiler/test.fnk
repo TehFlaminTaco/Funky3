@@ -1,14 +1,10 @@
-function List(a...) {
+function List(a...){
     a;
 }
 
-var testList = List();
-
-with testList{
-    var x = 3;
-    var y = 5;
+var l = List(1, 2, 3);
+function l:PrintSelf(){
+    print(this)
 }
 
-print( testList.x )
-testList.x = 18;
-print( testList.x )
+l:PrintSelf();

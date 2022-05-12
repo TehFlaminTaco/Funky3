@@ -18,6 +18,10 @@ void DerefferenceVar(Var* var, Var* from){
             // We're still referneced here, so don't dereference
             return;
         }
+        if(map -> withValue == var){
+            // We're still referneced here, so don't dereference
+            return;
+        }
         // Check the list's values for references to this var
         if(HashMapHasValue(map, var)){
             // We're still referenced here, so don't dereference
@@ -62,7 +66,9 @@ void DoReferenceBy(Var* var, Var* from){
     if(var->referencedBy == NULL){
         return;
     }
+    DebugPrint("Removing any old references\n");
     LinkedListRemoveByValue(var->referencedBy, from);
+    DebugPrint("Adding new reference\n");
     LinkedListPush(var->referencedBy, from);
     return;
 }

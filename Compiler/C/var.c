@@ -25,11 +25,14 @@ Var* VarNew(char type, long long value, Var* metatable){
 void FreeVar(Var* var){
     if(var->type == VAR_STRING || var->type == VAR_FUNCTION || var->type == VAR_LIST){
         free((void*)var->value);
+        var->value = NULL;
     }
-    if(var->referencedBy != NULL)
-        LinkedListFree(var->referencedBy);
     if(var->metatable != NULL)
         DerefferenceVar(var->metatable, var);
+    var->metatable = NULL;
+    if(var->referencedBy != NULL)
+        LinkedListFree(var->referencedBy);
+    var->referencedBy = NULL;
     free(var);
 }
 
@@ -106,6 +109,7 @@ int VarEquals(Var* var1, Var* var2){
 
 Var* VarFunctionCall(Var* function, Var* args){
     DebugPrint("VarFunctionCall\n");
+    function = VarAsFunction(function);
     if(function->type != VAR_FUNCTION){
         DebugPrint("VarFunctionCall: Not a function\n");
         return &NIL;
@@ -139,6 +143,10 @@ Var* VarRawGet(Var* table, Var* key){
 
 Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet\n");
+    if(key == NULL){
+        DebugPrint("VarRawSet: key is NULL\n");
+        return &UNDEFINED;
+    }
     if(table->type != VAR_LIST){
         DebugPrint("VarRawSet: table is not a list\n");
         return &UNDEFINED;
@@ -153,7 +161,7 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet: removing old value\n");
     Var* oldValue = VarRawGet(table, key);
     DebugPrint("VarRawSet: old value is %p\n", oldValue);
-    if(oldValue->referencedBy != NULL){
+    if(oldValue != NULL && oldValue->referencedBy != NULL){
         DebugPrint("VarRawSet: removing old value from referencedby list\n");
         LinkedListRemoveByValue(oldValue->referencedBy, table);
     }
@@ -317,6 +325,34 @@ Var* VarAsCode(Var* var){
     return result;
 }
 
+Var* VarAsFunction(Var* var){
+    DebugPrint("VarAsFunction\n");
+    if(ISUNDEFINED(var)){
+        DebugPrint("VarAsFunction: var is undefined\n");
+        return &UNDEFINED;
+    }
+    if(var->type == VAR_FUNCTION){
+        DebugPrint("VarAsFunction: already a function\n");
+        return var;
+    }
+    // Return the call metamethod
+    Var* method = VarGetMeta(var, "call");
+    if(method->type != VAR_FUNCTION){
+        DebugPrint("VarAsFunction: no call metamethod\n");
+        return &UNDEFINED;
+    }
+    // Curry the Call function so that it passes itself as an argument.
+    VarFunction* fMethod = method -> value;
+    Var* tempScope = VarNewList();
+    VarRawSet(tempScope, VarNewString("this"), var);
+    VarRawSet(tempScope, VarNewString("method"), method);
+    Var* fnc = VarNewFunction(CallCurried);
+    VarFunction* f = fnc -> value;
+    f -> scope = tempScope;
+    f -> name = fMethod -> name;
+    return fnc;
+}
+
 int VarTruthy(Var* var){
     // If a number is non-zero, it's truthy.
     if(var->type == VAR_NUMBER){
@@ -381,9 +417,11 @@ Var* VarListCopyLShifted(Var* list, int shift){
     newMap -> parent = map -> parent;
 
     // Copy all values over
+    DebugPrint("VarListCopy: copying values\n");
     for(int i=0; i < map -> capacity; i++){
         KVLinklett* current = map->values[i]->first;
         while(current != NULL){
+            DebugPrint("VarListCopy: copying values: %i/%i, %p\n", i, map->capacity - 1, current);
             if(current->key -> type == VAR_NUMBER){
                 // If it's an integer, shift it
                 double j;
@@ -408,8 +446,73 @@ Var* VarListCopyLShifted(Var* list, int shift){
             current = current->next;
         }
     }
-
+    DebugPrint("VarListCopy: done\n");
     return newList;
+}
+
+/*
+function curry(method, a){
+    return b...=>{
+        return method(a, b...);
+    }
+}
+*/
+
+Var* CallCurried(Var* scope, Var* args){
+    Var* method = VarRawGet(scope, VarNewString("method"));
+    Var* this = VarRawGet(scope, VarNewString("this"));
+    Var* callArgs = VarListCopyLShifted(args, -1);
+    VarRawSet(callArgs, VarNewNumber(0), this);
+    return VarFunctionCall(method, callArgs);
+}
+
+Var* VarCurryGet(Var* object, Var* index){
+    DebugPrint("VarCurryGet\n");
+    Var* method = VarAsFunction(VarRawGet(object, index));
+    if(method -> type != VAR_FUNCTION){
+        DebugPrint("VarCurryGet: not a function\n");
+        return &UNDEFINED;
+    }
+    VarFunction* fMethod = method -> value;
+    Var* tempScope = VarNewList();
+    VarRawSet(tempScope, VarNewString("this"), object);
+    VarRawSet(tempScope, VarNewString("method"), method);
+    Var* fnc = VarNewFunction(CallCurried);
+    VarFunction* f = fnc -> value;
+    f -> scope = tempScope;
+    f -> name = fMethod -> name;
+    return fnc;
+}
+
+Var* MethodWithoutCurry(Var* scope, Var* args){
+    DebugPrint("MethodWithoutCurry\n");
+    Var* method = VarRawGet(scope, VarNewString("method"));
+    Var* this = ArgVarGet(scope, 0, "this");
+    DebugPrint("MethodWithoutCurry: Copying Args!\n");
+    Var* callArgs = VarListCopyLShifted(args, 1);
+    VarRawSet(callArgs, VarNewString("this"), this);
+    DebugPrint("MethodWithoutCurry: Calling Method\n");
+    return VarFunctionCall(method, callArgs);
+}
+
+Var* VarCurrySet(Var* object, Var* index, Var* method){
+    DebugPrint("VarCurrySet\n");
+    method = VarAsFunction(method);
+    if(method -> type != VAR_FUNCTION){
+        DebugPrint("VarCurrySet: not a function\n");
+        return &UNDEFINED;
+    }
+    VarFunction* fMethod = method -> value;
+    Var* tempScope = VarNewList();
+    VarRawSet(tempScope, VarNewString("this"), object);
+    VarRawSet(tempScope, VarNewString("method"), method);
+    Var* fnc = VarNewFunction(MethodWithoutCurry);
+    DebugPrint("VarCurrySet: created function\n");
+    VarFunction* f = fnc -> value;
+    f -> scope = tempScope;
+    f -> name = fMethod -> name;
+    DebugPrint("VarCurrySet: set scope\n");
+    return VarRawSet(object, index, fnc);
 }
 
 

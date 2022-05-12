@@ -33,6 +33,7 @@ Calls a function.
 The final bracket being excluded does not constitute a syntax error.
 Arguments may optionally be seperated by commas.
 Arguments may be "splat"ed, any number of times, by appending a `...` to the end of the argument.
+Arguments may be named with the form `name: value`.
 
 ## Crementor
 

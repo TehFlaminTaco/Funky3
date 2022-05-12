@@ -41,8 +41,15 @@ public class Function : Expression {
     public static (Function?, int) TryParseKeyword(List<Token> tokens, int index) {
         int i = index;
         // Try to get a Variable.
-        var storeVariable = Variable.TryParse(tokens, i);
+        Expression.PushBlock(new(){
+            typeof(Call)
+        });
+        var storeVariable = Expression.TryParseAny(tokens, i);
+        Expression.PopBlock();
         if(storeVariable.Item1 != null) {
+            if(storeVariable.Item1 is not Variable v) {
+                return (null, index);
+            }
             i = storeVariable.Item2;
         }
         if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "(") {
@@ -76,7 +83,7 @@ public class Function : Expression {
         int start = tokens[index-1].Index;
         int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
         string code = Compiler.CurrentCode[start..end];
-        return (new Function(storeVariable.Item1, arguments, body.expression, code), body.index);
+        return (new Function(storeVariable.Item1 as Variable, arguments, body.expression, code), body.index);
     }
 
     // In the form (a, b) => body
@@ -144,50 +151,53 @@ public class Function : Expression {
     public override string GenerateInline(StreamWriter header, out string stackName) {
         // Write the method to the header.
         string methodName = UniqueValueName("method");
-        header.WriteLine("// Function Definition");
-        header.WriteLine($"Var* {methodName}(Var* scope, Var* args){{");
-        header.WriteLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
+        StringBuilder headerSB = new StringBuilder();
+        headerSB.AppendLine("// Function Definition");
+        headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
+        headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
+        // Try loading "this" into the scope... Just if it exists.
+        headerSB.AppendLine("\tVarRawSet(scope, VarNewString(\"this\"), VarRawGet(args, VarNewString(\"this\")));");
         if(Arguments.Count > 0) {
             string argIndex = UniqueValueName($"argIndex");
-            header.WriteLine($"\tint {argIndex} = 0;");
+            headerSB.AppendLine($"\tint {argIndex} = 0;");
             // Add the args to the scope.
             // VarRawSet(scope, VarNewString( argument name ), args[i]);
             for(int i = 0; i < Arguments.Count; i++) {
                 string argName = UniqueValueName($"arg{i}");
-                header.WriteLine($"\t// Argument: {Arguments[i].Name} ");
+                headerSB.AppendLine($"\t// Argument: {Arguments[i].Name} ");
                 // If it's splatted, Dump the rest of the arguments into this in particular.
                 if(Arguments[i].Splat) {
-                    header.WriteLine($"\t\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
+                    headerSB.AppendLine($"\t\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
                     // Remove all arguments by name from the list.
                     for(int j = 0; j < Arguments.Count; j++) {
-                        header.WriteLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
+                        headerSB.AppendLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
                     }
                 }else{
-                    header.WriteLine($"\t\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
-                    header.WriteLine($"\t\tif(ISUNDEFINED({argName})) {{");
+                    headerSB.AppendLine($"\t\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
+                    headerSB.AppendLine($"\t\tif(ISUNDEFINED({argName})) {{");
                     if(Arguments[i].DefaultValue != null) {
                         string argOut;
                         string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
                         if(!String.IsNullOrEmpty(argBody)){
-                            header.Write(Tabbed(Tabbed(Tabbed($"{argBody}"))));
+                            headerSB.Append(Tabbed(Tabbed(Tabbed($"{argBody}"))));
                         }
-                        header.WriteLine($"\t\t\t{argName} = {argOut};");
+                        headerSB.AppendLine($"\t\t\t{argName} = {argOut};");
                     }else{
-                        header.WriteLine($"\t\t\t{argName} = &NIL;");
+                        headerSB.AppendLine($"\t\t\t{argName} = &NIL;");
                     }
-                    header.WriteLine("\t\t}");
+                    headerSB.AppendLine("\t\t}");
                 }
-                header.WriteLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
+                headerSB.AppendLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
             }
         }
         string retVal;
         string body = Body.GenerateInline(header, out retVal);
         if(!String.IsNullOrEmpty(body)) {
-            header.Write(Tabbed(body));
+            headerSB.Append(Tabbed(body));
         }
-        header.WriteLine($"\treturn {retVal};");
-        header.WriteLine($"}}");
-
+        headerSB.AppendLine($"\treturn {retVal};");
+        headerSB.AppendLine($"}}");
+        header.Write(headerSB.ToString());
         StringBuilder sb = new StringBuilder();
         sb.Append('\"');
         foreach(char c in Code) {
@@ -227,7 +237,7 @@ public class Function : Expression {
         string constFunctionBody = sb.ToString();
 
         if(StoreVariable != null) {
-            stackName = $"VarSet(scope, VarNewString(\"{StoreVariable!.Name}\"), VarNewFunctionWithScope({methodName}, scope, {constFunctionBody}))";
+            StoreVariable!.GenerateSetterInline(header, out stackName, $"VarNewFunctionWithScope({methodName}, scope, {constFunctionBody})");
         }else{
             stackName = $"VarNewFunctionWithScope({methodName}, scope,  {constFunctionBody})";
         }

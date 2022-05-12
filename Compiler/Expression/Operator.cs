@@ -118,6 +118,15 @@ public class UnaryOperator {
         '-',
         '!',
         '~',
+        '#',
+    };
+
+    public static Dictionary<string, string> OperatorMetamethods = new() {
+        {"+", "unp"},
+        {"-", "unm"},
+        {"!", "not"},
+        {"~", "bnot"},
+        {"#", "len"},
     };
 
     public static (UnaryOperator?, int) TryParse(List<Token> tokens, int index) {
