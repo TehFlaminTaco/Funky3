@@ -1,16 +1,10 @@
-function List(a...){
-    a;
+function TestFunction(){
+    return 2;
+    return 3;
+    1;
 }
 
-var l = List(1, 2, 3);
-function l:PrintSelf(){
-    print(this)
-}
-
-l:PrintSelf();
-
-var j = List(5,6,7);
-
-j.PrintSelf = l.PrintSelf;
-
-j:PrintSelf();
+print(TestFunction());
+return "Hello, World!";
+return "Huh";
+print("Never reached!");

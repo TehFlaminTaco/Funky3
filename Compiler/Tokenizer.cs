@@ -4,6 +4,7 @@ public static class Tokenizer {
     private static readonly string[] keywords = new string[] {
         "for", "if", "function","with",
         "var", "local",
+        "return", "break",
         "and", "or", "not",
 
         // Preprocessor stuff

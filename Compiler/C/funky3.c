@@ -28,6 +28,13 @@
 
 #include "header.c"
 
+Var* Funky3Code(Var* scope){
+    Var* _;
+    DebugPrint("USER GENERATED CODE:\n");
+    #include "main.c"
+    DebugPrint("USER GENERATED CODE END\n");
+}
+
 int main(int argc, char** argv){
     gc.toCleanup = LinkedListNew();
 
@@ -47,13 +54,7 @@ int main(int argc, char** argv){
 
 
     GarbageCollect();
-
-    Var* _;
-
-    DebugPrint("USER GENERATED CODE:\n");
-#include "main.c"
-    DebugPrint("USER GENERATED CODE END\n");
-
+    Funky3Code(scope);
     GarbageCollect();
     
     return 0;
