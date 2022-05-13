@@ -262,6 +262,22 @@ Var* VarSet(Var* table, Var* key, Var* value){
             VarRawSet(args, VarNewNumber(1), key);
             VarRawSet(args, VarNewNumber(2), value);
             return VarFunctionCall(setter, args);
+        }else{ // If there's a parent, try that
+            DebugPrint("VarSet: no setter, trying parent\n");
+            if(table -> type == VAR_LIST){
+                DebugPrint("VarSet: table is a list\n");
+                HashMap* map = (HashMap*)table->value;
+                if(map == NULL){
+                    DebugPrint("VarSet: map is NULL\n");
+                    return &UNDEFINED;
+                }
+                Var* parent = map -> parent;
+                if(!ISUNDEFINED(parent)){
+                    DebugPrint("VarSet: parent is not undefined\n");
+                    return VarSet(parent, key, value);
+                }
+                DebugPrint("VarSet: parent is undefined\n");
+            }
         }
     }
     // Use rawset

@@ -1,6 +1,7 @@
 #ifndef STRINGMETA_C
 #define STRINGMETA_C
 
+#include "basemeta.c"
 #include "../funky3.h"
 
 // Escape "string" to a code-ready string.
@@ -95,8 +96,10 @@ Var* StringToCode(Var* scope, Var* args){
     return result;
 }
 
+
 void PopulateStringMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tocode"), VarNewFunction(StringToCode));
+    VarRawSet(metatable, VarNewString("add"), VarNewFunction(BaseConcat));
 }
 
 #endif

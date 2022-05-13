@@ -58,6 +58,7 @@ public abstract class Expression {
                     case "not":                 return RightParse(Math.TryParse(tokens, index), tokens);
                     case "function":            return RightParse(Function.TryParse(tokens, index), tokens);
                     case "if":                  return RightParse(If.TryParse(tokens, index), tokens);
+                    case "while":               return RightParse(While.TryParse(tokens, index), tokens);
                     case "with":                return RightParse(With.TryParse(tokens, index), tokens);
                     case "return": case "break":return RightParse(Return.TryParse(tokens, index), tokens);
                     case "$CodeChunk":          return RightParse(CodeChunk.TryParse(tokens, index), tokens);

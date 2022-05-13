@@ -1,27 +1,9 @@
-function List(a...){
-    return a;
-}
+var a = "Hello, "
+var b = "World!"
+print(a + b);
 
-var list = List(1, 2, 3);
-
-with list {
-    print(this);
-
-    function this:Announce(){
-        print("Hi! I am:", this)
-    }
-}
-
-list:Announce();
-
-thief = List(4, 5, 6)
-thief.Announce = list.Announce;
-
-thief:Announce();
-
-anotherThief = List(7, 8, 9);
-with anotherThief {
-    Announce = list.Announce;
-}
-
-anotherThief:Announce();
+print (3 ^ 3)
+print (3 * 3)
+print (27 / 3)
+print (28 // 3)
+print (65 & 63)
