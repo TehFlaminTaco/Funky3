@@ -94,7 +94,7 @@ public class Math : Expression {
                     sb.AppendLine("\t// Left");
                     sb.AppendLine(Tabbed(leftBody));
                 }
-                {
+                if(true){
                     string tempHolder = UniqueValueName("left");
                     sb.AppendLine($"\tVar* {tempHolder} = {leftHolder};");
                     leftHolder = tempHolder;
@@ -107,7 +107,7 @@ public class Math : Expression {
                 }
                 string metamethodHolder = $"VarGetMeta({leftHolder}, \"{BinaryOperator.OperatorMetamethods[OperatorBinary.Operator]}\")";
                 string argsHolder = UniqueValueName("args");
-                sb.AppendLine($"\tVar* {argsHolder} = VarNewList({rightHolder});");
+                sb.AppendLine($"\tVar* {argsHolder} = VarNewList();");
                 sb.AppendLine($"\tArgVarSet({argsHolder}, 0, \"left\", {leftHolder});");
                 sb.AppendLine($"\tArgVarSet({argsHolder}, 1, \"right\", {rightHolder});");
                 stackName = $"VarFunctionCall({metamethodHolder}, {argsHolder})";
@@ -121,7 +121,7 @@ public class Math : Expression {
             }
             string metamethodHolder = $"VarGetMeta({expressionHolder}, \"{UnaryOperator.OperatorMetamethods[OperatorUnary.Operator]}\")";
             string argsHolder = UniqueValueName("args");
-            sb.AppendLine($"\tVar* {argsHolder} = VarNewList({expressionHolder});");
+            sb.AppendLine($"\tVar* {argsHolder} = VarNewList();");
             sb.AppendLine($"\tArgVarSet({argsHolder}, 0, \"value\", {expressionHolder});");
             stackName = $"VarFunctionCall({metamethodHolder}, {argsHolder})";
             return sb.ToString();

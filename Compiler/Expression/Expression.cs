@@ -56,6 +56,14 @@ public abstract class Expression {
                 switch (tokens[index].Value) {
                     case "var": case "local":   return RightParse(Variable.TryParse(tokens, index), tokens);
                     case "not":                 return RightParse(Math.TryParse(tokens, index), tokens);
+                    case "for":
+                        // Try a forIn first
+                        (Expression? expression, int index) result = ForIn.TryParse(tokens, index);
+                        if(result.expression != null) {
+                            return result;
+                        }
+                        // Otherwise, it's a for loop.
+                        return RightParse(For.TryParse(tokens, index), tokens);
                     case "function":            return RightParse(Function.TryParse(tokens, index), tokens);
                     case "if":                  return RightParse(If.TryParse(tokens, index), tokens);
                     case "while":               return RightParse(While.TryParse(tokens, index), tokens);

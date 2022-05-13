@@ -150,8 +150,11 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
         DebugPrint("VarRawSet: key is NULL\n");
         return &UNDEFINED;
     }
+    if(key -> type == VAR_STRING){
+        DebugPrint("VarRawSet: key is \"%s\"\n", (char*)(intptr_t)key->value);
+    }
     if(table->type != VAR_LIST){
-        DebugPrint("VarRawSet: table is not a list\n");
+        DebugPrint("VarRawSet: table is not a list (%i)\n", table->type);
         return &UNDEFINED;
     }
     HashMap* map = (HashMap*)table->value;

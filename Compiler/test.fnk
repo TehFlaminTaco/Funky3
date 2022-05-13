@@ -1,9 +1,5 @@
-var a = "Hello, "
-var b = "World!"
-print(a + b);
-
-print (3 ^ 3)
-print (3 * 3)
-print (27 / 3)
-print (28 // 3)
-print (65 & 63)
+print("Pre-loop");
+for c in "Hello, World!" {
+    print(c)
+}
+print("Post-loop");

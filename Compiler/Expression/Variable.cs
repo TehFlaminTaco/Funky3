@@ -43,13 +43,12 @@ public class Variable : Expression {
             sb.AppendLine($"\t{varHolder} = VarRawSet(scope, VarNewString(\"{Name}\"), &NIL);");
             sb.AppendLine($"}}");
             stackName = varHolder;
+            return sb.ToString();
         }else{
             // Can always be inlined.
             stackName = $"/* Get {Name} */ VarGet(scope, VarNewString(\"{Name}\"))";
             return "";
         }
-
-        return "";
     }
 
     public virtual string GenerateSetterInline(StreamWriter header, out string stackName, string value) {

@@ -96,10 +96,55 @@ Var* StringToCode(Var* scope, Var* args){
     return result;
 }
 
+Var* _stringIter(Var* scope, Var* args){
+    DebugPrint("================== _stringIter\n");
+    Var* str = VarRawGet(scope, VarNewString("str"));
+    Var* index = VarRawGet(scope, VarNewString("index"));
+    if(str -> type != VAR_STRING){
+        DebugPrint("================== _stringIter: str is not a string\n");
+        return &UNDEFINED;
+    }
+    if(index -> type != VAR_NUMBER){
+        DebugPrint("================== _stringIter: index is not a number\n");
+        return &UNDEFINED;
+    }
+    char* s = str -> value;
+    double j;
+    memcpy(&j, &index -> value, sizeof(double));
+    int i = (int)j;
+    if(s[i] == '\0'){
+        DebugPrint("================== _stringIter: end\n");
+        return &UNDEFINED;
+    }
+    char* oneLetter = calloc(2, sizeof(char));
+    oneLetter[0] = s[i];
+    oneLetter[1] = '\0';
+    DebugPrint("================== _stringIter: %s\n", oneLetter);
+    Var* result = VarNewString(oneLetter);
+    free(oneLetter);
+    VarRawSet(scope, VarNewString("index"), VarNewNumber(i + 1));
+    DebugPrint("================== _stringIter: Sent\n");
+    return result;
+}
+
+Var* StringIterator(Var* scope, Var* args){
+    Var* string = ArgVarGet(args, 0, "obj");
+    if(string -> type != VAR_STRING){
+        return &UNDEFINED;
+    }
+    Var* func = VarNewFunction(_stringIter);
+    VarFunction* funcObj = (VarFunction*)func -> value;
+    funcObj -> scope = VarNewList();
+    VarRawSet(funcObj -> scope, VarNewString("str"), string);
+    VarRawSet(funcObj -> scope, VarNewString("index"), VarNewNumber(0));
+    return func;
+}
+
 
 void PopulateStringMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tocode"), VarNewFunction(StringToCode));
     VarRawSet(metatable, VarNewString("add"), VarNewFunction(BaseConcat));
+    VarRawSet(metatable, VarNewString("iter"), VarNewFunction(StringIterator));
 }
 
 #endif
