@@ -175,12 +175,19 @@ public class For : Loop {
 }
 
 public class ForIn : Loop {
-    public Variable Variable { get; set; }
+    public Variable? Variable { get; set; }
+    public List<Variable>? Variables { get; set; }
     public Expression Collection { get; set; }
     public Expression Body { get; set; }
 
     public ForIn(Variable variable, Expression collection, Expression body) {
         Variable = variable;
+        Collection = collection;
+        Body = body;
+    }
+
+    public ForIn(List<Variable> variables, Expression collection, Expression body) {
+        Variables = variables;
         Collection = collection;
         Body = body;
     }
@@ -195,18 +202,48 @@ public class ForIn : Loop {
         Parser.RegisterFurthest(i);
         i++;
 
-        // Optionally skip a left bracket
+        Variable? variable = null;
+        List<Variable>? variables = null;
+
+        // Unpack List into variables.
         if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "(") {
             Parser.RegisterFurthest(i);
             i++;
-        }
 
-        // Get the variable
-        (var variable, int j) = Variable.TryParse(tokens, i);
-        if(variable == null) {
-            return (null, index);
+            // Get a bunch of variables, seperated optionally by commas.
+            variables = new();
+            while(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")") {
+                (var v, int j) = Variable.TryParse(tokens, i);
+                if(v == null) {
+                    return (null, index);
+                }
+                i = j;
+                variables.Add(v);
+
+                // Skip a comma
+                if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ",") {
+                    Parser.RegisterFurthest(i);
+                    i++;
+                }
+            }
+
+            // Get the right parenthesis
+            if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")") {
+                return (null, index);
+            }
+            Parser.RegisterFurthest(i);
+            i++;
+
+
+        // Just one variable.
+        }else{
+            // Get the variable
+            (variable, int j) = Variable.TryParse(tokens, i);
+            if(variable == null) {
+                return (null, index);
+            }
+            i = j;
         }
-        i = j;
 
         // Get the in
         if(tokens[i].Type != TokenType.Keyword || tokens[i].Value != "in") {
@@ -222,13 +259,6 @@ public class ForIn : Loop {
         }
         i = k;
 
-        // Optionally skip a right bracket
-        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ")") {
-            Parser.RegisterFurthest(i);
-            i++;
-        }
-
-        // Get the body
         (var body, int l) = Expression.TryParseAny(tokens, i);
         if(body == null) {
             return (null, index);
@@ -236,7 +266,10 @@ public class ForIn : Loop {
         i = l;
 
         // Return the statement
-        return (new ForIn(variable, collection, body), i);
+        if(variable is not null)
+            return (new ForIn(variable, collection, body), i);
+        else
+            return (new ForIn(variables!, collection, body), i);
     }
 
     public override string GenerateInline(StreamWriter header, out string stackName){
@@ -263,9 +296,12 @@ public class ForIn : Loop {
         string iterHolder = UniqueValueName("iter");
         // Call the collection's iter metamethod to get it's iterator
         string argHolder = UniqueValueName("arg");
+        sb.AppendLine($"\tVar* {iterHolder} = {collectionHolder};");
         sb.AppendLine($"\tVar* {argHolder} = VarNewList();");
-        sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");
-        sb.AppendLine($"\tVar* {iterHolder} = VarAsFunction(VarFunctionCall(VarGetMeta({collectionHolder}, \"iter\"), {argHolder}));");
+        sb.AppendLine($"\tif({iterHolder}->type != VAR_FUNCTION) {{");
+        sb.AppendLine($"\t\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");
+        sb.AppendLine($"\t\t{iterHolder} = VarAsFunction(VarFunctionCall(VarGetMeta({collectionHolder}, \"iter\"), {argHolder}));");
+        sb.AppendLine($"\t}}");
         sb.AppendLine($"\tif({iterHolder}->type != VAR_FUNCTION) {{");
         sb.AppendLine($"\t\tgoto {labelEnd};");
         sb.AppendLine($"\t}}");
@@ -276,21 +312,37 @@ public class ForIn : Loop {
         sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");
         sb.AppendLine($"\tArgVarSet({argHolder}, 1, \"last\", {nextHolder});");
         sb.AppendLine($"\t{nextHolder} = VarFunctionCall({iterHolder}, {argHolder});");
-        sb.AppendLine($"\tif(!ISUNDEFINED({nextHolder})) {{");
-        
-        var variableBody = Variable.GenerateSetterInline(header, out string variableHolder, nextHolder);
-        if(!String.IsNullOrEmpty(variableBody)) {
-            sb.Append(Tabbed(Tabbed(variableBody)));
+
+        // Singular Variable
+        if(Variable is not null){
+            sb.AppendLine($"\tif(ISUNDEFINED({nextHolder})) {{");
+            sb.AppendLine($"\t\tgoto {labelEnd};");
+            sb.AppendLine($"\t}}");
+            var variableBody = Variable.GenerateSetterInline(header, out string variableHolder, nextHolder);
+            if(!String.IsNullOrEmpty(variableBody)) {
+                sb.Append(Tabbed(variableBody));
+            }
+            sb.AppendLine($"\t_ = {variableHolder};");
+        }else{
+            sb.AppendLine($"\tif({nextHolder} -> type != VAR_LIST) {{");
+            sb.AppendLine($"\t\tgoto {labelEnd};");
+            sb.AppendLine($"\t}}");
+            int j = 0;
+            foreach(var variable in Variables!){
+                var variableBody = variable.GenerateSetterInline(header, out string variableHolder, $"VarRawGet({nextHolder}, VarNewNumber({j++}))");
+                if(!String.IsNullOrEmpty(variableBody)) {
+                    sb.Append(Tabbed(variableBody));
+                }
+                sb.AppendLine($"\t_ = {variableHolder};");
+            }
         }
-        sb.AppendLine($"\t\t_ = {variableHolder};");
         // Call the body
         string bodyBody = Body.GenerateInline(header, out string bodyHolder);
         if(!String.IsNullOrEmpty(bodyBody)) {
-            sb.Append(Tabbed(Tabbed(bodyBody)));
+            sb.Append(Tabbed(bodyBody));
         }
-        sb.AppendLine($"\t\t{result} = {bodyHolder};");
-        sb.AppendLine($"\t\tgoto {labelStart};");
-        sb.AppendLine($"\t}}");
+        sb.AppendLine($"\t{result} = {bodyHolder};");
+        sb.AppendLine($"\tgoto {labelStart};");
         sb.AppendLine($"\t{labelEnd}:");
         BreakValues.Pop();
         stackName = result;

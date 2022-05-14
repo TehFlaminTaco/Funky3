@@ -23,6 +23,10 @@ The following metamethods are associated with the math operators:
 * `>=`: `ge`
 * `==`: `eq`
 * `!=`: `ne`
+* `..`: `concat`
+
+### Iter
+The `iter` metamethod is called when a list is iterated over. It should return an iterator function. See "For In" for how these should be structured.
 
 ### To String
 `tostring` is a metamethod that is called when a variable is converted to a string. If this does not return a string, an empty string is returned.
@@ -33,5 +37,5 @@ The following metamethods are associated with the math operators:
 ### Get
 `get` is used to add custom indexing behavior to a variable. It takes the arguments: `table`, `key`.
 
-## Set
+### Set
 `set` is used to add custom indexing behavior to a variable. It takes the arguments: `table`, `key`, `value`.

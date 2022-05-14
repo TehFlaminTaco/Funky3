@@ -1,5 +1,12 @@
-print("Pre-loop");
-for c in "Hello, World!" {
-    print(c)
+function List(a...){
+    return a;
 }
-print("Post-loop");
+
+var l = List(1, 2, 3)
+
+l.x = "Hello"
+l.y = "World"
+
+for (k,v) in pairs(l){
+    print(s)
+}

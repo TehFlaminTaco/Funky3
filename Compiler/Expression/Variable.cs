@@ -96,6 +96,12 @@ public class IndexVariable : Variable {
                     return (null, index);
                 }
                 i = result.index;
+                // Skip a right bracket
+                if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "]") {
+                    return (null, index);
+                }
+                Parser.RegisterFurthest(i);
+                i++;
                 var indexVariable = new IndexVariable(result.expression, left);
                 return (indexVariable, i);
             }

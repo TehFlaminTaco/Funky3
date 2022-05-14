@@ -150,6 +150,11 @@ public abstract class Expression {
                         if(IsBlocked<IndexVariable>())
                             return result;
                         return RightParse(IndexVariable.TryParse(result.expression, tokens, result.index), tokens);
+                    case "[":
+                        // Indexer Only
+                        if(IsBlocked<IndexVariable>())
+                            return result;
+                        return RightParse(IndexVariable.TryParse(result.expression, tokens, result.index), tokens);
                     case "?":
                         // If statement, Ternary style.
                         if(IsBlocked<If>())

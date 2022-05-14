@@ -49,6 +49,28 @@ Arguments may be named with the form `name: value`.
 **Special Notes:**\
 When the operator precedes the variable, the new value is returned. Otherwise, the old value is returned.
 
+## For
+
+**Description:**\
+A for loop.
+
+**Forms:**
+* Punctuation: `for`, Punctuation: `(`, Expression: `Any`, Expression: `Any`, Expression: `Any`, Punctuation: `)`, Expression: `Any`
+
+**Special Notes:**\
+The first expression is evaluated once, and then the second expression is checked for truthyness. The third expression is evaluated after each iteration. This is a C Style For loop.
+
+## For In
+
+**Description:**\
+A for loop that iterates over an iterator. The iterator is returned by the `iter` metamethod, unless the passed value is a function.
+
+**Forms:**
+* Punctuation: `for`, Punctuation: `(`?, Expression: `Any`, Keyword: `in`, Expression: `Any`, Punctuation: `)`?, Expression: `Any`
+
+**Special Notes:**\
+An iterator is a function that, when called repeatedly, returns the next value in the sequence. Once every value is returned, the iterator should return `undefined`. It's important to note that `nil` will not terminate, and be looped over instead.
+
 ## Function
 
 **Description:**\
@@ -128,7 +150,7 @@ When preceeded by `var` or `local`, the variable is declared as a local variable
 
 ## Variable Indexing
 
-**Description**\
+**Description:**\
 Access the stored value within a list. Can also be used to generate Curry Methods.
 
 **Forms:**
@@ -136,10 +158,18 @@ Access the stored value within a list. Can also be used to generate Curry Method
 * Expression: `Any`, Punctuation: `.`, Identifier: `Any`
 * Expression: `Any`, Punctuation: `:`, Identifier: `Any`
 
-**Special Notes**\
+**Special Notes:**\
 The first form allows one to index with strange objects, like other lists, nil, or numbers.\
 The second form only allows one to index with a string.\
 The third form will always resolve to a special function which passes itself as the first argument automatically.
+
+## While
+
+**Description:**\
+A while loop. Whilst the first expression is truthy, the second expression is evaluated.
+
+**Forms:**
+* Keyword: `while`, Expression: `Any`, Expression: `Any`
 
 ## With
 
