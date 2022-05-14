@@ -54,6 +54,7 @@ public class WebServer {
                 response.ContentType = "application/wasm";
                 response.ContentLength64 = new FileInfo("Funky3Compiled/funky3.wasm").Length;
                 f.CopyTo(response.OutputStream);
+                Console.WriteLine("Sent!");
                 continue;
             }
 
