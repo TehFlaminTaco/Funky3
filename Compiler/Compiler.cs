@@ -5,7 +5,7 @@ using System.Diagnostics;
 public static class Compiler
 {
     public static string CurrentCode { get; set; } = "";
-    public static void Main(){
+    public static void Compile(string code){
         // Generate a Temporary folder for compiling
         var temp = Path.Combine(Path.GetTempPath(), "Funky3Compiler");
         var folder = Path.Combine(temp, Path.GetRandomFileName());
@@ -32,7 +32,7 @@ public static class Compiler
             
             using (StreamWriter bodyStream = new StreamWriter(Path.Combine(folder, "main.c"))) {
                 using (StreamWriter headerStream = new StreamWriter(Path.Combine(folder, "header.c"))) {
-                    Compile("test.fnk", bodyStream, headerStream);
+                    Compile(code, bodyStream, headerStream);
                 }
             }
             
@@ -45,45 +45,76 @@ public static class Compiler
                 Console.WriteLine(reader.ReadToEnd());
             }
 
-            // Compile the C code
-            var compiler = new Process();
-            compiler.StartInfo.FileName = "gcc";
-            compiler.StartInfo.Arguments = "-w -O3 -o program.exe funky3.c";
-            compiler.StartInfo.WorkingDirectory = folder;
-            compiler.StartInfo.UseShellExecute = false;
-            compiler.StartInfo.RedirectStandardOutput = true;
-            compiler.StartInfo.RedirectStandardError = true;
-            compiler.Start();
-            var output = compiler.StandardOutput.ReadToEnd();
-            var error = compiler.StandardError.ReadToEnd();
+            Directory.CreateDirectory(Path.Combine(folder, "output"));
+            File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -o output/funky3.js");
+            ProcessStartInfo compilerStart = new("cmd.exe", "/c build.bat");
+            compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
+            compilerStart.UseShellExecute = false;
+            compilerStart.RedirectStandardOutput = true;
+            compilerStart.RedirectStandardError = true;
+            compilerStart.CreateNoWindow = true;
+            Process compiler = Process.Start(compilerStart)!;
             compiler.WaitForExit();
             if(compiler.ExitCode != 0){
-                Console.WriteLine(output);
-                Console.WriteLine(error);
+                Console.WriteLine(compiler.StandardOutput.ReadToEnd());
+                Console.WriteLine(compiler.StandardError.ReadToEnd());
                 throw new Exception("Compilation failed");
             }
+
             // Copy result to the output folder
-            if(File.Exists(Path.Combine("Funky3.exe"))){
-                File.Delete(Path.Combine("Funky3.exe"));
+            if(Directory.Exists("Funky3Compiled")){
+                Directory.Delete("Funky3Compiled", true);
             }
-            File.Copy(Path.Combine(folder, "program.exe"), Path.Combine("Funky3.exe"));
+            Directory.CreateDirectory("Funky3Compiled");
+            CopyDirectory(Path.Combine(folder, "output"), Path.Combine("Funky3Compiled"), true);
             Console.WriteLine("Compilation successful");
         }finally{
             Directory.Delete(temp, true);
         }
     }
 
-    public static void Compile(string codePath, StreamWriter bodyOutput, StreamWriter headerOutput){
-        using (StreamReader codeStream = new StreamReader(codePath)) {
-            string preprocessedCode = Preprocessor.Process(codeStream);
-            CurrentCode = preprocessedCode;
-            var tokens = Tokenizer.Tokenize(preprocessedCode);
+    static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+    {
+        // Get information about the source directory
+        var dir = new DirectoryInfo(sourceDir);
 
-            foreach(var headCode in CHeader.HeaderCodeChunks){
-                headerOutput.WriteLine(headCode);
-            }
+        // Check if the source directory exists
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
 
-            Parser.Parse(tokens, bodyOutput, headerOutput);
+        // Cache directories before we start copying
+        DirectoryInfo[] dirs = dir.GetDirectories();
+
+        // Create the destination directory
+        Directory.CreateDirectory(destinationDir);
+
+        // Get the files in the source directory and copy to the destination directory
+        foreach (FileInfo file in dir.GetFiles())
+        {
+            string targetFilePath = Path.Combine(destinationDir, file.Name);
+            file.CopyTo(targetFilePath);
         }
+
+        // If recursive and copying subdirectories, recursively call this method
+        if (recursive)
+        {
+            foreach (DirectoryInfo subDir in dirs)
+            {
+                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir, true);
+            }
+        }
+    }
+
+    public static void Compile(string sourceCode, StreamWriter bodyOutput, StreamWriter headerOutput){
+        string preprocessedCode = Preprocessor.Process(sourceCode);
+        CurrentCode = preprocessedCode;
+        var tokens = Tokenizer.Tokenize(preprocessedCode);
+
+        foreach(var headCode in CHeader.HeaderCodeChunks){
+            headerOutput.WriteLine(headCode);
+        }
+
+        Parser.Parse(tokens, bodyOutput, headerOutput);
     }
 }

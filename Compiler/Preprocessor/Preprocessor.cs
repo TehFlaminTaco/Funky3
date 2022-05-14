@@ -16,9 +16,8 @@ RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
 
     public static bool Skipping = false;
     public static StringBuilder PreprocBuffer = new();
-    public static string Process(StreamReader reader) {
+    public static string Process(string allCode) {
         StringBuilder sb = new();
-        string allCode = reader.ReadToEnd();
         // For each chunk of code
         foreach (Match m in SuperTokenizer.Matches(allCode)) {
             if(Skipping && !m.Groups["preprocessor"].Success){
