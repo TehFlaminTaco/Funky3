@@ -9,7 +9,7 @@ public class Preprocessor {
 (?<multilineComment> \$\*(.|\s)*?\*\$                   )| (?#Multiline Comment)
 (?<string>           (?<qoute>[\""'`])(\\.|.)*?\<qoute> )| (?#Strings)
 (?<singleineComment> \$\$.*                             )| (?#Singleline Comment)
-(?<preprocessor>     \s*\$(?<directive>\w+)(?<body>.+)  )| (?#Preprocessor)
+(?<preprocessor>     \s*\$(?<directive>\w+)(?<body>.*)  )| (?#Preprocessor)
 (?<code>             [^$\""'\r\n]+                      )| (?#Regular, Boring code)
 (?<unknown>          .                                  )  (?#Incase I missed something)",
 RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
@@ -26,7 +26,6 @@ RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
             }
             // If it's a preprocessor directive
             if (m.Groups["preprocessor"].Success) {
-                Console.WriteLine($"Preprocessor: {m.Groups["directive"].Value}");
                 var directive = m.Groups["directive"].Value;
                 var body = m.Groups["body"].Value;
                 switch(directive) {
