@@ -13,7 +13,7 @@ public static class Compiler
         Directory.CreateDirectory(Path.Combine(folder, "metatables"));
         try {
             // Copy all the C code into the folder
-            foreach(var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c=>c.EndsWith(".c") || c.EndsWith(".h"))){
+            foreach(var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c=>c.StartsWith("Funky3_Compiler.C.")).Where(c=>c.EndsWith(".c") || c.EndsWith(".h"))){
                 // Get a local folder name from s
                 var targetFile = s["Funky3_Compiler.C.".Length..].Replace('.', Path.DirectorySeparatorChar);
                 var lastSlash = targetFile.LastIndexOf(Path.DirectorySeparatorChar);

@@ -1,41 +1,29 @@
-<HTML>
+<html>
     <head>
         <meta charset="utf-8">
-        <title>Funky3 in the Browser!</title>
+        <title>Funky3!!!</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.0/ace.min.js"></script>
+        <link rel="stylesheet" href="style.css">
+        <script>
+            window.addEventListener("load", ev => {
+                window.editor = ace.edit("code");
+                document.getElementById("run").addEventListener("click", ev => {
+                    let code = editor.getValue();
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("POST", "http://localhost:8080/postCode", true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.addEventListener("load", ev => {
+                        // Reload the iframe.
+                        document.getElementById("output").src += "";
+                    });
+                    xhr.send(code);
+                });
+            });
+        </script>
     </head>
     <body>
-        <textarea id="output" rows="8"></textarea>
-
-        <script type='text/javascript'>
-        var Module = {
-            preRun: [],
-            postRun: [],
-            print: (function() {
-            var element = document.getElementById('output');
-            if (element) element.value = ''; // clear browser cache
-            return function(text) {
-                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                // These replacements are necessary if you render to raw HTML
-                //text = text.replace(/&/g, "&amp;");
-                //text = text.replace(/</g, "&lt;");
-                //text = text.replace(/>/g, "&gt;");
-                //text = text.replace('\n', '<br>', 'g');
-                console.log(text);
-                if (element) {
-                element.value += text + "\n";
-                element.scrollTop = element.scrollHeight; // focus on bottom
-                }
-            };
-            })(),
-            totalDependencies: 0,
-            monitorRunDependencies: function(left) {
-            this.totalDependencies = Math.max(this.totalDependencies, left);
-            }
-        };
-        window.onerror = function(event) {
-            // E
-        };
-        </script>
-        <script async type="text/javascript" src="funky3.js"></script>
+        <textarea id="code"></textarea> 
+        <iframe id="output" src="funky3.html" width="50%" height="100%"></iframe>
+        <button id="run">Run</button>
     </body>
-</HTML>
+</html>
