@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "funky3.h"
-#include "var.h"
+#include "hashmap.h"
 
 Var* Print(Var* scope, Var* args){
     DebugPrint("PRINT\n");
