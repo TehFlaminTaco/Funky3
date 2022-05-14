@@ -26,6 +26,7 @@ RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
             }
             // If it's a preprocessor directive
             if (m.Groups["preprocessor"].Success) {
+                Console.WriteLine($"Preprocessor: {m.Groups["directive"].Value}");
                 var directive = m.Groups["directive"].Value;
                 var body = m.Groups["body"].Value;
                 switch(directive) {
