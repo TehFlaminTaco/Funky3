@@ -32,7 +32,7 @@ public class WebServer {
             }else{
                 session = cookies["session"]!.Value;
             }
-            
+            Console.WriteLine($"{session} {url.AbsolutePath}");
             if(url!.LocalPath == "/postCode"){
                 // Get the request body
                 var body = new StreamReader(request.InputStream).ReadToEnd();
