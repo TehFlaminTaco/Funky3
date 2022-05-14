@@ -18,7 +18,7 @@ Var* Print(Var* scope, Var* args){
         printf("%s", VarAsString(arg)->value);
         arg = ArgVarGet(args, ++index, NULL);
         if(arg != NULL)
-            printf(" ");
+            printf("\t");
     }
     printf("\n");
     return &NIL;
