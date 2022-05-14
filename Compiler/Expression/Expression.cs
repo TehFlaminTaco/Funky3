@@ -81,6 +81,11 @@ public abstract class Expression {
                         if(function.Item1 != null) {
                             return RightParse(function, tokens);
                         }
+                        // Then, try an unpack
+                        var unpack = UnpackVariable.TryParse(tokens, index);
+                        if(unpack.Item1 != null) {
+                            return RightParse(unpack, tokens);
+                        }
                         // Otherwise, try a parenthesized expression
                         return RightParse(Parentheses.TryParse(tokens, index), tokens);
                     case "!": case "+": case "-": case "~": case "#":
@@ -92,11 +97,11 @@ public abstract class Expression {
         }
     }
 
-    public static (Expression? expression, int index) RightParse((Expression? expression, int index) result, List<Token> tokens) {
+    public static (Expression? expression, int index) RightParse((Expression? expression, int index) result, List<Token> tokens, (Expression? expression, int index) left = default) {
         if(result.expression == null)
-            return result;
+            return left;
         if(result.index >= tokens.Count)
-            return result;
+            return left;
 
         switch (tokens[result.index].Type) {
             case TokenType.Punctuation:
@@ -104,57 +109,62 @@ public abstract class Expression {
                     case "(":
                         if(IsBlocked<Call>())
                             return result;
-                        return RightParse(Call.TryParse(result.expression, tokens, result.index), tokens);
+                        return RightParse(Call.TryParse(result.expression, tokens, result.index), tokens, result);
                     case "=":
                         // Try and get math first.
                         if(!IsBlocked<Math>()) {
                             (Expression? expression, int index) math = Math.TryParse(result.expression, tokens, result.index);
                             if(math.expression != null) {
-                                return RightParse(Assignment.TryParse(math.expression, tokens, math.index), tokens);
+                                return RightParse(math, tokens, result);
                             }
                         }
                         // Otherwise, get an assignment.
                         if(IsBlocked<Assignment>())
                             return result;
-                        return RightParse(Assignment.TryParse(result.expression, tokens, result.index), tokens);
+                        return RightParse(Assignment.TryParse(result.expression, tokens, result.index), tokens, result);
                     case "+": case "-":
                         // Either a Crementor or math.
                         // Crementors need to be implemented later.
                         if(!IsBlocked<Math>()) {
                             (Expression? expression, int index) math2 = Math.TryParse(result.expression, tokens, result.index);
                             if(math2.expression != null)
-                                return RightParse(math2, tokens);
+                                return RightParse(math2, tokens, result);
                         }
                         return result;
                     case "*": case "/": case "%": case "^": case "&": case "|": case "~": case "<": case ">":
                         // Math only punctuation
                         if(IsBlocked<Math>())
                             return result;
-                        return RightParse(Math.TryParse(result.expression, tokens, result.index), tokens);
+                        return RightParse(Math.TryParse(result.expression, tokens, result.index), tokens, result);
                     case ".":
                         // Try and get math first
                         if(!IsBlocked<Math>()) {
                             (Expression? expression, int index) math3 = Math.TryParse(result.expression, tokens, result.index);
                             if(math3.expression != null) 
-                                return RightParse(math3, tokens);
+                                return RightParse(math3, tokens, result);
                         }
                         // try to get an indexer
                         if(!IsBlocked<IndexVariable>()){
                             (Expression? expression, int index) indexer = IndexVariable.TryParse(result.expression, tokens, result.index);
                             if(indexer.expression != null)
-                                return RightParse(indexer, tokens);
+                                return RightParse(indexer, tokens, result);
                         }
                         return result;
                     case ":":
                         // Indexer only
                         if(IsBlocked<IndexVariable>())
                             return result;
-                        return RightParse(IndexVariable.TryParse(result.expression, tokens, result.index), tokens);
+                        return RightParse(IndexVariable.TryParse(result.expression, tokens, result.index), tokens, result);
+                    case "[":
+                        // Indexer Only
+                        if(IsBlocked<IndexVariable>())
+                            return result;
+                        return RightParse(IndexVariable.TryParse(result.expression, tokens, result.index), tokens, result);
                     case "?":
                         // If statement, Ternary style.
                         if(IsBlocked<If>())
                             return result;
-                        return RightParse(If.TryParse(result.expression, tokens, result.index), tokens);
+                        return RightParse(If.TryParse(result.expression, tokens, result.index), tokens, result);
                 }
                 return result;
             case TokenType.Keyword:
@@ -163,7 +173,7 @@ public abstract class Expression {
                         // Math only keywords
                         if(IsBlocked<Math>())
                             return result;
-                        return RightParse(Math.TryParse(result.expression, tokens, result.index), tokens);
+                        return RightParse(Math.TryParse(result.expression, tokens, result.index), tokens, result);
                 }
                 return result;
             default:

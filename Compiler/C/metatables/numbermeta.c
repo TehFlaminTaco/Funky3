@@ -564,6 +564,45 @@ Var* NumberUnm(Var* scope, Var* args){
     return VarNewNumber(result);
 }
 
+Var* _numberIter(Var* scope, Var* args){
+    DebugPrint("_numberIter\n");
+    Var* target = VarRawGet(scope, VarNewString("target"));
+    Var* index = VarRawGet(scope, VarNewString("index"));
+    if(target -> type != VAR_NUMBER){
+        DebugPrint("_stringIter: number is not a number\n");
+        return &UNDEFINED;
+    }
+    if(index -> type != VAR_NUMBER){
+        DebugPrint("_stringIter: index is not a number\n");
+        return &UNDEFINED;
+    }
+    double j;
+    memcpy(&j, &target->value, sizeof(double));
+
+    double k;
+    memcpy(&k, &index->value, sizeof(double));
+    if(k >= j){
+        return &UNDEFINED;
+    }
+    VarRawSet(scope, VarNewString("index"), VarNewNumber(k + 1));
+    return VarNewNumber(k);
+}
+
+Var* NumberIterator(Var* scope, Var* args){
+    DebugPrint("NumberIterator\n");
+    Var* target = ArgVarGet(args, 0, "target");
+    if(target -> type != VAR_NUMBER){
+        DebugPrint("NumberIterator: target is not a number\n");
+        return &UNDEFINED;
+    }
+    Var* func = VarNewFunction(_numberIter);
+    VarFunction* funcObj = (VarFunction*)func -> value;
+    funcObj -> scope = VarNewList();
+    VarRawSet(funcObj -> scope, VarNewString("target"), target);
+    VarRawSet(funcObj -> scope, VarNewString("index"), VarNewNumber(0));
+    return func;
+}
+
 void PopulateNumberMeta(Var* metatable){
     DebugPrint("!");
     VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(NumberToString));
@@ -585,6 +624,8 @@ void PopulateNumberMeta(Var* metatable){
 
     VarRawSet(metatable, VarNewString("gt"), VarNewFunction(NumberGt));
     VarRawSet(metatable, VarNewString("lt"), VarNewFunction(NumberLt));
+
+    VarRawSet(metatable, VarNewString("iter"), VarNewFunction(NumberIterator));
     DebugPrint("@");
 }
 

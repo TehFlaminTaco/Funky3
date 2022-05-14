@@ -49,7 +49,14 @@ public class Assignment : Expression {
     public override string GenerateInline(StreamWriter header, out string stackName){
         string valueHolder;
         string valueBody = Value.GenerateInline(header, out valueHolder);
-        Name.GenerateSetterInline(header, out stackName, valueHolder); // KNOWN to always be inline
-        return valueBody;
+        StringBuilder sb = new();
+        if(!String.IsNullOrEmpty(valueBody)){
+            sb.Append(valueBody);
+        }
+        valueBody = Name.GenerateSetterInline(header, out stackName, valueHolder); // KNOWN to always be inline
+        if(!String.IsNullOrEmpty(valueBody)){
+            sb.Append(valueBody);
+        }
+        return sb.ToString();
     }
 }

@@ -2,7 +2,7 @@ public static class Parser {
     public static int FurthestToken = 0;
     public static void Parse(List<Token> tokens, StreamWriter body, StreamWriter header) {
         int index = 0;
-        while(index < tokens.Count) {
+        while(index < tokens.Count && tokens[index].Type != TokenType.None) {
             (Expression? expression, int index) result = Expression.TryParseAny(tokens, index);
             if(result.expression != null) {
                 string lineBody = result.expression.GenerateInline(header, out string stackName);

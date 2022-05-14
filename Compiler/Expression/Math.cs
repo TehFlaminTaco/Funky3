@@ -39,14 +39,12 @@ public class Math : Expression {
         if(operatorBinary == null) {
             return (null, index);
         }
-        Parser.RegisterFurthest(i);
         i = j;
         // And then an expression
         (var expression, j) = Expression.TryParseAny(tokens, i);
         if(expression == null) {
             return (null, index);
         }
-        Parser.RegisterFurthest(i);
         i = j;
         // Build and return
         return (new Math(left, expression, operatorBinary, null), i);
@@ -62,13 +60,13 @@ public class Math : Expression {
                 stackName = resultName;
                 string leftBody = Left!.GenerateInline(header, out string leftHolder);
                 if(!String.IsNullOrEmpty(leftBody)) {
-                    sb.AppendLine(Tabbed(leftBody));
+                    sb.Append(Tabbed(leftBody));
                 }
                 sb.AppendLine($"\tVar* {resultName} = {leftHolder};");
                 sb.AppendLine($"\tif(VarTruthy({resultName})){{");
                 string rightBody = Right!.GenerateInline(header, out string rightHolder);
                 if(!String.IsNullOrEmpty(rightBody)) {
-                    sb.AppendLine(Tabbed(rightBody));
+                    sb.Append(Tabbed(rightBody));
                 }
                 sb.AppendLine($"\t\t{resultName} = {rightHolder};");
                 sb.AppendLine($"\t}}");
@@ -77,13 +75,13 @@ public class Math : Expression {
                 stackName = resultName;
                 string leftBody = Left!.GenerateInline(header, out string leftHolder);
                 if(!String.IsNullOrEmpty(leftBody)) {
-                    sb.AppendLine(Tabbed(leftBody));
+                    sb.Append(Tabbed(leftBody));
                 }
                 sb.AppendLine($"\tVar* {resultName} = {leftHolder};");
                 sb.AppendLine($"\tif(!VarTruthy({resultName})){{");
                 string rightBody = Right!.GenerateInline(header, out string rightHolder);
                 if(!String.IsNullOrEmpty(rightBody)) {
-                    sb.AppendLine(Tabbed(rightBody));
+                    sb.Append(Tabbed(rightBody));
                 }
                 sb.AppendLine($"\t\t{resultName} = {rightHolder};");
                 sb.AppendLine($"\t}}");
@@ -92,7 +90,7 @@ public class Math : Expression {
                 string leftBody = Left!.GenerateInline(header, out leftHolder);
                 if(!String.IsNullOrEmpty(leftBody)) {
                     sb.AppendLine("\t// Left");
-                    sb.AppendLine(Tabbed(leftBody));
+                    sb.Append(Tabbed(leftBody));
                 }
                 if(true){
                     string tempHolder = UniqueValueName("left");
@@ -103,7 +101,7 @@ public class Math : Expression {
                 string rightBody = Right!.GenerateInline(header, out rightHolder);
                 if(!String.IsNullOrEmpty(rightBody)) {
                     sb.AppendLine("\t// Right");
-                    sb.AppendLine(Tabbed(rightBody));
+                    sb.Append(Tabbed(rightBody));
                 }
                 string metamethodHolder = $"VarGetMeta({leftHolder}, \"{BinaryOperator.OperatorMetamethods[OperatorBinary.Operator]}\")";
                 string argsHolder = UniqueValueName("args");
@@ -117,7 +115,7 @@ public class Math : Expression {
             sb.AppendLine($"// {OperatorUnary.Operator}");
             string expressionBody = Right!.GenerateInline(header, out string expressionHolder);
             if(!String.IsNullOrEmpty(expressionBody)) {
-                sb.AppendLine(Tabbed(expressionBody));
+                sb.Append(Tabbed(expressionBody));
             }
             string metamethodHolder = $"VarGetMeta({expressionHolder}, \"{UnaryOperator.OperatorMetamethods[OperatorUnary.Operator]}\")";
             string argsHolder = UniqueValueName("args");

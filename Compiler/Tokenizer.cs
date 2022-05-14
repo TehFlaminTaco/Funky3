@@ -144,11 +144,16 @@ public static class Tokenizer {
                 k++;
             }
         }
+        for(int i = 0; i < 10; i++){
+            tokens.Add(new Token(TokenType.None, "", 0, 0, 0, 0)); // Just append a heap of empty tokens.
+            // This is a bad solution to me not checking the list length.
+        }
         return tokens;
     }
 }
 
 public enum TokenType {
+    None,
     Comment,
     Keyword,
     Identifier,

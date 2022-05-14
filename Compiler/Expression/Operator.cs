@@ -29,15 +29,15 @@ public class BinaryOperator {
         { "^",  "pow" },
         { "&",  "band" },
         { "|",  "bor" },
-        { "~",  "bnot" },
+        { "~",  "bxor" },
+        { "<<", "bshl" },
+        { ">>", "bshr" },
         { "<",  "lt" },
         { ">",  "gt" },
         { "==", "eq" },
         { "!=", "ne" },
         { "<=", "le" },
         { ">=", "ge" },
-        { "<<", "bshl" },
-        { ">>", "bshr" },
         { "..", "concat" },
     };
 
@@ -59,10 +59,13 @@ public class BinaryOperator {
         }
         // Check for special cases: "..", "!="
         if(tokens[i].Value == "." && tokens[i+1].Type == TokenType.Punctuation && tokens[i + 1].Value == ".") {
-            return (new BinaryOperator(".."), i + 1);
+            return (new BinaryOperator(".."), i + 2);
         }
         if(tokens[i].Value == "!" && tokens[i+1].Type == TokenType.Punctuation && tokens[i + 1].Value == "=") {
-            return (new BinaryOperator("!="), i + 1);
+            return (new BinaryOperator("!="), i + 2);
+        }
+        if(tokens[i].Value == "=" && tokens[i+1].Type == TokenType.Punctuation && tokens[i + 1].Value == "=") {
+            return (new BinaryOperator("=="), i + 2);
         }
         // Check the operator is a binary operator.
         if(!Operators.Contains(tokens[i].Value[0])) {
@@ -91,9 +94,6 @@ public class BinaryOperator {
             case ">":
                 if(tokens[i].Value == "=") return (new BinaryOperator(">="), i + 1);
                 if(tokens[i].Value == ">") return (new BinaryOperator(">>"), i + 1);
-                break;
-            case "=":
-                if(tokens[i].Value == "=") return (new BinaryOperator("=="), i + 1);
                 break;
             case "&":
                 if(tokens[i].Value == "&") return (new BinaryOperator("&&"), i + 1);

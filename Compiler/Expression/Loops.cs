@@ -195,14 +195,11 @@ public class ForIn : Loop {
         Parser.RegisterFurthest(i);
         i++;
 
-        // Optionally skip a left bracket
-        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "(") {
-            Parser.RegisterFurthest(i);
-            i++;
-        }
-
         // Get the variable
-        (var variable, int j) = Variable.TryParse(tokens, i);
+        (var e, int j) = Expression.TryParseAny(tokens, i);
+        if(e is not Variable variable) {
+            return (null, index);
+        }
         if(variable == null) {
             return (null, index);
         }
@@ -221,13 +218,7 @@ public class ForIn : Loop {
             return (null, index);
         }
         i = k;
-
-        // Optionally skip a right bracket
-        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ")") {
-            Parser.RegisterFurthest(i);
-            i++;
-        }
-
+        
         // Get the body
         (var body, int l) = Expression.TryParseAny(tokens, i);
         if(body == null) {
@@ -263,9 +254,12 @@ public class ForIn : Loop {
         string iterHolder = UniqueValueName("iter");
         // Call the collection's iter metamethod to get it's iterator
         string argHolder = UniqueValueName("arg");
+        sb.AppendLine($"\tVar* {iterHolder} = {collectionHolder};");
         sb.AppendLine($"\tVar* {argHolder} = VarNewList();");
-        sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");
-        sb.AppendLine($"\tVar* {iterHolder} = VarAsFunction(VarFunctionCall(VarGetMeta({collectionHolder}, \"iter\"), {argHolder}));");
+        sb.AppendLine($"\tif({iterHolder}->type != VAR_FUNCTION) {{");
+        sb.AppendLine($"\t\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");
+        sb.AppendLine($"\t\t{iterHolder} = VarAsFunction(VarFunctionCall(VarGetMeta({collectionHolder}, \"iter\"), {argHolder}));");
+        sb.AppendLine($"\t}}");
         sb.AppendLine($"\tif({iterHolder}->type != VAR_FUNCTION) {{");
         sb.AppendLine($"\t\tgoto {labelEnd};");
         sb.AppendLine($"\t}}");

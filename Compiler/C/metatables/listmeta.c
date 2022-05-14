@@ -59,9 +59,65 @@ Var* ListToString(Var* scope, Var* args){
     }*/
 }
 
+Var* _listIter(Var* scope, Var* args){
+    DebugPrint("_listIter\n");
+    Var* keys = VarRawGet(scope, VarNewString("keys"));
+    Var* index = VarRawGet(scope, VarNewString("index"));
+    if(keys -> type != VAR_LIST){
+        DebugPrint("_listIter: not a list\n");
+        return &UNDEFINED;
+    }
+    if(index -> type != VAR_NUMBER){
+        DebugPrint("_listIter: index is not a number\n");
+        return &UNDEFINED;
+    }
+    double j;
+    memcpy(&j, &index -> value, sizeof(double));
+    int i = (int)j;
+    Var* val = VarRawGet(keys, VarNewNumber(i));
+    if(ISUNDEFINED(val)){
+        DebugPrint("_listIter: end\n");
+        return &UNDEFINED;
+    }
+    VarRawSet(scope, VarNewString("index"), VarNewNumber(i + 1));
+    DebugPrint("_listIter: Sent\n");
+    return val;
+}
+
+Var* ListIterator(Var* scope, Var* args){
+    DebugPrint("ListIterator\n");
+    Var* list = ArgVarGet(args, 0, "obj");
+    if(list -> type != VAR_LIST){
+        DebugPrint("ListIterator: not a list\n");
+        return &UNDEFINED;
+    }
+    DebugPrint("ListIterator: %p\n", list);
+    Var* keysList = VarNewList();
+
+    HashMap* map = (HashMap*)list -> value;
+    int j = 0;
+    for(int i = 0; i < map -> capacity; i++){
+        KVLinklett* current = map->values[i]->first;
+        while(current != NULL){
+            VarRawSet(keysList, VarNewNumber(j++), current->key);
+            current = current->next;
+        }
+    }
+
+    Var* func = VarNewFunction(_listIter);
+    VarFunction* funcObj = (VarFunction*)func -> value;
+    funcObj -> scope = VarNewList();
+    VarRawSet(funcObj -> scope, VarNewString("keys"), keysList);
+    VarRawSet(funcObj -> scope, VarNewString("index"), VarNewNumber(0));
+    return func;
+}
+
+
 void PopulateListMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(ListToString));
     VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(ListToString));
+
+    VarRawSet(metatable, VarNewString("iter"), VarNewFunction(ListIterator));
 }
 
 #endif

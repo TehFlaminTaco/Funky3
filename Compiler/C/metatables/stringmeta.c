@@ -97,15 +97,15 @@ Var* StringToCode(Var* scope, Var* args){
 }
 
 Var* _stringIter(Var* scope, Var* args){
-    DebugPrint("================== _stringIter\n");
+    DebugPrint("_stringIter\n");
     Var* str = VarRawGet(scope, VarNewString("str"));
     Var* index = VarRawGet(scope, VarNewString("index"));
     if(str -> type != VAR_STRING){
-        DebugPrint("================== _stringIter: str is not a string\n");
+        DebugPrint("_stringIter: str is not a string\n");
         return &UNDEFINED;
     }
     if(index -> type != VAR_NUMBER){
-        DebugPrint("================== _stringIter: index is not a number\n");
+        DebugPrint("_stringIter: index is not a number\n");
         return &UNDEFINED;
     }
     char* s = str -> value;
@@ -113,17 +113,17 @@ Var* _stringIter(Var* scope, Var* args){
     memcpy(&j, &index -> value, sizeof(double));
     int i = (int)j;
     if(s[i] == '\0'){
-        DebugPrint("================== _stringIter: end\n");
+        DebugPrint("_stringIter: end\n");
         return &UNDEFINED;
     }
     char* oneLetter = calloc(2, sizeof(char));
     oneLetter[0] = s[i];
     oneLetter[1] = '\0';
-    DebugPrint("================== _stringIter: %s\n", oneLetter);
+    DebugPrint("_stringIter: %s\n", oneLetter);
     Var* result = VarNewString(oneLetter);
     free(oneLetter);
     VarRawSet(scope, VarNewString("index"), VarNewNumber(i + 1));
-    DebugPrint("================== _stringIter: Sent\n");
+    DebugPrint("_stringIter: Sent\n");
     return result;
 }
 
