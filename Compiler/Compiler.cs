@@ -46,8 +46,8 @@ public static class Compiler
             }
 
             Directory.CreateDirectory(Path.Combine(folder, "output"));
-            File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -o output/funky3.js");
-            ProcessStartInfo compilerStart = new("cmd.exe", "/c build.bat");
+            File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -w -fweb -o output/funky3.js");
+            ProcessStartInfo compilerStart = new("source", "build.sh");
             compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
             compilerStart.UseShellExecute = false;
             compilerStart.RedirectStandardOutput = true;
