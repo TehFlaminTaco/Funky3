@@ -108,6 +108,7 @@ public static class Compiler
 
     public static void Compile(string sourceCode, StreamWriter bodyOutput, StreamWriter headerOutput){
         string preprocessedCode = Preprocessor.Process(sourceCode);
+        Console.WriteLine(preprocessedCode);
         CurrentCode = preprocessedCode;
         var tokens = Tokenizer.Tokenize(preprocessedCode);
 
