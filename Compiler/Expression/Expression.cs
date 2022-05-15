@@ -82,9 +82,11 @@ public abstract class Expression {
                             return RightParse(function, tokens);
                         }
                         // Then, try an unpack
-                        var unpack = UnpackVariable.TryParse(tokens, index);
-                        if(unpack.Item1 != null) {
-                            return RightParse(unpack, tokens);
+                        if(!IsBlocked<UnpackVariable>()){
+                            var unpack = UnpackVariable.TryParse(tokens, index);
+                            if(unpack.Item1 != null) {
+                                return RightParse(unpack, tokens);
+                            }
                         }
                         // Otherwise, try a parenthesized expression
                         return RightParse(Parentheses.TryParse(tokens, index), tokens);
