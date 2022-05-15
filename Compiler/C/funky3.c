@@ -53,9 +53,9 @@ int main(int argc, char** argv){
     DebugPrint("B\n");
 
 
-    GarbageCollect();
+    //GarbageCollect();
     Funky3Code(scope);
-    GarbageCollect();
+    //GarbageCollect();
     
     return 0;
 }

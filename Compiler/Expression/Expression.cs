@@ -95,6 +95,8 @@ public abstract class Expression {
                         return RightParse(ListLiteral.TryParse(tokens, index), tokens);
                     case "!": case "+": case "-": case "~": case "#":
                         return RightParse(Math.TryParse(tokens, index), tokens);
+                    case "@":
+                        return RightParse(DeOperator.TryParse(tokens, index), tokens);
                     default:    return (null, index);
                 }
             default:

@@ -1,35 +1,21 @@
-$$ The most simple function
-function HelloWorld(){
-    print("Hello World!");
-}
-HelloWorld();
-print();
+simple = @print("HELLO, WORLD!");
 
-$$ Functions also return themselves as variables
-AlsoHelloWorld = function HelloWorld2(){
-    print("Hi, World!");
-}
-HelloWorld2();
-AlsoHelloWorld();
-print();
+simple();
 
-$$ Functions may also not be named.
-(function(){
-    print("Anonymouse Function!")
-})();
-print()
+unaryOnly = @!;
 
-$$ Functions may use the Arrow Format
-var hw = (x, y)=>print(x,y)
-hw("Hello,","World!")
-hw = x=>print(x);
-hw("Hello!!!")
-hw = ()=>print("WORLD!);
-hw();
+print(unaryOnly(1))
+print(unaryOnly(0))
+print(unaryOnly(1,2))
 
-$$ Arguments may have defaults, or be splatted
-function NamedAndSplat(a = 1, theRest...){
-    print(a, theRest)
-}
-NamedAndSplat() $$ "1, []"
-NamedAndSplat(2, 3, 4) $$ "2, [3, 4]"
+binaryOnly = @*;
+
+print(binaryOnly(3,2))
+print(binaryOnly(1))
+
+both = @+;
+
+print(both(1,2))
+print(both(1))
+
+print(+"13.2")

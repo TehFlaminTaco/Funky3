@@ -170,7 +170,8 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet: old value is %p\n", oldValue);
     if(oldValue != NULL && oldValue->referencedBy != NULL){
         DebugPrint("VarRawSet: removing old value from referencedby list\n");
-        LinkedListRemoveByValue(oldValue->referencedBy, table);
+        //LinkedListRemoveByValue(oldValue->referencedBy, table);
+        VarFreeLater(oldValue);
     }
     // Add to the referencedby list
     DebugPrint("VarRawSet: adding new value to referencedby list\n");
@@ -186,7 +187,8 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     if(!ISUNDEFINED(oldKey)){
         DebugPrint("VarRawSet: removing old key from referencedby list\n");
         if(oldKey -> referencedBy != NULL){
-            LinkedListRemoveByValue(oldKey->referencedBy, table);
+            //LinkedListRemoveByValue(oldKey->referencedBy, table);
+            VarFreeLater(oldKey);
         }
     }
 

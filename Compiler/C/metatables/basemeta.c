@@ -58,12 +58,21 @@ Var* BaseConcat(Var* scope, Var* args){
     return resultVar;
 }
 
+Var* BaseUnp(Var* scope, Var* args){
+    Var* left = ArgVarGet(args, 0, "value");
+    if(ISUNDEFINED(left)){
+        return &NIL;
+    }
+    return left;
+}
+
 void PopulateBaseMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("eq"), VarNewFunction(BaseEq));
     VarRawSet(metatable, VarNewString("not"), VarNewFunction(BaseNot));
     VarRawSet(metatable, VarNewString("ge"), VarNewFunction(BaseGe));
     VarRawSet(metatable, VarNewString("le"), VarNewFunction(BaseLe));
     VarRawSet(metatable, VarNewString("concat"), VarNewFunction(BaseConcat));
+    VarRawSet(metatable, VarNewString("unp"), VarNewFunction(BaseUnp));
 }
 
 #endif
