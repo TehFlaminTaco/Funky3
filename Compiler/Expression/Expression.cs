@@ -88,6 +88,9 @@ public abstract class Expression {
                         }
                         // Otherwise, try a parenthesized expression
                         return RightParse(Parentheses.TryParse(tokens, index), tokens);
+                    case "[":
+                        // List literal
+                        return RightParse(ListLiteral.TryParse(tokens, index), tokens);
                     case "!": case "+": case "-": case "~": case "#":
                         return RightParse(Math.TryParse(tokens, index), tokens);
                     default:    return (null, index);
