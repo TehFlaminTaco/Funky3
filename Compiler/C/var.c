@@ -472,6 +472,61 @@ Var* VarListCopyLShifted(Var* list, int shift){
     return newList;
 }
 
+// Copy all of source into destination. If the key is an integer, offset it by offset.
+// Any integer keys after an undefined gap, or less than 0, are ignored.
+// Afterwards, increment offset by the largest integer copied.
+Var* VarCopyListIntoOffset(Var* source, Var* destination, int* offset){
+    DebugPrint("VarCopyListIntoOffset\n");
+    if(source->type != VAR_LIST){
+        DebugPrint("VarCopyListIntoOffset: not a list\n");
+        return &NIL;
+    }
+    if(destination->type != VAR_LIST){
+        DebugPrint("VarCopyListIntoOffset: not a list\n");
+        return &NIL;
+    }
+    int highestValue = -1;
+    while(!ISUNDEFINED(VarRawGet(source, VarNewNumber(highestValue+1)))){
+        highestValue++;
+    }
+    DebugPrint("VarCopyListIntoOffset: highest value is %i\n", highestValue);
+    HashMap* map = source -> value;
+    HashMap* newMap = destination -> value;
+
+    // Copy all values over
+    for(int i=0; i < map -> capacity; i++){
+        KVLinklett* current = map->values[i]->first;
+        while(current != NULL){
+            if(current->key -> type == VAR_NUMBER){
+                // If it's an integer, offset it
+                double j;
+                memcpy(&j, &current->key->value, sizeof(double));
+                if(fmod(j,1) < 0.00001){
+                    if (j < 0 || j > highestValue){
+                        current = current->next;
+                        continue;
+                    }
+                    j = j + *offset;
+                    DoReferenceBy(current->key, destination);
+                    DoReferenceBy(current->var, destination);
+                    HashMapSet(newMap, VarNewNumber(j), current->var);
+                }else{
+                    DoReferenceBy(current->key, destination);
+                    DoReferenceBy(current->var, destination);
+                    HashMapSet(newMap, current->key, current->var);
+                }
+            }else{
+                DoReferenceBy(current->key, destination);
+                DoReferenceBy(current->var, destination);
+                HashMapSet(newMap, current->key, current->var);
+            }
+            current = current->next;
+        }
+    }
+    *offset += highestValue+1;
+    return destination;
+}
+
 /*
 function curry(method, a){
     return b...=>{
