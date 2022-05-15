@@ -116,6 +116,10 @@ public class Math : Expression {
             string expressionBody = Right!.GenerateInline(header, out string expressionHolder);
             if(!String.IsNullOrEmpty(expressionBody)) {
                 sb.Append(Tabbed(expressionBody));
+            }else{
+                var tempHolder = UniqueValueName("value");
+                sb.AppendLine($"\tVar* {tempHolder} = {expressionHolder};");
+                expressionHolder = tempHolder;
             }
             string metamethodHolder = $"VarGetMeta({expressionHolder}, \"{UnaryOperator.OperatorMetamethods[OperatorUnary.Operator]}\")";
             string argsHolder = UniqueValueName("args");

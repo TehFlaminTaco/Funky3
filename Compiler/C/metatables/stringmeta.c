@@ -140,11 +140,24 @@ Var* StringIterator(Var* scope, Var* args){
     return func;
 }
 
+// Convert a string to a number.
+Var* StringUnp(Var* scope, Var* args){
+    printf("UNARY PLUS!\n");
+    Var* string = ArgVarGet(args, 0, "value");
+    if(string -> type != VAR_STRING){
+        printf(":(\n");
+        return &NIL;
+    }
+    printf("%f\n", atof(string -> value));
+    return VarNewNumber(atof(string -> value));
+}
+
 
 void PopulateStringMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tocode"), VarNewFunction(StringToCode));
     VarRawSet(metatable, VarNewString("add"), VarNewFunction(BaseConcat));
     VarRawSet(metatable, VarNewString("iter"), VarNewFunction(StringIterator));
+    VarRawSet(metatable, VarNewString("unp"), VarNewFunction(StringUnp));
 }
 
 #endif

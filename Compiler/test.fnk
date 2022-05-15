@@ -1,27 +1,21 @@
-function List(a...){
-    return a;
-}
+simple = @print("HELLO, WORLD!");
 
-var l = List(1, 2, 3)
+simple();
 
-l.x = "Hello"
-l.y = "World"
-print("L:")
-for (k,v) in pairs(l){
-    print(k, v)
-};
+unaryOnly = @!;
 
-j = List();
-(j[0], j[1]) = l
+print(unaryOnly(1))
+print(unaryOnly(0))
+print(unaryOnly(1,2))
 
-print("J1:")
-for (k,v) in pairs(j){
-    print(k, v)
-};
+binaryOnly = @*;
 
-(j[4], j..., j[0]) = l;
+print(binaryOnly(3,2))
+print(binaryOnly(1))
 
-print("J2:")
-for (k,v) in pairs(j){
-    print(k, v)
-};
+both = @+;
+
+print(both(1,2))
+print(both(1))
+
+print(+"13.2")

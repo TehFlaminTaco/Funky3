@@ -152,7 +152,7 @@ public class Function : Expression {
     public override string GenerateInline(StreamWriter header, out string stackName) {
         // Write the method to the header.
         string methodName = UniqueValueName("method");
-        StringBuilder headerSB = new StringBuilder();
+        StringBuilder headerSB = new();
         headerSB.AppendLine("// Function Definition");
         headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
         headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
@@ -191,15 +191,14 @@ public class Function : Expression {
                 headerSB.AppendLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
             }
         }
-        string retVal;
-        string body = Body.GenerateInline(header, out retVal);
-        if(!String.IsNullOrEmpty(body)) {
+        string body = Body.GenerateInline(header, out string retVal);
+        if (!String.IsNullOrEmpty(body)) {
             headerSB.Append(Tabbed(body));
         }
         headerSB.AppendLine($"\treturn {retVal};");
         headerSB.AppendLine($"}}");
         header.Write(headerSB.ToString());
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.Append('\"');
         foreach(char c in Code) {
             switch(c){
