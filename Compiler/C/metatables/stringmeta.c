@@ -142,13 +142,10 @@ Var* StringIterator(Var* scope, Var* args){
 
 // Convert a string to a number.
 Var* StringUnp(Var* scope, Var* args){
-    printf("UNARY PLUS!\n");
     Var* string = ArgVarGet(args, 0, "value");
     if(string -> type != VAR_STRING){
-        printf(":(\n");
         return &NIL;
     }
-    printf("%f\n", atof(string -> value));
     return VarNewNumber(atof(string -> value));
 }
 
