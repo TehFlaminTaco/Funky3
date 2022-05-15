@@ -1,0 +1,53 @@
+$$ The most simple function
+function HelloWorld(){
+    print("Hello World!");
+}
+HelloWorld();
+print();
+
+$$ Functions also return themselves as variables
+AlsoHelloWorld = function HelloWorld2(){
+    print("Hi, World!");
+}
+HelloWorld2();
+AlsoHelloWorld();
+print();
+
+$$ Functions may alternatively not be named.
+(function(){
+    print("Anonymouse Function!")
+})();
+print()
+
+$$ Functions may use the Arrow Format
+var hw = (x, y)=>print(x,y)
+hw("Hello,","World!")
+hw = x=>print(x);
+hw("Hello!!!")
+hw = ()=>print("WORLD!");
+hw();
+print();
+
+$$ Arguments may have defaults, or be splatted
+function NamedAndSplat(a = 1, theRest...){
+    print(a, theRest)
+}
+NamedAndSplat() $$ "1, []"
+NamedAndSplat(2, 3, 4) $$ "2, [3, 4]"
+print();
+
+$$ Functions may be stored as members of a list.
+var list = [];
+function list.helloWorld(){
+    print("Hello World!");
+}
+list.helloWorld();
+print();
+
+$$ Functions may also be "curried"
+function list:whatsMyX(x){
+    print(this.x);
+}
+list.x = "Sneaky!";
+list:whatsMyX();
+print();
