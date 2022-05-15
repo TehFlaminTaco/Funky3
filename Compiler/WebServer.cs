@@ -23,6 +23,12 @@ public class WebServer {
             var response = context.Response;
             // Get the request URL
             var url = request.Url;
+            if(url == null){
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Close();
+                continue;
+            }
+
             // Get the cookies
             var cookies = request.Cookies;
             string session;
@@ -59,6 +65,13 @@ public class WebServer {
                 continue;
             }
 
+            if(url.LocalPath == "/"){
+                // Redirect to index.html
+                response.Redirect("/index.html");
+                response.Close();
+                continue;
+            }
+
             // Try to find the file in the Manifest
             var file = Assembly.GetExecutingAssembly().GetManifestResourceNames().FirstOrDefault(c=>c.EndsWith(url.LocalPath.Replace('/', '.')));
             if(file == null){
@@ -71,6 +84,14 @@ public class WebServer {
             }
             // Get the file
             using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(file)){
+                if(stream == null){
+                    // Not found. Not sure this is possible..?
+                    Console.WriteLine("404: " + url.LocalPath);
+                    response.StatusCode = 404;
+                    response.OutputStream.Write(Encoding.UTF8.GetBytes("404 Not Found"));
+                    response.Close();
+                    continue;
+                }
                 // Get the file length
                 var length = stream.Length;
                 // Read the file

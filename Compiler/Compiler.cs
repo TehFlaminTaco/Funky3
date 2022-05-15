@@ -46,13 +46,15 @@ public static class Compiler
             }
 
             Directory.CreateDirectory(Path.Combine(folder, "output"));
+            // TODO: Check if this is windows or linux and run accordingly.
             File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -w -fweb -o output/funky3.js");
-            ProcessStartInfo compilerStart = new("bash", "build.sh");
-            compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
-            compilerStart.UseShellExecute = false;
-            compilerStart.RedirectStandardOutput = true;
-            compilerStart.RedirectStandardError = true;
-            compilerStart.CreateNoWindow = true;
+            ProcessStartInfo compilerStart = new("bash", "build.sh"){
+                WorkingDirectory = folder + Path.DirectorySeparatorChar,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
             Process compiler = Process.Start(compilerStart)!;
             compiler.WaitForExit();
             if(compiler.ExitCode != 0){
