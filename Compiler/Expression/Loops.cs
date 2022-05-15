@@ -43,7 +43,7 @@ public class While : Loop {
         BreakValues.Push((labelEnd, result));
         sb.AppendLine($"// While");
         sb.AppendLine($"\tVar* {result} = &NIL;");
-        sb.AppendLine($"\t{labelStart}:");
+        sb.AppendLine($"\t{labelStart}:;");
         // First condition iteration
         string conditionBody = Condition.GenerateInline(header, out string conditionHolder);
         if(!String.IsNullOrEmpty(conditionBody)) {
@@ -59,7 +59,7 @@ public class While : Loop {
         }
         sb.AppendLine($"\t{result} = {bodyHolder};");
         sb.AppendLine($"\tgoto {labelStart};");
-        sb.AppendLine($"\t{labelEnd}:");
+        sb.AppendLine($"\t{labelEnd}:;");
         BreakValues.Pop();
         stackName = result;
         return sb.ToString();
@@ -141,7 +141,7 @@ public class For : Loop {
             }
             sb.AppendLine($"\t_ = {initializerHolder};");
         }
-        sb.AppendLine($"\t{labelStart}:");
+        sb.AppendLine($"\t{labelStart}:;");
         // Condition
         if(Condition != null) {
             string conditionBody = Condition.GenerateInline(header, out string conditionHolder);
@@ -167,7 +167,7 @@ public class For : Loop {
             sb.AppendLine($"\t_ = {incrementHolder};");
         }
         sb.AppendLine($"\tgoto {labelStart};");
-        sb.AppendLine($"\t{labelEnd}:");
+        sb.AppendLine($"\t{labelEnd}:;");
         BreakValues.Pop();
         stackName = result;
         return sb.ToString();
@@ -264,7 +264,7 @@ public class ForIn : Loop {
         sb.AppendLine($"\t\tgoto {labelEnd};");
         sb.AppendLine($"\t}}");
 
-        sb.AppendLine($"\t{labelStart}:");
+        sb.AppendLine($"\t{labelStart}:;");
         // Get the next item
         sb.AppendLine($"\t{argHolder} = VarNewList();");
         sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");
@@ -285,7 +285,7 @@ public class ForIn : Loop {
         sb.AppendLine($"\t\t{result} = {bodyHolder};");
         sb.AppendLine($"\t\tgoto {labelStart};");
         sb.AppendLine($"\t}}");
-        sb.AppendLine($"\t{labelEnd}:");
+        sb.AppendLine($"\t{labelEnd}:;");
         BreakValues.Pop();
         stackName = result;
         return sb.ToString();
