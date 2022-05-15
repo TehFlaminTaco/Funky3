@@ -13,7 +13,7 @@ HelloWorld2();
 AlsoHelloWorld();
 print();
 
-$$ Functions may also not be named.
+$$ Functions may alternatively not be named.
 (function(){
     print("Anonymouse Function!")
 })();
@@ -24,8 +24,9 @@ var hw = (x, y)=>print(x,y)
 hw("Hello,","World!")
 hw = x=>print(x);
 hw("Hello!!!")
-hw = ()=>print("WORLD!);
+hw = ()=>print("WORLD!");
 hw();
+print();
 
 $$ Arguments may have defaults, or be splatted
 function NamedAndSplat(a = 1, theRest...){
@@ -33,3 +34,20 @@ function NamedAndSplat(a = 1, theRest...){
 }
 NamedAndSplat() $$ "1, []"
 NamedAndSplat(2, 3, 4) $$ "2, [3, 4]"
+print();
+
+$$ Functions may be stored as members of a list.
+var list = [];
+function list.helloWorld(){
+    print("Hello World!");
+}
+list.helloWorld();
+print();
+
+$$ Functions may also be "curried"
+function list:whatsMyX(x){
+    print(this.x);
+}
+list.x = "Sneaky!";
+list:whatsMyX();
+print();

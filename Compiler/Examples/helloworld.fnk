@@ -1,1 +1,2 @@
+$$ Print "Hello, World!" to the console, followed by a newline.
 print("Hello, World!");
