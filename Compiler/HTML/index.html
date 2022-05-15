@@ -2,11 +2,25 @@
     <head>
         <meta charset="utf-8">
         <title>Funky3!!!</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.0/ace.min.js"></script>
         <link rel="stylesheet" href="style.css">
         <script>
             window.addEventListener("load", ev => {
+                console.log("Loaded!");
                 window.editor = ace.edit("code");
+
+                {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("GET", "/currentCode.txt", true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.addEventListener("load", ev => {
+                        console.log("Loaded code!");
+                        window.editor.setValue(xhr.responseText);
+                    });
+                    xhr.send();
+                }
+
                 document.getElementById("run").addEventListener("click", ev => {
                     let code = editor.getValue();
                     let xhr = new XMLHttpRequest();
@@ -14,16 +28,93 @@
                     xhr.setRequestHeader("Content-Type", "application/json");
                     xhr.addEventListener("load", ev => {
                         // Reload the iframe.
+                        document.getElementById("preCompiled").src += "";
+                        document.getElementById("compiled").src += "";
+                        document.getElementById("error").src += "";
                         document.getElementById("output").src += "";
                     });
                     xhr.send(code);
                 });
+
+                document.getElementById("save").addEventListener("click", ev => {
+                    let code = editor.getValue();
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/save", true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.addEventListener("load", ev => {
+                        if(xhr.code == 200) {
+                            console.log("Saved!");
+                            document.location = `/index.html?file=${xhr.responseText}`;
+                        }
+                    });
+                    xhr.send(code);
+                });
+
+                var buttons = $(".tabButton");
+                var tabBodies = $(".tabBody");
+                for (var i=0; i < buttons.length; i++){
+                    let buttonID = i;
+                    buttons[i].addEventListener("click", ev => {
+                        // Disable all buttons and tabs
+                        for (var j=0; j < buttons.length; j++){
+                            if(j == buttonID){
+                                buttons[j].classList.add("active");
+                                tabBodies[j].classList.add("active");
+                            }else{
+                                buttons[j].classList.remove("active");
+                                tabBodies[j].classList.remove("active");
+                            }
+                        }
+                    });
+                }
+
+                var examples = $(".example");
+                for (var i=0; i < examples.length; i++){
+                    let exampleID = examples[i].getAttribute("file");
+                    examples[i].addEventListener("click", ev => {
+                        let xhr = new XMLHttpRequest();
+                        xhr.open("GET", "/getExample?file=" + exampleID, true);
+                        xhr.addEventListener("load", ev => {
+                            window.location = "/index.html";
+                        });
+                        xhr.send();
+                    });
+                }
             });
         </script>
     </head>
     <body>
         <textarea id="code"></textarea> 
-        <iframe id="output" src="funky3.html" width="50%" height="100%"></iframe>
+        <div id="tabHolder">
+            <div id="tabButtons">
+                <button id="tabOutputButton" class="tabButton active">Output</button>
+                <button id="tabPreCompiledButton" class="tabButton">Pre-Compiled</button>
+                <button id="tabCompiledButton" class="tabButton">Compiled</button>
+                <button id="tabErrorButton" class="tabButton">Error</button>
+                <button id="tabSaveLoadButton" class="tabButton">Save / Examples</button>
+            </div>
+            <div id="tabBodies">
+                <div id="tabOutput" class="tabBody active">
+                    <iframe id="output" src="funky3.html" width="50%" height="100%"></iframe>
+                </div>
+                <div id="tabPreCompiled" class="tabBody">
+                    <iframe id="preCompiled" src="precompiled.html" width="50%" height="100%"></iframe>
+                </div>
+                <div id="tabCompiled" class="tabBody">
+                    <iframe id="compiled" src="compiled.html" width="50%" height="100%"></iframe>
+                </div>
+                <div id="tabError" class="tabBody">
+                    <iframe id="error" src="error.html" width="50%" height="100%"></iframe>
+                </div>
+                <div id="tabSaveLoad" class="tabBody">
+                    <button id="save">Save</button>
+                    <hr>
+                    <h2>Examples</h2>
+                    <p>These examples help demonstrate how Funky 3 handles.<br>Clicking any of these buttons <b>WILL</b> make you lose your progress. Save first is you really don't want to lose it.</p>
+                    <button class="example" file="helloworld.fnk">Hello, World!</button>
+                </div>
+            </div>
+        </div>
         <button id="run">Run</button>
     </body>
 </html>

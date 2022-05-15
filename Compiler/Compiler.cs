@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Net;
+using System.Reflection;
 using System;
 using System.Diagnostics;
 
@@ -22,7 +23,7 @@ public static class Compiler
                     targetFile = string.Concat(targetFile.AsSpan(0, lastSlash), ".", targetFile.AsSpan(lastSlash + 1));
                 }
                 var file = Path.Combine(folder, targetFile);
-                Console.WriteLine(file);
+                //Console.WriteLine(file);
                 using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(s)){
                     using(var fileStream = File.Create(file)){
                         stream!.CopyTo(fileStream);
@@ -38,28 +39,34 @@ public static class Compiler
             
             // And also the header.c
             using (StreamReader reader = new StreamReader(Path.Combine(folder, "header.c"))) {
-                Console.WriteLine(reader.ReadToEnd());
+                WebServer.CompiledHeader[WebServer.CurrentSession] = (reader.ReadToEnd(), DateTime.Now);
             }
             // For debugging, print the main.c
             using (StreamReader reader = new StreamReader(Path.Combine(folder, "main.c"))) {
-                Console.WriteLine(reader.ReadToEnd());
+                WebServer.CompiledBody[WebServer.CurrentSession] = (reader.ReadToEnd(), DateTime.Now);
             }
 
             Directory.CreateDirectory(Path.Combine(folder, "output"));
             // TODO: Check if this is windows or linux and run accordingly.
-            File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -w -fweb -o output/funky3.js");
-            ProcessStartInfo compilerStart = new("bash", "build.sh"){
-                WorkingDirectory = folder + Path.DirectorySeparatorChar,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
+            ProcessStartInfo compilerStart;
+            // If Windows
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -o output/funky3.js");
+                compilerStart = new("cmd", "/c build.bat");
+            } else {
+                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -w -fweb -o output/funky3.js");
+                compilerStart = new("bash", "build.sh");
+            }
+            compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
+            compilerStart.UseShellExecute = false;
+            compilerStart.RedirectStandardOutput = true;
+            compilerStart.RedirectStandardError = true;
+            compilerStart.CreateNoWindow = true;
             Process compiler = Process.Start(compilerStart)!;
             compiler.WaitForExit();
             if(compiler.ExitCode != 0){
-                Console.WriteLine(compiler.StandardOutput.ReadToEnd());
-                Console.WriteLine(compiler.StandardError.ReadToEnd());
+                WebServer.WriteError(compiler.StandardOutput.ReadToEnd());
+                WebServer.WriteError(compiler.StandardError.ReadToEnd());
                 throw new Exception("Compilation failed");
             }
 
@@ -69,7 +76,10 @@ public static class Compiler
             }
             Directory.CreateDirectory("Funky3Compiled");
             CopyDirectory(Path.Combine(folder, "output"), Path.Combine("Funky3Compiled"), true);
-            Console.WriteLine("Compilation successful");
+            WebServer.CompiledWasm[WebServer.CurrentSession] = (File.ReadAllBytes(Path.Combine(folder, "output", "funky3.wasm")), DateTime.Now);
+            WebServer.WriteError("Compilation successful");
+        }catch(Exception e){
+            WebServer.WriteError(e.ToString());
         }finally{
             Directory.Delete(temp, true);
         }
@@ -110,6 +120,7 @@ public static class Compiler
 
     public static void Compile(string sourceCode, StreamWriter bodyOutput, StreamWriter headerOutput){
         string preprocessedCode = Preprocessor.Process(sourceCode);
+        WebServer.PreCompiled[WebServer.CurrentSession] =  (preprocessedCode, DateTime.Now);
         CurrentCode = preprocessedCode;
         var tokens = Tokenizer.Tokenize(preprocessedCode);
 

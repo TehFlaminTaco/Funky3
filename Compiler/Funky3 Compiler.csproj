@@ -12,6 +12,7 @@
     <EmbeddedResource Include="C/*" />
     <EmbeddedResource Include="C/metatables/*" />
     <EmbeddedResource Include="HTML/*" />
+    <EmbeddedResource Include="Examples/*" />
   </ItemGroup>
 
 </Project>
