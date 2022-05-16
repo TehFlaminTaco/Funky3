@@ -1,7 +1,7 @@
 using System.Text;
 // v++, v--
 // ++v, --v
-public class Crementor : Expression {
+public class Crementor : Expression, ILeftProvider, IRightProvider {
     public Variable Variable {get; set;}
     public bool IsDecrement {get; set;}
     public bool IsPrefix {get; set;}
@@ -114,5 +114,45 @@ public class Crementor : Expression {
             sb.AppendLine($"\t_ = {setterHolder};");
         }
         return sb.ToString();
+    }
+
+    public Expression? GetLeft(){
+        if(IsPrefix){
+            return null;
+        }
+        return Variable;
+    }
+
+    public void SetLeft(Expression? e){
+        if(IsPrefix){
+            return;
+        }
+        Variable = (e as Variable)!;
+    }
+
+    public int GetPrecedence(){
+        return IExpressionProvider.CALL_PRECEDENCE;
+    }
+
+    public Expression? GetRight(){
+        if(IsPrefix){
+            return Variable;
+        }
+        return null;
+    }
+
+    public void SetRight(Expression? e){
+        if(IsPrefix){
+            Variable = (e as Variable)!;
+        }
+        return;
+    }
+
+    bool ILeftProvider.AcceptLeft(Expression? e){
+        return e is Variable;
+    }
+
+    bool IRightProvider.AcceptRight(Expression? e){
+        return e is Variable;
     }
 }

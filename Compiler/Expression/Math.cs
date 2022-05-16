@@ -1,5 +1,5 @@
 using System.Text;
-public class Math : Expression {
+public class Math : Expression, IRightProvider, ILeftProvider {
     public Expression? Left { get; set; }
     public Expression Right { get; set; }
     public BinaryOperator? OperatorBinary { get; set; }
@@ -130,5 +130,33 @@ public class Math : Expression {
         }
         stackName = "&NIL";
         return "";  
+    }
+
+    public Expression? GetRight(){
+        return Right;
+    }
+
+    public void SetRight(Expression? e){
+        Right = e!;
+    }
+
+    public int GetPrecedence(){
+        if(OperatorUnary is null){
+            return BinaryOperator.OperatorPrecedences[OperatorBinary!.Operator];
+        }else{
+            return IExpressionProvider.CALL_PRECEDENCE - 1;
+        }
+    }
+
+    bool IExpressionProvider.IsRightLeftAssociative(){
+        return (OperatorBinary?.Operator??"") == "^";
+    }
+
+    public Expression? GetLeft(){
+        return Left;
+    }
+
+    public void SetLeft(Expression? e){
+        Left = e;
     }
 }

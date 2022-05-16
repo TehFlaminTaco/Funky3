@@ -1,14 +1,16 @@
 using System.Text;
 
-public class If : Expression {
+public class If : Expression, ILeftProvider, IRightProvider {
     public Expression Condition { get; set; }
     public Expression Then { get; set; }
     public Expression? Else { get; set; }
+    public bool IsTernary { get; set; }
 
-    public If(Expression condition, Expression then, Expression? @else = null) {
+    public If(bool isTernary, Expression condition, Expression then, Expression? @else = null) {
         Condition = condition;
         Then = then;
         Else = @else;
+        IsTernary = isTernary;
     }
 
     public static (If?, int) TryParse(List<Token> tokens, int index) {
@@ -31,7 +33,7 @@ public class If : Expression {
         i = then.index;
 
         if(tokens[i].Type != TokenType.Keyword || tokens[i].Value != "else") {
-            return (new If(condition.expression, then.expression), i);
+            return (new If(false, condition.expression, then.expression), i);
         }
         Parser.RegisterFurthest(i);
         i++;
@@ -42,7 +44,7 @@ public class If : Expression {
         }
         i = @else.index;
 
-        return (new If(condition.expression, then.expression, @else.expression), i);
+        return (new If(false, condition.expression, then.expression, @else.expression), i);
     }
 
     // Ternary statement. a ? b : c
@@ -66,7 +68,7 @@ public class If : Expression {
         i = then.index;
 
         if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ":") {
-            return (new If(left, then.expression), i);
+            return (new If(true, left, then.expression), i);
         }
         Parser.RegisterFurthest(i);
         i++;
@@ -77,7 +79,7 @@ public class If : Expression {
         }
         i = @else.index;
 
-        return (new If(left, then.expression, @else.expression), i);
+        return (new If(true, left, then.expression, @else.expression), i);
     }
         
     public override string GenerateInline(StreamWriter header, out string stackName){
@@ -106,5 +108,31 @@ public class If : Expression {
         }
         sb.AppendLine($"\t}}");
         return sb.ToString();
+    }
+
+    public Expression? GetLeft(){
+        return IsTernary ? Condition : null;
+    }
+
+    public void SetLeft(Expression? e){
+        if(IsTernary) Condition = e!;
+    }
+
+    public int GetPrecedence(){
+        return BinaryOperator.MATHMINPRECEDENCE + 8;
+    }
+
+    public Expression? GetRight(){
+        return IsTernary ? (Else ?? Then) : null;
+    }
+
+    public void SetRight(Expression? e){
+        if(IsTernary) {
+            if(Else == null) {
+                Then = e!;
+            } else {
+                Else = e!;
+            }
+        }
     }
 }

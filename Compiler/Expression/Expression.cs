@@ -122,6 +122,10 @@ public abstract class Expression {
         if(result.index >= tokens.Count)
             return left;
 
+        if(result.expression is IExpressionProvider iep){
+            result.expression = IExpressionProvider.BalanceEither(iep);
+        }
+
         switch (tokens[result.index].Type) {
             case TokenType.Punctuation:
                 switch (tokens[result.index].Value) {

@@ -1,5 +1,5 @@
 using System.Text;
-public class Call : Expression {
+public class Call : Expression, ILeftProvider {
     public Expression Method { get; set; }
     public List<ListEntry> Arguments { get; set; }
 
@@ -97,5 +97,17 @@ public class Call : Expression {
         sb.AppendLine($"\t{retValue} = VarFunctionCall({vMethod}, {vArgs});");
         stackName = retValue;
         return sb.ToString();
+    }
+
+    public Expression? GetLeft(){
+        return Method;
+    }
+
+    public void SetLeft(Expression? e){
+        Method = e!;
+    }
+
+    public int GetPrecedence(){
+        return IExpressionProvider.CALL_PRECEDENCE;
     }
 }

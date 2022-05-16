@@ -1,5 +1,5 @@
 using System.Text;
-public class Assignment : Expression {
+public class Assignment : Expression, IRightProvider {
     public Variable Name { get; set; }
     public Expression Value { get; set; }
     public BinaryOperator? Operator { get; set; }
@@ -75,5 +75,17 @@ public class Assignment : Expression {
             sb.Append(Tabbed(valueBody));
         }
         return sb.ToString();
+    }
+
+    public Expression? GetRight(){
+        return Value;
+    }
+
+    public void SetRight(Expression? e){
+        Value = e!;
+    }
+
+    public int GetPrecedence(){
+        return IExpressionProvider.NO_PRECEDENCE;
     }
 }

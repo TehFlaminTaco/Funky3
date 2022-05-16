@@ -65,7 +65,7 @@ public class Variable : Expression {
     }
 }
 
-public class IndexVariable : Variable {
+public class IndexVariable : Variable, ILeftProvider {
     public Expression? Index { get; set; }
     public string? Identifier { get; set; }
     public Expression Value { get; set; }
@@ -235,6 +235,18 @@ public class IndexVariable : Variable {
         }else{
             throw new Exception("Invalid indexing");
         }
+    }
+
+    public Expression? GetLeft(){
+        return Value;
+    }
+
+    public void SetLeft(Expression? e){
+        Value = e!;
+    }
+
+    public int GetPrecedence(){
+        return IExpressionProvider.CALL_PRECEDENCE;
     }
 }
 
