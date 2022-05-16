@@ -87,12 +87,13 @@ int VarEquals(Var* var1, Var* var2){
     switch(var1->type){
         case VAR_NULL: // NIL
             return var1->value == var2->value;
-        case VAR_NUMBER: // double.
+        case VAR_NUMBER:{ // double.
             double a;
             double b;
             memcpy(&a, &var1->value, sizeof(double));
             memcpy(&b, &var2->value, sizeof(double));
             return fabs(a-b) < 0.00001;
+        }
         case VAR_STRING: // String
             return strcmp((char*)(intptr_t)var1->value, (char*)(intptr_t)var2->value) == 0;
             //return (char*)(intptr_t)var2->value == NULL;
