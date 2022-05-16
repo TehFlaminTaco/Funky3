@@ -1,6 +1,7 @@
 public static class Parser {
     public static int FurthestToken = 0;
     public static void Parse(List<Token> tokens, StreamWriter body, StreamWriter header) {
+        FurthestToken = 0;
         int index = 0;
         while(index < tokens.Count && tokens[index].Type != TokenType.None) {
             (Expression? expression, int index) result = Expression.TryParseAny(tokens, index);

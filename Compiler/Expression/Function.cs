@@ -174,7 +174,7 @@ public class Function : Expression {
                         headerSB.AppendLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
                     }
                 }else{
-                    headerSB.AppendLine($"\t\tVar* {argName} = VarRawGet(args, VarNewNumber({argIndex}++));");
+                    headerSB.AppendLine($"\t\tVar* {argName} = ArgVarGet(args, {argIndex}++, \"{Arguments[i].Name}\");");
                     headerSB.AppendLine($"\t\tif(ISUNDEFINED({argName})) {{");
                     if(Arguments[i].DefaultValue != null) {
                         string argOut;
