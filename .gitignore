@@ -57,7 +57,3 @@ Compiler/obj
 
 # VSCode
 .vscode
-
-# Built objects
-Compiler/savedCode
-Compiler/Funky3Compiled
