@@ -29,7 +29,7 @@ public class DeOperator : Expression
         var unaryOperator = UnaryOperator.TryParse(tokens, i);
         // Get a binary operator
         var binaryOperator = BinaryOperator.TryParse(tokens, i);
-        int start = tokens[index-1].Index;
+        int start = tokens[index].Index;
         // If we got both a unary, and a binary.
         if(binaryOperator.Item1!=null && unaryOperator.Item1 != null){
             if(binaryOperator.Item2 == unaryOperator.Item2){

@@ -89,7 +89,10 @@ public abstract class Expression {
                             }
                         }
                         // Otherwise, try a parenthesized expression
-                        return RightParse(Parentheses.TryParse(tokens, index), tokens);
+                        if(!IsBlocked(typeof(Parentheses))){
+                            return RightParse(Parentheses.TryParse(tokens, index), tokens);
+                        }
+                        return (null, index);
                     case "[":
                         // List literal
                         return RightParse(ListLiteral.TryParse(tokens, index), tokens);
@@ -167,6 +170,11 @@ public abstract class Expression {
                         if(IsBlocked<IndexVariable>())
                             return result;
                         return RightParse(IndexVariable.TryParse(result.expression, tokens, result.index), tokens, result);
+                    case "@":
+                        // Deoperator call
+                        if(IsBlocked<Call>() || IsBlocked<DeOperator>())
+                            return result;
+                        return RightParse(Call.TryParse(result.expression, tokens, result.index), tokens, result);
                     case "?":
                         // If statement, Ternary style.
                         if(IsBlocked<If>())
@@ -183,6 +191,11 @@ public abstract class Expression {
                         return RightParse(Math.TryParse(result.expression, tokens, result.index), tokens, result);
                 }
                 return result;
+            case TokenType.String:
+                // String call
+                if(IsBlocked<Call>() || IsBlocked<StringLiteral>())
+                    return result;
+                return RightParse(Call.TryParse(result.expression, tokens, result.index), tokens, result);
             default:
                 return result;
         }

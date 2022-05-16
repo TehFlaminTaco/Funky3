@@ -43,7 +43,8 @@ public class Function : Expression {
         // Try to get a Variable.
         Expression.PushBlock(new(){
             typeof(Call),
-            typeof(UnpackVariable)
+            typeof(UnpackVariable),
+            typeof(Parentheses)
         });
         var storeVariable = Expression.TryParseAny(tokens, i);
         Expression.PopBlock();

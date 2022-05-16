@@ -1,21 +1,7 @@
-simple = @print("HELLO, WORLD!");
+doWithOneTwo = function(f){
+    return f(1, 2)
+}
 
-simple();
+print "Hello, World!"
 
-unaryOnly = @!;
-
-print(unaryOnly(1))
-print(unaryOnly(0))
-print(unaryOnly(1,2))
-
-binaryOnly = @*;
-
-print(binaryOnly(3,2))
-print(binaryOnly(1))
-
-both = @+;
-
-print(both(1,2))
-print(both(1))
-
-print(+"13.2")
+print(doWithOneTwo@+)
