@@ -1,5 +1,5 @@
 using System.Text;
-public class DeOperator : Expression
+public class DeOperator : Expression, IRightProvider
 {
     public BinaryOperator? BinaryOp {get; set;}
     public UnaryOperator? UnaryOp {get; set;}
@@ -166,5 +166,17 @@ public class DeOperator : Expression
             return "";
         }
         throw new Exception("Could not generate inline code for deoperator.");
+    }
+
+    public Expression? GetRight(){
+        return Expr;
+    }
+
+    public void SetRight(Expression? e){
+        Expr = e;
+    }
+
+    public int GetPrecedence(){
+        return IExpressionProvider.NO_PRECEDENCE;
     }
 }

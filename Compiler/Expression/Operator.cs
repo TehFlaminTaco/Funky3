@@ -5,7 +5,7 @@ public class BinaryOperator {
         Operator = operator_;
     }
 
-    public static char[] Operators = new char[] {
+    public static readonly char[] Operators = new char[] {
         '+',
         '-',
         '*',
@@ -19,7 +19,7 @@ public class BinaryOperator {
         '>',
     };
 
-    public static Dictionary<string, string> OperatorMetamethods = new() {
+    public static readonly Dictionary<string, string> OperatorMetamethods = new() {
         { "+",  "add" },
         { "-",  "sub" },
         { "*",  "mul" },
@@ -39,6 +39,34 @@ public class BinaryOperator {
         { "<=", "le" },
         { ">=", "ge" },
         { "..", "concat" },
+        { "&&", "and" },
+        { "||", "or" },
+    };
+
+
+    public const int MATHMINPRECEDENCE = 10;
+    public static readonly Dictionary<string, int> OperatorPrecedences = new(){
+        { "||", MATHMINPRECEDENCE + 0 },
+        { "&&", MATHMINPRECEDENCE + 1 },
+        { "|",  MATHMINPRECEDENCE + 2 },
+        { "~",  MATHMINPRECEDENCE + 3 },
+        { "&",  MATHMINPRECEDENCE + 4 },
+        { "==", MATHMINPRECEDENCE + 5 },
+        { "!=", MATHMINPRECEDENCE + 5 },
+        { "<",  MATHMINPRECEDENCE + 6 },
+        { ">",  MATHMINPRECEDENCE + 6 },
+        { "<=", MATHMINPRECEDENCE + 6 },
+        { ">=", MATHMINPRECEDENCE + 6 },
+        { "<<", MATHMINPRECEDENCE + 8 },
+        { ">>", MATHMINPRECEDENCE + 8 },
+        { "..", MATHMINPRECEDENCE + 9 },
+        { "+",  MATHMINPRECEDENCE + 10 },
+        { "-",  MATHMINPRECEDENCE + 10 },
+        { "*",  MATHMINPRECEDENCE + 11 },
+        { "/",  MATHMINPRECEDENCE + 11 },
+        { "//", MATHMINPRECEDENCE + 11 },
+        { "%",  MATHMINPRECEDENCE + 11 },
+        { "^",  MATHMINPRECEDENCE + 12 },
     };
 
 

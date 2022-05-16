@@ -33,7 +33,7 @@ Calls a function.
 The final bracket being excluded does not constitute a syntax error.
 Arguments may optionally be seperated by commas.
 Arguments may be "splat"ed, any number of times, by appending a `...` to the end of the argument.
-Arguments may be named with the form `name: value`.
+Arguments may be named with the form `name = value`.
 
 ## Crementor
 
@@ -48,6 +48,18 @@ Arguments may be named with the form `name: value`.
 
 **Special Notes:**\
 When the operator precedes the variable, the new value is returned. Otherwise, the old value is returned.
+
+## DeOperator
+
+**Description**\
+The DeOperator is a unary operator that turns a statement or an operator into a function.
+
+**Forms:**
+* Punctuation: `@`, Punctuation: `Operator`
+* Punctuation: `@`, Expression: `Any`
+
+**Special Notes:**\
+Operators are given precedence over statements. So `print(@!v)` is equivalent to `print(@!, v)`, rather than `print(@(!v))`. Use parentheses to override this.
 
 ## For
 
@@ -80,6 +92,10 @@ Defines a function.
 * Keyword: `function`, Expression: `Variable`?, Punctuation: `(`, Expression: `Any`*, Punctuation: `)`, Expression: `Any`
 * Expression: `Variable`, Punctuation: `=>`, Expression: `Any`
 * Punctuation: `(`, Expression: `Variable`*, Punctuation: `)`, Punctuation: `=>`, Expression: `Any`
+
+**Special Notes:**\
+Arguments may be "splat"ed, any number of times, by appending a `...` to the end of the argument.
+Arguments may be named with the form `name = value`.
 
 ## Math
 
