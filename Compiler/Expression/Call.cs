@@ -11,6 +11,15 @@ public class Call : Expression {
     public static (Call?, int) TryParse(Expression left, List<Token> tokens, int index) {
         int i = index;
         if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "(") {
+            // Try to get a String literal, or a DeOperator
+            (StringLiteral?, int) result = StringLiteral.TryParse(tokens, i);
+            if(result.Item1 != null) {
+                return (new Call(left, new List<ListEntry>(){new EntryExpression(result.Item1)}), result.Item2);
+            }
+            (DeOperator?, int) result2 = DeOperator.TryParse(tokens, i);
+            if(result2.Item1 != null) {
+                return (new Call(left, new List<ListEntry>(){new EntryExpression(result2.Item1)}), result2.Item2);
+            }
             return (null, index);
         }
         Parser.RegisterFurthest(i);
