@@ -46,6 +46,12 @@ Var* BaseConcat(Var* scope, Var* args){
             return &NIL;
         }
     }
+    Var* inverted = ArgVarGet(args, 2, "inverted");
+    if(VarTruthy(inverted)){
+        Var* t = left;
+        left = right;
+        right = t;
+    }
 
     right = VarAsString(right);
     int totalSize = strlen(left -> value) + strlen(right -> value) + 1;

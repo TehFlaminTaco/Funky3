@@ -22,29 +22,32 @@ public static class Tokenizer {
             
             // Keywords or Identifiers
             if (firstChar == '$' || char.IsLetter(firstChar) || firstChar == '_') {
-                var matchedKeywords = keywords.Where(c=>c.StartsWith(firstChar.ToString())).OrderByDescending(c=>c.Length).Where(c=>code.Substring(k).StartsWith(c));
-                if (matchedKeywords.Any()) {
-                    // Return the *longest* matched keyword
-                    int line = code[..k].Split('\n').Length;
-                    int column = k - code[..k].LastIndexOf('\n');
-                    tokens.Add(new Token(TokenType.Keyword, matchedKeywords.First(), line, column, k, matchedKeywords.First().Length));
-                    k += matchedKeywords.First().Length;
-                    continue;
-                }else if(firstChar != '$') {
+                //var matchedKeywords = keywords.Where(c=>c.StartsWith(firstChar.ToString())).OrderByDescending(c=>c.Length).Where(c=>code.Substring(k).StartsWith(c));
+                //if (matchedKeywords.Any()) {
+                //    // Return the *longest* matched keyword
+                //    int line = code[..k].Split('\n').Length;
+                //    int column = k - code[..k].LastIndexOf('\n');
+                //    tokens.Add(new Token(TokenType.Keyword, matchedKeywords.First(), line, column, k, matchedKeywords.First().Length));
+                //    k += matchedKeywords.First().Length;
+                //    continue;
+                //}else if(firstChar != '$') {
                     // Identifier
                     // Continue until the next non-letter, digit, or underscore
-                    int end = k;
-                    while (end < code.Length && (char.IsLetterOrDigit(code[end]) || code[end] == '_')) {
-                        end++;
-                    }
-                    // Generate the token
-                    int line = code[..k].Split('\n').Length;
-                    int column = k - code[..k].LastIndexOf('\n');
-                    tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column, k, end - k));
-                    // Move the index to the end of the identifier
-                    k = end;
-                    continue;
+                int end = k;
+                while (end < code.Length && (char.IsLetterOrDigit(code[end]) || code[end] == '_')) {
+                    end++;
                 }
+                // Generate the token
+                int line = code[..k].Split('\n').Length;
+                int column = k - code[..k].LastIndexOf('\n');
+                if(keywords.Any(c=>c==code[k..end]))
+                    tokens.Add(new Token(TokenType.Keyword, code[k..end], line, column, k, end-k));
+                else
+                    tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column, k, end - k));
+                // Move the index to the end of the identifier
+                k = end;
+                continue;
+                //}
             }
 
             // Comments
