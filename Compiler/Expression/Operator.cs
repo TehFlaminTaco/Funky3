@@ -39,6 +39,8 @@ public class BinaryOperator {
         { "<=", "le" },
         { ">=", "ge" },
         { "..", "concat" },
+        { "&&", "and" },
+        { "||", "or" },
     };
 
 

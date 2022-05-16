@@ -96,7 +96,16 @@ public abstract class Expression {
                     case "[":
                         // List literal
                         return RightParse(ListLiteral.TryParse(tokens, index), tokens);
-                    case "!": case "+": case "-": case "~": case "#":
+                    case "+": case "-":
+                        // Maybe a crementor, otherwise math.
+                        if(!IsBlocked<Crementor>()){
+                            var crementor = Crementor.TryParse(tokens, index);
+                            if(crementor.Item1 != null) {
+                                return RightParse(crementor, tokens);
+                            }
+                        }
+                        return RightParse(Math.TryParse(tokens, index), tokens);
+                    case "!": case "~": case "#":
                         return RightParse(Math.TryParse(tokens, index), tokens);
                     case "@":
                         return RightParse(DeOperator.TryParse(tokens, index), tokens);
@@ -134,7 +143,19 @@ public abstract class Expression {
                         return RightParse(Assignment.TryParse(result.expression, tokens, result.index), tokens, result);
                     case "+": case "-":
                         // Either a Crementor or math.
-                        // Crementors need to be implemented later.
+                        if(!IsBlocked<Crementor>() && result.expression is Variable variable) {
+                            (Expression? expression, int index) crementor = Crementor.TryParse(variable, tokens, result.index);
+                            if(crementor.expression != null) {
+                                return RightParse(crementor, tokens, result);
+                            }
+                        }
+                        if(!IsBlocked<Assignment>()) {
+                            (Expression? expression, int index) assignment = Assignment.TryParse(result.expression, tokens, result.index);
+                            if(assignment.expression != null) {
+                                return RightParse(assignment, tokens, result);
+                            }
+                        }
+
                         if(!IsBlocked<Math>()) {
                             (Expression? expression, int index) math2 = Math.TryParse(result.expression, tokens, result.index);
                             if(math2.expression != null)
@@ -142,11 +163,25 @@ public abstract class Expression {
                         }
                         return result;
                     case "*": case "/": case "%": case "^": case "&": case "|": case "~": case "<": case ">":
+                        // Might be an assignment. Check just in case. +=, -=, etc.
+                        if(!IsBlocked<Assignment>()) {
+                            (Expression? expression, int index) assignment = Assignment.TryParse(result.expression, tokens, result.index);
+                            if(assignment.expression != null) {
+                                return RightParse(assignment, tokens, result);
+                            }
+                        }
                         // Math only punctuation
                         if(IsBlocked<Math>())
                             return result;
                         return RightParse(Math.TryParse(result.expression, tokens, result.index), tokens, result);
                     case ".":
+                        // Incase it's a concat assignemnt. Check first a..=3
+                        if(!IsBlocked<Assignment>()) {
+                            (Expression? expression, int index) concat = Assignment.TryParse(result.expression, tokens, result.index);
+                            if(concat.expression != null) {
+                                return RightParse(concat, tokens, result);
+                            }
+                        }
                         // Try and get math first
                         if(!IsBlocked<Math>()) {
                             (Expression? expression, int index) math3 = Math.TryParse(result.expression, tokens, result.index);
