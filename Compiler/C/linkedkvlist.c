@@ -8,7 +8,7 @@
 #include "var.h"
 
 LinkedKVList* LinkedKVListNew(){
-    LinkedKVList* list = calloc(1, sizeof(LinkedKVList));
+    LinkedKVList* list = tgc_calloc(&gc, 1, sizeof(LinkedKVList));
     list->first = NULL;
     return list;
 }
@@ -44,7 +44,7 @@ void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var){
     KVLinklett* current = list->first;
     if(current == NULL){
         DebugPrint("LinkedKVListInsert: first is null\n");
-        list->first = calloc(1, sizeof(KVLinklett));
+        list->first = tgc_calloc(&gc, 1, sizeof(KVLinklett));
         list->first->var = var;
         list->first->key = key;
         list->first->next = NULL;
@@ -63,7 +63,7 @@ void LinkedKVListInsert(LinkedKVList* list, Var* key, Var* var){
     }
 
     DebugPrint("LinkedKVListInsert: reached end of list\n");
-    KVLinklett* new = calloc(1, sizeof(KVLinklett));
+    KVLinklett* new = tgc_calloc(&gc, 1, sizeof(KVLinklett));
     new->var = var;
     new->key = key;
     new->next = NULL;
@@ -82,7 +82,7 @@ Var* LinkedKVListRemove(LinkedKVList* list, Var* key){
             KVLinklett* toRemove = current->next;
             current->next = toRemove->next;
             Var* var = toRemove->var;
-            free(toRemove);
+            tgc_free(&gc, toRemove);
             return var;
         }
     }
@@ -95,9 +95,9 @@ void LinkedKVListFree(LinkedKVList* list){
     while(current != NULL){
         toRemove = current;
         current = current->next;
-        free(toRemove);
+        tgc_free(&gc, toRemove);
     }
-    free(list);
+    tgc_free(&gc, list);
     return;
 }
 

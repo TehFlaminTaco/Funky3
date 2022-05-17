@@ -6,9 +6,9 @@
 #include "hashmap.h"
 
 HashMap* HashMapNew(int capacity){
-    HashMap* map = calloc(1, sizeof(HashMap));
+    HashMap* map = tgc_calloc(&gc, 1, sizeof(HashMap));
     map->capacity = capacity;
-    map->values = calloc(capacity, sizeof(LinkedKVList*));
+    map->values = tgc_calloc(&gc, capacity, sizeof(LinkedKVList*));
     map->parent = &UNDEFINED;
     map->withValue = &UNDEFINED;
     for(int i = 0; i < capacity; i++){
@@ -43,11 +43,13 @@ int CalculateHash(Var* val){
 }
 
 void HashMapSet(HashMap* map, Var* key, Var* value){
-    DebugPrint("HashMapSet:\n");
+    DebugPrint("HashMapSet: %p\n", map);
     int hash = CalculateHash(key);
     if(hash < 0)hash = -hash;
     DebugPrint("HashMapSet: hash is %d\n", hash);
-    LinkedKVListInsert(map->values[hash % map->capacity], key, value);
+    DebugPrint("HashMapSet: Values %p\n", map->values);
+    DebugPrint("HashMapSet: Values %i\n", map->capacity);
+    LinkedKVListInsert(map->values[hash % (map->capacity)], key, value);
     DebugPrint("HashMapSet: done\n");
     return;
 }

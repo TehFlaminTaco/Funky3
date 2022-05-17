@@ -41,7 +41,7 @@ Var* ListToString(Var* scope, Var* args){
     totalStringLength++;
     DebugPrint("ListToString: Total Length %i\n", totalStringLength);
     // Create a new string with the concatenated strings.
-    char* string = calloc(totalStringLength+1, sizeof(char));
+    char* string = tgc_calloc(&gc, totalStringLength+1, sizeof(char));
     int index = totalStringLength;
     string[totalStringLength] = '\0';
     for(Linklett* current = strings->first; current != NULL; current = current->next){
@@ -52,7 +52,7 @@ Var* ListToString(Var* scope, Var* args){
     }
     LinkedListFree(strings);
     Var* result = VarNewString(string);
-    free(string);
+    tgc_free(&gc, string);
     return result;
     /*for(int j = 0; j < map -> capacity; j++){
 
