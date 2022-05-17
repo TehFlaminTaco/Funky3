@@ -16,40 +16,39 @@
 
 void SetupMetaTables(){
     // Initialize metatables with new HashMaps.
+    MetatableBase.value = (long long)HashMapNew(16);
+    tgc_set_flags(&gc, MetatableBase.value, TGC_ROOT);
+    MetatableBase.metatable = &MetatableList;
+    PopulateBaseMeta(&MetatableBase);
+
     MetatableNull.value = (long long)HashMapNew(16);
     tgc_set_flags(&gc, MetatableNull.value, TGC_ROOT);
     MetatableNull.metatable = &MetatableList;
-    PopulateBaseMeta(&MetatableNull);
     PopulateNullMeta(&MetatableNull);
 
     MetatableNumber.value = (long long)HashMapNew(16);
     tgc_set_flags(&gc, MetatableNumber.value, TGC_ROOT);
     MetatableNumber.metatable = &MetatableList;
-    PopulateBaseMeta(&MetatableNumber);
     PopulateNumberMeta(&MetatableNumber);
 
     MetatableString.value = (long long)HashMapNew(16);
     tgc_set_flags(&gc, MetatableString.value, TGC_ROOT);
     MetatableString.metatable = &MetatableList;
-    PopulateBaseMeta(&MetatableString);
     PopulateStringMeta(&MetatableString);
 
     MetatableFunction.value = (long long)HashMapNew(16);
     tgc_set_flags(&gc, MetatableFunction.value, TGC_ROOT);
     MetatableFunction.metatable = &MetatableList;
-    PopulateBaseMeta(&MetatableFunction);
     PopulateFunctionMeta(&MetatableFunction);
 
     MetatableList.value = (long long)HashMapNew(16);
     tgc_set_flags(&gc, MetatableList.value, TGC_ROOT);
     MetatableList.metatable = &MetatableList;
-    PopulateBaseMeta(&MetatableList);
     PopulateListMeta(&MetatableList);
 
     MetatableWith.value = (long long)HashMapNew(16);
     tgc_set_flags(&gc, MetatableWith.value, TGC_ROOT);
     MetatableWith.metatable = &MetatableList;
-    PopulateBaseMeta(&MetatableWith);
     PopulateListMeta(&MetatableWith);
     PopulateWithMeta(&MetatableWith);
 }
@@ -60,12 +59,12 @@ Var* VarGetMeta(Var* var, char* key){
     DebugPrint("VarGetMeta: Made Key\n");
     if(var->metatable == NULL){
         DebugPrint("VarGetMeta: No metatable\n");
-        return &UNDEFINED;
+        return VarRawGet(&MetatableBase, keyVar);
     }
     // Assert the Var's metatable is a list
     if(var->metatable->type != 0x04){
         DebugPrint("VarGetMeta: Assertion failed: var->metatable->type != 0x04\n");
-        return &UNDEFINED;
+        return VarRawGet(&MetatableBase, keyVar);
     }
     DebugPrint("VarGetMeta: Assertion passed\n");
 
@@ -73,7 +72,7 @@ Var* VarGetMeta(Var* var, char* key){
     // If the key is not found, return NIL.
     if(var -> metatable -> value == NULL){
         DebugPrint("VarGetMeta: Assertion failed: var -> metatable -> value == NULL\n");
-        return &UNDEFINED;
+        return VarRawGet(&MetatableBase, keyVar);
     }
     DebugPrint("VarGetMeta: Assertion passed\n");
     HashMap* metatable = (HashMap*)(intptr_t)var->metatable->value;
@@ -81,7 +80,7 @@ Var* VarGetMeta(Var* var, char* key){
     Var* meta = HashMapGet(metatable, keyVar);
     if(ISUNDEFINED(meta)){
         DebugPrint("VarGetMeta: Key not found.\n");
-        return &UNDEFINED;
+        return VarRawGet(&MetatableBase, keyVar);
     }
 
     DebugPrint("VarGetMeta: Key found.\n");
