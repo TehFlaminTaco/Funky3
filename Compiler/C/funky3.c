@@ -37,7 +37,7 @@ Var* Funky3Code(Var* scope){
 
 int main(int argc, char** argv){
     tgc_start(&gc, &argc);
-    //tgc_pause(&gc);
+    tgc_pause(&gc);
 
     DebugPrint("PreSetup\n");
     SetupMetaTables();
@@ -49,10 +49,8 @@ int main(int argc, char** argv){
     tgc_set_flags(&gc, scope, TGC_ROOT);
     PopulateGlobals(scope);
     DebugPrint("B\n");
-    //GarbageCollect();
-    tgc_resume(&gc);
+    tgc_run(&gc);
     Funky3Code(scope);
-    //GarbageCollect();
     
     tgc_stop(&gc);
     return 0;

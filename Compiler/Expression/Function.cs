@@ -156,6 +156,7 @@ public class Function : Expression {
         StringBuilder headerSB = new();
         headerSB.AppendLine("// Function Definition");
         headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
+        headerSB.AppendLine($"\ttgc_run(&gc);");
         headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
         // Try loading "this" into the scope... Just if it exists.
         headerSB.AppendLine("\tVarRawSet(scope, VarNewString(\"this\"), VarRawGet(args, VarNewString(\"this\")));");
