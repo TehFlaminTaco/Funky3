@@ -224,6 +224,13 @@ public abstract class Expression {
             case TokenType.Keyword:
                 switch (tokens[result.index].Value) {
                     case "and": case "or": 
+                        // Try an assignment first, Just in case
+                        if(!IsBlocked<Assignment>()) {
+                            (Expression? expression, int index) assignment = Assignment.TryParse(result.expression, tokens, result.index);
+                            if(assignment.expression != null) {
+                                return RightParse(assignment, tokens, result);
+                            }
+                        }
                         // Math only keywords
                         if(IsBlocked<Math>())
                             return result;

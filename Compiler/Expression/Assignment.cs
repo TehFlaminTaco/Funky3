@@ -15,18 +15,18 @@ public class Assignment : Expression, IRightProvider {
         if(left is not Variable variable) {
             return (null, index);
         }
-        if(tokens[i].Type != TokenType.Punctuation){
-            return (null, index);
-        }
 
         BinaryOperator? operator_ = null;
-        if(tokens[i].Value != "=") { // Try to get an operator.
+        if(tokens[i].Value != "=" || tokens[i].Type != TokenType.Punctuation) { // Try to get an operator.
             var op = BinaryOperator.TryParse(tokens, i);
             if(op.Item1 is not BinaryOperator binaryOperator) {
                 return (null, index);
             }
             operator_ = binaryOperator;
             i = op.Item2;
+        }
+        if(tokens[i].Type != TokenType.Punctuation){
+            return (null, index);
         }
         Parser.RegisterFurthest(i);
         if(tokens[i].Value != "=") { // Check for an assignment operator.
@@ -46,35 +46,82 @@ public class Assignment : Expression, IRightProvider {
     }
 
     public override string GenerateInline(StreamWriter header, out string stackName){
-        string valueBody = Value.GenerateInline(header, out string valueHolder);
         StringBuilder sb = new();
-        if(!String.IsNullOrEmpty(valueBody)){
-            sb.Append(Tabbed(valueBody));
-        }
         if(Operator is not null){
-            // Math. BAH.
-            string argHolder = UniqueValueName("arg");
-            sb.AppendLine($"// {Operator.Operator}=");
-            sb.AppendLine($"\tVar* {argHolder} = VarNewList();");
-            string storedValueBody = Name.GenerateInline(header, out string storedValueHolder);
-            if(!String.IsNullOrEmpty(storedValueBody)){
-                sb.Append(Tabbed(storedValueBody));
+            // If it's AND or OR, use short-circuiting.
+            if(Operator.Operator == "&&" || Operator.Operator == "||"){
+                // Calculate the currently stored value.
+                string storedValueBody = Name.GenerateInline(header, out string storedValueHolder);
+                if(!String.IsNullOrEmpty(storedValueBody)){
+                    sb.Append(Tabbed(storedValueBody));
+                }
+                if(true){ // Ensure single use promise.
+                    string valueHolder2 = UniqueValueName("value");
+                    sb.AppendLine($"\tVar* {valueHolder2} = {storedValueHolder};");
+                    storedValueHolder = valueHolder2;
+                }
+                // If it's an AND, the value should be set to whatever's on the right ONLY if this is truthy
+                // If it's an OR, the value should be set to whatever's on the right ONLY if this is falsy
+                sb.AppendLine($"\tif ({(Operator.Operator == "||" ? "!" : "")}VarTruthy({storedValueHolder})) {{");
+                // Calculate the right side.
+                string valueBody = Value.GenerateInline(header, out string valueHolder);
+                if(!String.IsNullOrEmpty(valueBody)){
+                    sb.Append(Tabbed(Tabbed(valueBody)));
+                }
+                // Run the setter
+                string setterBody = Name.GenerateSetterInline(header, out string setterHolder, valueHolder);
+                if(!String.IsNullOrEmpty(setterBody)){
+                    sb.Append(Tabbed(setterBody));
+                }
+                // Ensure the setter is called here
+                sb.AppendLine($"\t\t{storedValueHolder} = {setterHolder};");
+                stackName = storedValueHolder;
+                sb.AppendLine($"\t}}");
+                return sb.ToString();
+            
+            // Otherwise, Handle as math.
+            }else{
+                // Calculate the currently stored value.
+                string storedValueBody = Name.GenerateInline(header, out string storedValueHolder);
+                if(!String.IsNullOrEmpty(storedValueBody)){
+                    sb.Append(Tabbed(storedValueBody));
+                }
+                if(true){ // Ensure single use promise.
+                    string valueHolder2 = UniqueValueName("value");
+                    sb.AppendLine($"\tVar* {valueHolder2} = {storedValueHolder};");
+                    storedValueHolder = valueHolder2;
+                }
+                // Calculate the right side.
+                string valueBody = Value.GenerateInline(header, out string valueHolder);
+                if(!String.IsNullOrEmpty(valueBody)){
+                    sb.Append(Tabbed(Tabbed(valueBody)));
+                }
+                string metaMethod = $"VarGetMeta({storedValueHolder}, \"{BinaryOperator.OperatorMetamethods[Operator.Operator]}\")";
+                string argHolder = UniqueValueName("arg");
+                sb.AppendLine($"\tVar* {argHolder} = VarNewList();");
+                sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"left\", {storedValueHolder});");
+                sb.AppendLine($"\tArgVarSet({argHolder}, 1, \"right\", {valueHolder});");
+                // Call the setter with the outcome of the math
+                string setterBody = Name.GenerateSetterInline(header, out string setterHolder, $"VarFunctionCall({metaMethod}, {argHolder})");
+                if(!String.IsNullOrEmpty(setterBody)){
+                    sb.Append(Tabbed(setterBody));
+                }
+                stackName = setterHolder;
+                return sb.ToString();
             }
-            if(true){
-                string valueHolder2 = UniqueValueName("value");
-                sb.AppendLine($"\tVar* {valueHolder2} = {storedValueHolder};");
-                storedValueHolder = valueHolder2;
+        // Otherwise, ignore what's stored and just set it to the right side.
+        }else{
+            string valueBody = Value.GenerateInline(header, out string valueHolder);
+            if(!String.IsNullOrEmpty(valueBody)){
+                sb.Append(Tabbed(valueBody));
             }
-            string metaMethod = $"VarGetMeta({storedValueHolder}, \"{BinaryOperator.OperatorMetamethods[Operator.Operator]}\")";
-            sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"left\", {storedValueHolder});");
-            sb.AppendLine($"\tArgVarSet({argHolder}, 1, \"right\", {valueHolder});");
-            valueHolder = $"VarFunctionCall({metaMethod}, {argHolder})";
+            string setterBody = Name.GenerateSetterInline(header, out string setterHolder, valueHolder);
+            if(!String.IsNullOrEmpty(setterBody)){
+                sb.Append(Tabbed(setterBody));
+            }
+            stackName = setterHolder;
+            return sb.ToString();
         }
-        valueBody = Name.GenerateSetterInline(header, out stackName, valueHolder); // KNOWN to always be inline
-        if(!String.IsNullOrEmpty(valueBody)){
-            sb.Append(Tabbed(valueBody));
-        }
-        return sb.ToString();
     }
 
     public Expression? GetRight(){

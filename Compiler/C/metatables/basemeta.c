@@ -97,6 +97,24 @@ Var* BaseUnp(Var* scope, Var* args){
     return left;
 }
 
+Var* BaseAnd(Var* scope, Var* args){
+    Var* left = ArgVarGet(args, 0, "left");
+    Var* right = ArgVarGet(args, 1, "right");
+    if(VarTruthy(left)){
+        return right;
+    }
+    return left;
+}
+
+Var* BaseOr(Var* scope, Var* args){
+    Var* left = ArgVarGet(args, 0, "left");
+    Var* right = ArgVarGet(args, 1, "right");
+    if(VarTruthy(left)){
+        return left;
+    }
+    return right;
+}
+
 void PopulateBaseMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("eq"), VarNewFunction(BaseEq));
     VarRawSet(metatable, VarNewString("not"), VarNewFunction(BaseNot));
@@ -119,6 +137,9 @@ void PopulateBaseMeta(Var* metatable){
     GenerateTryRight(metatable, "bshr");
     GenerateTryRight(metatable, "gt");
     GenerateTryRight(metatable, "lt");
+    
+    GenerateTryRight(metatable, "and");
+    GenerateTryRight(metatable, "or");
 }
 
 #endif
