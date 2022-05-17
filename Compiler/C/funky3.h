@@ -3,8 +3,9 @@
 
 //#define DEBUG
 
+
 #include "var.h"
-#include "gc.h"
+#include "tgc.h"
 
 #define VAR_NULL 0x00
 #define VAR_NUMBER 0x01
@@ -18,10 +19,10 @@
 #define DebugPrint(...)
 #endif
 
-GarbageCollector gc = {NULL};
+static tgc_t gc = {NULL};
 
-Var UNDEFINED   = {VAR_NULL, 0, NULL, NULL, 0};
-Var NIL         = {VAR_NULL, 1, NULL, NULL, 0};
+Var UNDEFINED   = {VAR_NULL, 0, NULL};
+Var NIL         = {VAR_NULL, 1, NULL};
 
 
 #endif

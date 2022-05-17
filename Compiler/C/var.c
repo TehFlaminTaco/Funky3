@@ -13,61 +13,44 @@
 #include "linkedlist.h"
 
 Var* VarNew(char type, long long value, Var* metatable){
-    Var* var = calloc(1, sizeof(Var));
+    Var* var = tgc_calloc(&gc, 1, sizeof(Var));
     var->type = type;
     var->value = value;
     var->metatable = metatable;
-    var->referencedBy = LinkedListNew();
-    var->gcMark = 0;
     return var;
-}
-
-void FreeVar(Var* var){
-    if(var->type == VAR_STRING || var->type == VAR_FUNCTION || var->type == VAR_LIST){
-        free((void*)var->value);
-        var->value = NULL;
-    }
-    if(var->metatable != NULL)
-        DerefferenceVar(var->metatable, var);
-    var->metatable = NULL;
-    if(var->referencedBy != NULL)
-        LinkedListFree(var->referencedBy);
-    var->referencedBy = NULL;
-    free(var);
 }
 
 Var* VarNewNumber(double value){
     long long j;
     memcpy(&j, &value, sizeof(double));
-    return VarFreeLater(VarNew(VAR_NUMBER, j, &MetatableNumber));
+    return VarNew(VAR_NUMBER, j, &MetatableNumber);
 }
 
 Var* VarNewString(char* value){
-    char* copiedString = calloc(strlen(value) + 1, sizeof(char));
+    char* copiedString = tgc_calloc(&gc, strlen(value) + 1, sizeof(char));
     strcpy(copiedString, value);
-    return VarFreeLater(VarNew(VAR_STRING, (long long)copiedString, &MetatableString));
+    return VarNew(VAR_STRING, (long long)copiedString, &MetatableString);
 }
 
 Var* VarNewList(){
-    return VarFreeLater(VarNew(VAR_LIST, (long long)HashMapNew(256), &MetatableList));
+    return VarNew(VAR_LIST, (long long)HashMapNew(256), &MetatableList);
 }
 
 Var* VarNewFunction(Var* (value)(Var*, Var*)){
-    VarFunction* func = calloc(1, sizeof(VarFunction));
+    VarFunction* func = tgc_calloc(&gc, 1, sizeof(VarFunction));
     func->method = value;
     func->scope = &NIL;
     func->name = "<C Function>";
-    return VarFreeLater(VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction));
+    return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
 }
 
 Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
-    VarFunction* func = calloc(1, sizeof(VarFunction));
+    VarFunction* func = tgc_calloc(&gc, 1, sizeof(VarFunction));
     Var* vFunc = VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
     func->method = value;
     func->scope = VarSubScope(scope);
-    DoReferenceBy(func->scope, vFunc);
     func->name = name;
-    return VarFreeLater(vFunc);
+    return vFunc;
 }
 
 Var* VarTrue(){
@@ -162,41 +145,6 @@ Var* VarRawSet(Var* table, Var* key, Var* value){
     // WithMeta hack
     if(table->metatable == &MetatableWith){
         return VarRawSet(map -> withValue, key, value);
-    }
-
-    // Remove any currently set var from the referencedby list.
-    DebugPrint("VarRawSet: removing old value\n");
-    Var* oldValue = VarRawGet(table, key);
-    DebugPrint("VarRawSet: old value is %p\n", oldValue);
-    if(oldValue != NULL && oldValue->referencedBy != NULL){
-        DebugPrint("VarRawSet: removing old value from referencedby list\n");
-        //LinkedListRemoveByValue(oldValue->referencedBy, table);
-        VarFreeLater(oldValue);
-    }
-    // Add to the referencedby list
-    DebugPrint("VarRawSet: adding new value to referencedby list\n");
-    if(value->referencedBy != NULL){
-        DebugPrint("VarRawSet: adding new value to referencedby list\n");
-        DoReferenceBy(value, table);
-    }
-
-    // Remove any currently set key from the referencedby list.
-    DebugPrint("VarRawSet: removing old key\n");
-    Var* oldKey = HashMapGetKey(map, key);
-    DebugPrint("VarRawSet: old key is %p\n", oldKey);
-    if(!ISUNDEFINED(oldKey)){
-        DebugPrint("VarRawSet: removing old key from referencedby list\n");
-        if(oldKey -> referencedBy != NULL){
-            //LinkedListRemoveByValue(oldKey->referencedBy, table);
-            VarFreeLater(oldKey);
-        }
-    }
-
-    // Adding to key's referencedby list
-    DebugPrint("VarRawSet: adding new key to referencedby list\n");
-    if(key->referencedBy != NULL){
-        DebugPrint("VarRawSet: adding new key to referencedby list\n");
-        DoReferenceBy(key, table);
     }
 
     if(ISUNDEFINED(value)){
@@ -419,8 +367,6 @@ Var* VarListCopy(Var* list){
     for(int i=0; i < map -> capacity; i++){
         KVLinklett* current = map->values[i]->first;
         while(current != NULL){
-            DoReferenceBy(current->key, newList);
-            DoReferenceBy(current->var, newList);
             HashMapSet(newMap, current->key, current->var);
             current = current->next;
         }
@@ -454,18 +400,12 @@ Var* VarListCopyLShifted(Var* list, int shift){
                 if(fmod(j,1) < 0.00001){
                     j = j - shift;
                     if(j >= 0){
-                        DoReferenceBy(current->key, newList);
-                        DoReferenceBy(current->var, newList);
                         HashMapSet(newMap, VarNewNumber(j), current->var);
                     }
                 }else{
-                    DoReferenceBy(current->key, newList);
-                    DoReferenceBy(current->var, newList);
                     HashMapSet(newMap, current->key, current->var);
                 }
             }else{
-                DoReferenceBy(current->key, newList);
-                DoReferenceBy(current->var, newList);
                 HashMapSet(newMap, current->key, current->var);
             }
             current = current->next;
@@ -510,17 +450,11 @@ Var* VarCopyListIntoOffset(Var* source, Var* destination, int* offset){
                         continue;
                     }
                     j = j + *offset;
-                    DoReferenceBy(current->key, destination);
-                    DoReferenceBy(current->var, destination);
                     HashMapSet(newMap, VarNewNumber(j), current->var);
                 }else{
-                    DoReferenceBy(current->key, destination);
-                    DoReferenceBy(current->var, destination);
                     HashMapSet(newMap, current->key, current->var);
                 }
             }else{
-                DoReferenceBy(current->key, destination);
-                DoReferenceBy(current->var, destination);
                 HashMapSet(newMap, current->key, current->var);
             }
             current = current->next;
@@ -606,8 +540,6 @@ Var* VarSubScope(Var* scope){
     Var* newScope = VarNewList();
     HashMap* map = newScope -> value;
     map -> parent = scope;
-    DoReferenceBy(scope, newScope);
-    
     return newScope;
 }
 
@@ -622,9 +554,7 @@ Var* VarWithScope(Var* scope, Var* with){
     newScope -> metatable = &MetatableWith;
     HashMap* map = newScope -> value;
     map -> parent = scope;
-    DoReferenceBy(scope, newScope);
     map -> withValue = with;
-    DoReferenceBy(with, newScope);
 
     return newScope;
 }

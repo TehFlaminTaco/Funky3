@@ -5,10 +5,10 @@
 #include "linkedkvlist.h"
 
 typedef struct _HashMap {
-    LinkedKVList** values;
     int capacity;
     Var* parent;
     Var* withValue;
+    LinkedKVList** values;
 } HashMap;
 
 HashMap* HashMapNew(int capacity);
