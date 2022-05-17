@@ -15,7 +15,7 @@ Var* NumberToString(Var* scope, Var* args){
         return VarNewString("");
     }
     memcpy(&j, &i->value, sizeof(double));
-    char* buffer = calloc(1, sizeof(char) * 32);
+    char* buffer = tgc_calloc(&gc, 1, sizeof(char) * 32);
     snprintf(buffer, 32, "%lf", j);
     // Remove trailing 0s after the decimal point
     char* decimalPoint = strchr(buffer, '.');

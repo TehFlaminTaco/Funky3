@@ -55,12 +55,12 @@ Var* BaseConcat(Var* scope, Var* args){
 
     right = VarAsString(right);
     int totalSize = strlen(left -> value) + strlen(right -> value) + 1;
-    char* result = calloc(totalSize, sizeof(char));
+    char* result = tgc_calloc(&gc, totalSize, sizeof(char));
     strcpy(result, left -> value);
     strcat(result, right -> value);
     result[totalSize - 1] = '\0';   // Just in case.
     Var* resultVar = VarNewString(result);
-    free(result);
+    tgc_free(&gc, result);
     return resultVar;
 }
 

@@ -6,10 +6,11 @@
 
 #include "funky3.h"
 
+#include "tgc.c"
+
 #include "linkedkvlist.h"
 #include "linkedlist.h"
 #include "var.h"
-#include "gc.h"
 
 #include "hashmap.h"
 #include "metatable.h"
@@ -19,7 +20,6 @@
 #include "var.c"
 #include "linkedkvlist.c"
 #include "linkedlist.c"
-#include "gc.c"
 
 #include "hashmap.c"
 #include "metatable.c"
@@ -36,7 +36,8 @@ Var* Funky3Code(Var* scope){
 }
 
 int main(int argc, char** argv){
-    gc.toCleanup = LinkedListNew();
+    tgc_start(&gc, &argc);
+    //tgc_pause(&gc);
 
     DebugPrint("PreSetup\n");
     SetupMetaTables();
@@ -45,17 +46,14 @@ int main(int argc, char** argv){
     UNDEFINED.metatable = &MetatableNull;
 
     Var* scope = VarNewList();
-    // Ensure it's a global!!!
-    free(scope -> referencedBy);
-    scope -> referencedBy = NULL;
-
+    tgc_set_flags(&gc, scope, TGC_ROOT);
     PopulateGlobals(scope);
     DebugPrint("B\n");
-
-
     //GarbageCollect();
+    tgc_resume(&gc);
     Funky3Code(scope);
     //GarbageCollect();
     
+    tgc_stop(&gc);
     return 0;
 }

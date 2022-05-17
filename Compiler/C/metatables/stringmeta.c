@@ -28,7 +28,7 @@ Var* StringToCode(Var* scope, Var* args){
         }
     }
     // Create the new string
-    char* newString = calloc(length, sizeof(char));
+    char* newString = tgc_calloc(&gc, length, sizeof(char));
     int index = 0;
     newString[index++] = '"';
     for(char* c = string -> value; *c != '\0'; c++){
@@ -92,7 +92,7 @@ Var* StringToCode(Var* scope, Var* args){
     newString[index] = '\0';
     // Create the new string variable
     Var* result = VarNewString(newString);
-    free(newString);
+    tgc_free(&gc, newString);
     return result;
 }
 
@@ -116,12 +116,12 @@ Var* _stringIter(Var* scope, Var* args){
         DebugPrint("_stringIter: end\n");
         return &UNDEFINED;
     }
-    char* oneLetter = calloc(2, sizeof(char));
+    char* oneLetter = tgc_calloc(&gc, 2, sizeof(char));
     oneLetter[0] = s[i];
     oneLetter[1] = '\0';
     DebugPrint("_stringIter: %s\n", oneLetter);
     Var* result = VarNewString(oneLetter);
-    free(oneLetter);
+    tgc_free(&gc, oneLetter);
     VarRawSet(scope, VarNewString("index"), VarNewNumber(i + 1));
     DebugPrint("_stringIter: Sent\n");
     return result;

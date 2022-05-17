@@ -8,7 +8,7 @@
 #include "var.h"
 
 LinkedVarList* LinkedListNew(){
-    LinkedVarList* list = calloc(1, sizeof(LinkedVarList));
+    LinkedVarList* list = tgc_calloc(&gc, 1, sizeof(LinkedVarList));
     list->first = NULL;
     return list;
 }
@@ -32,7 +32,7 @@ Var* LinkedListGet(LinkedVarList* list, int index){
 void LinkedListInsert(LinkedVarList* list, Var* var, int index){
     Linklett* current = list->first;
     if(current == NULL){
-        list->first = calloc(1, sizeof(Linklett));
+        list->first = tgc_calloc(&gc, 1, sizeof(Linklett));
         list->first->var = var;
         list->first->next = NULL;
         return;
@@ -41,14 +41,14 @@ void LinkedListInsert(LinkedVarList* list, Var* var, int index){
     for(int i = 0; i < index; i++){
         current = current->next;
         if(current == NULL){
-            current->next = calloc(1, sizeof(Linklett));
+            current->next = tgc_calloc(&gc, 1, sizeof(Linklett));
             current->next->var = var;
             current->next->next = NULL;
             return;
         }
     }
 
-    Linklett* new = calloc(1, sizeof(Linklett));
+    Linklett* new = tgc_calloc(&gc, 1, sizeof(Linklett));
     new->var = var;
     new->next = current->next;
     current->next = new;
@@ -56,7 +56,7 @@ void LinkedListInsert(LinkedVarList* list, Var* var, int index){
 }
 
 void LinkedListPush(LinkedVarList* list, Var* var){
-    Linklett* new = calloc(1, sizeof(Linklett));
+    Linklett* new = tgc_calloc(&gc, 1, sizeof(Linklett));
     new->var = var;
     new->next = list->first;
     list->first = new;
@@ -70,7 +70,7 @@ Var* LinkedListPop(LinkedVarList* list){
     }
     list->first = current->next;
     Var* var = current->var;
-    free(current);
+    tgc_free(&gc, current);
     return var;
 }
 
@@ -85,7 +85,7 @@ Var* LinkedListRemove(LinkedVarList* list, int index){
     if(index == 0){
         list->first = current->next;
         Var* var = current->var;
-        free(current);
+        tgc_free(&gc, current);
         DebugPrint("LinkedListRemove: done\n");
         return var;
     }
@@ -109,7 +109,7 @@ Var* LinkedListRemove(LinkedVarList* list, int index){
     DebugPrint("LinkedListRemove: current->next = %p\n", current->next);
     Var* var = toRemove->var;
     DebugPrint("LinkedListRemove: Finshed removing.");
-    free(toRemove);
+    tgc_free(&gc, toRemove);
     DebugPrint("LinkedListRemove: Finshed freeing.");
     return var;
 }
@@ -135,9 +135,9 @@ void LinkedListFree(LinkedVarList* list){
     while(current != NULL){
         toRemove = current;
         current = current->next;
-        free(toRemove);
+        tgc_free(&gc, toRemove);
     }
-    free(list);
+    tgc_free(&gc, list);
     return;
 }
 
