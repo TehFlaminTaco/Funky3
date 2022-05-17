@@ -1,6 +1,11 @@
 using System.Linq.Expressions;
-public static class Parentheses {
-    public static (Expression?, int) TryParse(List<Token> tokens, int index) {
+public class Parentheses : Expression {
+    public Expression Expression { get; set; }
+    public Parentheses(Expression expression) {
+        Expression = expression;
+    }
+
+    public static (Parentheses?, int) TryParse(List<Token> tokens, int index) {
         int i = index;
         if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "(") {
             return (null, index);
@@ -17,6 +22,10 @@ public static class Parentheses {
         }
         Parser.RegisterFurthest(i);
         i++;
-        return (expression.expression, i);
+        return (new Parentheses(expression.expression), i);
+    }
+
+    public override string GenerateInline(StreamWriter header, out string stackName){
+        return Expression.GenerateInline(header, out stackName);
     }
 }
