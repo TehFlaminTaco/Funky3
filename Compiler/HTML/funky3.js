@@ -750,13 +750,6 @@ function cwrap(ident, returnType, argTypes, opts) {
 
 // We used to include malloc/free by default in the past. Show a helpful error in
 // builds with assertions.
-function _malloc() {
-  abort("malloc() called but not included in the build - add '_malloc' to EXPORTED_FUNCTIONS");
-}
-function _free() {
-  // Show a helpful error since we used to include free by default in the past.
-  abort("free() called but not included in the build - add '_free' to EXPORTED_FUNCTIONS");
-}
 
 // include: runtime_legacy.js
 
@@ -781,7 +774,7 @@ function allocate(slab, allocator) {
   if (allocator == ALLOC_STACK) {
     ret = stackAlloc(slab.length);
   } else {
-    ret = abort('malloc was not included, but is needed in allocate. Adding "_malloc" to EXPORTED_FUNCTIONS should fix that. This may be a bug in the compiler, please file an issue.');;
+    ret = _malloc(slab.length);
   }
 
   if (!slab.subarray && !slab.slice) {
@@ -1127,7 +1120,7 @@ function lengthBytesUTF32(str) {
 // It is the responsibility of the caller to free() that memory.
 function allocateUTF8(str) {
   var size = lengthBytesUTF8(str) + 1;
-  var ret = abort('malloc was not included, but is needed in allocateUTF8. Adding "_malloc" to EXPORTED_FUNCTIONS should fix that. This may be a bug in the compiler, please file an issue.');;
+  var ret = _malloc(size);
   if (ret) stringToUTF8Array(str, HEAP8, ret, size);
   return ret;
 }
@@ -1823,6 +1816,8 @@ var ASM_CONSTS = {
       return demangleAll(js);
     }
 
+  function __emscripten_throw_longjmp() { throw Infinity; }
+
   function _emscripten_memcpy_big(dest, src, num) {
       HEAPU8.copyWithin(dest, src, src + num);
     }
@@ -1884,6 +1879,10 @@ var ASM_CONSTS = {
       return 0;
     }
 
+  function _getTempRet0() {
+      return getTempRet0();
+    }
+
   function _setTempRet0(val) {
       setTempRet0(val);
     }
@@ -1920,14 +1919,27 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('fetchSettings');
 }
 var asmLibraryArg = {
+  "_emscripten_throw_longjmp": __emscripten_throw_longjmp,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
   "fd_write": _fd_write,
+  "getTempRet0": _getTempRet0,
+  "invoke_vi": invoke_vi,
+  "invoke_vii": invoke_vii,
   "setTempRet0": _setTempRet0
 };
 var asm = createWasm();
 /** @type {function(...*):?} */
 var ___wasm_call_ctors = Module["___wasm_call_ctors"] = createExportWrapper("__wasm_call_ctors");
+
+/** @type {function(...*):?} */
+var _free = Module["_free"] = createExportWrapper("free");
+
+/** @type {function(...*):?} */
+var _malloc = Module["_malloc"] = createExportWrapper("malloc");
+
+/** @type {function(...*):?} */
+var _saveSetjmp = Module["_saveSetjmp"] = createExportWrapper("saveSetjmp");
 
 /** @type {function(...*):?} */
 var _main = Module["_main"] = createExportWrapper("main");
@@ -1937,6 +1949,9 @@ var ___errno_location = Module["___errno_location"] = createExportWrapper("__err
 
 /** @type {function(...*):?} */
 var ___stdio_exit = Module["___stdio_exit"] = createExportWrapper("__stdio_exit");
+
+/** @type {function(...*):?} */
+var _setThrew = Module["_setThrew"] = createExportWrapper("setThrew");
 
 /** @type {function(...*):?} */
 var _emscripten_stack_init = Module["_emscripten_stack_init"] = function() {
@@ -1970,6 +1985,28 @@ var stackAlloc = Module["stackAlloc"] = createExportWrapper("stackAlloc");
 /** @type {function(...*):?} */
 var dynCall_jiji = Module["dynCall_jiji"] = createExportWrapper("dynCall_jiji");
 
+
+function invoke_vii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
 
 
 
