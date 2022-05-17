@@ -22,6 +22,31 @@ Var* BaseLe(Var* scope, Var* args){
     return VarTruthy(VarFunctionCall(VarGetMeta(ArgVarGet(args, 0, "left"), "gt"), args)) ? VarFalse() : VarTrue();
 }
 
+Var* BaseTryRight(Var* scope, Var* args){
+    Var* left = ArgVarGet(args, 0, "left");
+    Var* right = ArgVarGet(args, 1, "right");
+    Var* inverted = ArgVarGet(args, 2, "inverted");
+
+    Var* metaMethod = VarRawGet(scope, VarNewString("metamethod"));
+    if(ISUNDEFINED(left) || ISUNDEFINED(right) || ISUNDEFINED(metaMethod) || metaMethod -> type != VAR_STRING || VarTruthy(inverted)){
+        return &NIL;
+    }
+    Var* nArgs = VarNewList();
+    ArgVarSet(nArgs, 0, "left", right);
+    ArgVarSet(nArgs, 1, "right", left);
+    ArgVarSet(nArgs, 2, "inverted", VarTrue());
+    return VarFunctionCall(VarGetMeta(right, metaMethod -> value), args);
+}
+
+void GenerateTryRight(Var* metatable, char* metamethod){
+    Var* tryRight = VarNewFunction(BaseTryRight);
+    VarFunction* func = (VarFunction*)tryRight -> value;
+    func -> scope = VarNewList();
+    Var* metaMethod = VarNewString(metamethod);
+    VarRawSet(func -> scope, VarNewString("metamethod"), metaMethod);
+    VarRawSet(metatable, metaMethod, tryRight);
+}
+
 Var* BaseConcat(Var* scope, Var* args){
     Var* left = VarAsString(ArgVarGet(args, 0, "left"));
     Var* right = ArgVarGet(args, 1, "right");
@@ -79,6 +104,21 @@ void PopulateBaseMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("le"), VarNewFunction(BaseLe));
     VarRawSet(metatable, VarNewString("concat"), VarNewFunction(BaseConcat));
     VarRawSet(metatable, VarNewString("unp"), VarNewFunction(BaseUnp));
+
+    GenerateTryRight(metatable, "add");
+    GenerateTryRight(metatable, "sub");
+    GenerateTryRight(metatable, "mul");
+    GenerateTryRight(metatable, "div");
+    GenerateTryRight(metatable, "intdiv");
+    GenerateTryRight(metatable, "mod");
+    GenerateTryRight(metatable, "pow");
+    GenerateTryRight(metatable, "band");
+    GenerateTryRight(metatable, "bor");
+    GenerateTryRight(metatable, "bxor");
+    GenerateTryRight(metatable, "bshl");
+    GenerateTryRight(metatable, "bshr");
+    GenerateTryRight(metatable, "gt");
+    GenerateTryRight(metatable, "lt");
 }
 
 #endif
