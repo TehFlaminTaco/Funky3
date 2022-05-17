@@ -8,6 +8,7 @@
 #include "../hashmap.h"
 
 Var* ListToString(Var* scope, Var* args){
+    tgc_run(&gc);
     DebugPrint("ListToString\n");
     Var* list = ArgVarGet(args, 0, "obj");
     if(list -> type != VAR_LIST){
