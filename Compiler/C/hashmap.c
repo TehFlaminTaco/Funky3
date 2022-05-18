@@ -23,7 +23,7 @@ int CalculateHash(Var* val){
             return 0;
         case VAR_NUMBER: // double. doubles are chaotic enough that this is an okay hash.
             return (int)val->value;
-        case VAR_STRING:{ // String
+        case VAR_STRING: // String
             int hash = 5381;
             int c;
             char* s = (char*)val->value;
@@ -31,7 +31,7 @@ int CalculateHash(Var* val){
                 hash = ((hash << 5) + hash) + c;
             }
             return hash;
-        }
+
         // For pointers, the pointer is a good hash.
         case VAR_FUNCTION: // Function
             return (int)val->value;
