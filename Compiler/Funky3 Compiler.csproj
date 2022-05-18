@@ -11,6 +11,7 @@
   <ItemGroup>
     <EmbeddedResource Include="C/*" />
     <EmbeddedResource Include="C/metatables/*" />
+    <EmbeddedResource Include="C/libs/*" />
   </ItemGroup>
 
 </Project>

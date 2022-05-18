@@ -6,6 +6,8 @@
 #include "funky3.h"
 #include "hashmap.h"
 
+#include "libs/list.c"
+
 Var* Print(Var* scope, Var* args){
     DebugPrint("PRINT\n");
     int index = 0;
@@ -139,6 +141,13 @@ void PopulateGlobals(Var* globals){
     VarRawSet(globals, VarNewString("pairs"), VarNewFunction(Pairs));
     VarRawSet(globals, VarNewString("print"), VarNewFunction(Print));
     VarRawSet(globals, VarNewString("values"), VarNewFunction(Values));
+
+    // Libs
+
+    // List
+    Var* list = VarNewList();
+    VarRawSet(globals, VarNewString("list"), list);
+    PopulateListLib(list);
 }
 
 #endif

@@ -146,11 +146,11 @@ public class EntrySplat : ListEntry {
         }
         i = value.index;
         // Check for a ., then a ., then a .
-        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "." || tokens[i+1].Type != TokenType.Punctuation || tokens[i+1].Value != "." || tokens[i+2].Type != TokenType.Punctuation || tokens[i+2].Value != "." || tokens[i+3].Type != TokenType.Punctuation || tokens[i+3].Value != ".") {
+        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "." || tokens[i+1].Type != TokenType.Punctuation || tokens[i+1].Value != "." || tokens[i+2].Type != TokenType.Punctuation || tokens[i+2].Value != ".") {
             return (null, index);
         }
         Parser.RegisterFurthest(i);
-        i += 4;
+        i += 3;
 
         return (new EntrySplat(value.expression), i);
     }

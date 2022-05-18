@@ -28,7 +28,7 @@ Var* BaseTryRight(Var* scope, Var* args){
     Var* inverted = ArgVarGet(args, 2, "inverted");
 
     Var* metaMethod = VarRawGet(scope, VarNewString("metamethod"));
-    if(ISUNDEFINED(left) || ISUNDEFINED(right) || ISUNDEFINED(metaMethod) || metaMethod -> type != VAR_STRING || VarTruthy(inverted)){
+    if(ISUNDEFINED(metaMethod) || metaMethod -> type != VAR_STRING || VarTruthy(inverted)){
         return &NIL;
     }
     Var* nArgs = VarNewList();
@@ -69,6 +69,8 @@ Var* BaseConcat(Var* scope, Var* args){
                 return VarFunctionCall(rMetaMethod, nArgs);
             }
             return &NIL;
+        }else{
+            right = VarAsString(right);
         }
     }
     Var* inverted = ArgVarGet(args, 2, "inverted");

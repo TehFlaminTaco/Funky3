@@ -12,6 +12,10 @@
 
 #include "linkedlist.h"
 
+inline int ISUNDEFINED(Var* var){
+    return var == NULL || var->type == VAR_NULL && var->value == 0;
+}
+
 Var* VarNew(char type, long long value, Var* metatable){
     Var* var = tgc_calloc(&gc, 1, sizeof(Var));
     var->type = type;
@@ -53,11 +57,11 @@ Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     return vFunc;
 }
 
-Var* VarTrue(){
+inline Var* VarTrue(){
     return VarNewNumber(1.0);
 }
 
-Var* VarFalse(){
+inline Var* VarFalse(){
     return VarNewNumber(0.0);
 }
 
@@ -129,7 +133,7 @@ Var* VarRawGet(Var* table, Var* key){
 
 Var* VarRawSet(Var* table, Var* key, Var* value){
     DebugPrint("VarRawSet\n");
-    if(key == NULL){
+    if(ISUNDEFINED(key)){
         DebugPrint("VarRawSet: key is NULL\n");
         return &UNDEFINED;
     }
@@ -177,6 +181,13 @@ Var* VarGet(Var* table, Var* key){
         if(!ISUNDEFINED(value)){
             return value;
         }   
+    }else if(getter->type == VAR_LIST){
+        // Try indexing from the getter instead
+        // We use the RAW getter, instead of the getter, to avoid Infinite Loop
+        value = VarRawGet(getter, key);
+        if(!ISUNDEFINED(value)){
+            return value;
+        }
     }
 
     // Try and get from the Parent.
@@ -249,14 +260,14 @@ Var* ArgVarGet(Var* args, int index, char* key){
     if(key != NULL)
         v = VarRawGet(args, VarNewString(key));
     DebugPrint("ArgVarGet: v is %p\n", v);
-    if ISUNDEFINED(v){
+    if(ISUNDEFINED(v)){
         DebugPrint("ArgVarGet: v is undefined\n");
         return VarRawGet(args, VarNewNumber(index));
     }
     return v;
 }
 
-Var* ArgVarSet(Var* args, int index, char* key, Var* value){
+inline Var* ArgVarSet(Var* args, int index, char* key, Var* value){
     return VarRawSet(args, VarNewString(key), VarRawSet(args, VarNewNumber(index), value));
 }
 
@@ -481,7 +492,7 @@ Var* CallCurried(Var* scope, Var* args){
 
 Var* VarCurryGet(Var* object, Var* index){
     DebugPrint("VarCurryGet\n");
-    Var* method = VarAsFunction(VarRawGet(object, index));
+    Var* method = VarAsFunction(VarGet(object, index));
     if(method -> type != VAR_FUNCTION){
         DebugPrint("VarCurryGet: not a function\n");
         return &UNDEFINED;

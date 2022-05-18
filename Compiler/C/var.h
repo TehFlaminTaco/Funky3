@@ -1,8 +1,6 @@
 #ifndef VAR_H
 #define VAR_H
 
-#define ISUNDEFINED(var) (var == NULL || var->type == VAR_NULL && var->value == 0)
-
 typedef struct _VAR {
     char type;
     long long value;
@@ -20,10 +18,13 @@ Var* VarNewString(char* value);
 Var* VarNewList();
 Var* VarNewFunction(Var* (value)(Var*, Var*));
 
+inline Var* VarTrue();
+inline Var* VarFalse();
+
 Var* VarRawGet(Var* table, Var* key);
 Var* VarRawSet(Var* table, Var* key, Var* value);
 Var* ArgVarGet(Var* args, int index, char* key);
-Var* ArgVarSet(Var* args, int index, char* key, Var* value);
+inline Var* ArgVarSet(Var* args, int index, char* key, Var* value);
 
 Var* VarGet(Var* table, Var* key);
 Var* VarSet(Var* table, Var* key, Var* value);
@@ -42,5 +43,7 @@ Var* MethodWithoutCurry(Var* scope, Var* args);
 Var* VarCurrySet(Var* object, Var* index, Var* method);
 Var* VarSubScope(Var* scope);
 Var* VarWithScope(Var* scope, Var* with);
+
+inline int ISUNDEFINED(Var* var);
 
 #endif

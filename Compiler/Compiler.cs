@@ -11,6 +11,7 @@ public static class Compiler
         var folder = Path.Combine(temp, Path.GetRandomFileName());
         Directory.CreateDirectory(folder);
         Directory.CreateDirectory(Path.Combine(folder, "metatables"));
+        Directory.CreateDirectory(Path.Combine(folder, "libs"));
         try {
             // Copy all the C code into the folder
             foreach(var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c=>c.EndsWith(".c") || c.EndsWith(".h"))){
