@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Consent</title>
+    <script>
+        window.addEventListener("load", ev => {
+            document.getElementById("consent").addEventListener("click", ev => {
+                let xhr = new XMLHttpRequest();
+                xhr.open("POST", "/cookieConsent", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.addEventListener("load", ev => {
+                    // Reload the page.
+                    document.location += "";
+                });
+                xhr.send();
+            });
+        })
+    </script>
+</head>
+<body>
+    <h1>Cookies</h1>
+    <p>This site uses Cookies to work.</p>
+    <p>We only have one cookie, a session cookie. We use it to keep track of who you are, which is important for passing the code you run to the serverr, and back to you.</p>
+    <p>To remain GDPR complaint, We still need you to consent to using this cookie. So, if you are okay with it...</p>
+    <button id="consent">I consent to cookies</button>
+    <p>Otherwise, just leave this page.</p>
+</body>
+</html>
