@@ -8,7 +8,7 @@ for (k,v) in pairs(list){
     print("","",k + ": " + v);
 }
 
-var newList = list:map(v=>v+5);
+var newList = list:where(v=>v>5);
 print("","After Where");
 for (k,v) in pairs(newList){
     print("","",k + ": " + v);
