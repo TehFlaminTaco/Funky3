@@ -9,16 +9,15 @@ public class Preprocessor {
 (?<multilineComment> \$\*(.|\s)*?\*\$                   )| (?#Multiline Comment)
 (?<string>           (?<qoute>[\""'`])(\\.|.)*?\<qoute> )| (?#Strings)
 (?<singleineComment> \$\$.*                             )| (?#Singleline Comment)
-(?<preprocessor>     \s*\$(?<directive>\w+)(?<body>.+)  )| (?#Preprocessor)
+(?<preprocessor>     \s*\$(?<directive>\w+)(?<body>.*)  )| (?#Preprocessor)
 (?<code>             [^$\""'\r\n]+                      )| (?#Regular, Boring code)
 (?<unknown>          .                                  )  (?#Incase I missed something)",
 RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace);
 
     public static bool Skipping = false;
     public static StringBuilder PreprocBuffer = new();
-    public static string Process(StreamReader reader) {
+    public static string Process(string allCode) {
         StringBuilder sb = new();
-        string allCode = reader.ReadToEnd();
         // For each chunk of code
         foreach (Match m in SuperTokenizer.Matches(allCode)) {
             if(Skipping && !m.Groups["preprocessor"].Success){
