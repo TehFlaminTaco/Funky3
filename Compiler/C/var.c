@@ -12,7 +12,7 @@
 
 #include "linkedlist.h"
 
-inline int ISUNDEFINED(Var* var){
+inline static int ISUNDEFINED(Var* var){
     return var == NULL || var->type == VAR_NULL && var->value == 0;
 }
 
@@ -57,11 +57,11 @@ Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     return vFunc;
 }
 
-inline Var* VarTrue(){
+inline static Var* VarTrue(){
     return VarNewNumber(1.0);
 }
 
-inline Var* VarFalse(){
+inline static Var* VarFalse(){
     return VarNewNumber(0.0);
 }
 
@@ -268,7 +268,7 @@ Var* ArgVarGet(Var* args, int index, char* key){
     return v;
 }
 
-inline Var* ArgVarSet(Var* args, int index, char* key, Var* value){
+inline static Var* ArgVarSet(Var* args, int index, char* key, Var* value){
     return VarRawSet(args, VarNewString(key), VarRawSet(args, VarNewNumber(index), value));
 }
 

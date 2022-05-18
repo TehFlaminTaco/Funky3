@@ -1,0 +1,65 @@
+$$ Where
+print("WHERE");
+var list = [19, 2, 8, 4, k = 1, v = 8];
+list[1.2] = 15
+
+print("","Before Where");
+for (k,v) in pairs(list){
+    print("","",k + ": " + v);
+}
+
+var newList = list:map(v=>v+5);
+print("","After Where");
+for (k,v) in pairs(newList){
+    print("","",k + ": " + v);
+}
+
+$$ Fold
+print("FOLD");
+var list = [1, 9, 2, 4, 8]
+print("",list:fold@+)       $$ [10, 11, 6, 12]
+print("",list:fold(@+, 8))  $$ [9, 10, 11, 6, 12]
+
+$$ Reduce
+print("REDUCE");
+var list = [1, 9, 2, 4, 8]
+print("",list:reduce@+)         $$ 24
+print("",list:reduce(@+, 8))    $$ 32
+
+$$ Cumulate
+print("CUMULATE");
+var list = [1, 9, 2, 4, 8]
+print("",list:cumulate@+)         $$ [1, 10, 12, 16, 24]
+print("",list:cumulate(@+, 8))    $$ [8, 9, 18, 20, 24, 32]
+
+$$ Reverse
+print("REVERSE");
+var list = [1, 9, 2, 4, 8]
+print("",list:reverse()) $$ [8, 4, 2, 9, 1]
+
+$$ Insert/Push/Enqueue
+$$ Insert, Push and Enqueue are identical.
+print("INSERT/PUSH/ENQUEUE");
+var list = [1, 2, 3]; print("",list);     $$ [1, 2, 3]
+list:insert(3); print("",list);           $$ [3, 1, 2, 3]
+list:insert(1, 4); print("",list);        $$ [3, 4, 1, 2, 3]
+list:insert(9000, 7); print("",list);     $$ [3, 4, 1, 2, 3, 7]
+
+$$ Remove
+$$ Remove and Pop are identical, where as Dequeue is different in that it removes the LAST element by default.
+print("REMOVE/POP/DEQUEUE");
+var list = [1, 2, 3]; print("",list);                $$ [1, 2, 3]
+print("",list:remove(1))                             $$ 2
+print("",list);                                      $$ [1, 3]
+list = [1, 2, 3]; list:remove(-100);print("",list);  $$ [1, 2, 3]
+list = [1, 2, 3]; list:remove(100); print("",list);  $$ [1, 2, 3]
+list = [1, 2, 3]; list:remove(0);   print("",list);  $$ [2, 3]
+list = [1, 2, 3]; list:remove(2);   print("",list);  $$ [1, 2]
+list = [1, 2, 3]; list:pop();       print("",list);  $$ [2, 3]
+list = [1, 2, 3]; list:dequeue();   print("",list);  $$ [1, 2]
+
+$$ Concatenation
+print("CONCATENATION");
+var a = [1, 2, 3];
+var b = [4, 5, 6];
+print("",[a..., b...]); $$ [1, 2, 3, 4, 5, 6]
