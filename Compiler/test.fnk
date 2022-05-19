@@ -1,42 +1,15 @@
-$$ Various loops
 
-print("Numbers 0 through 9, C-Style");
-for (var i=0; i < 10; i = i + 1){
-    $$ The current version does not support i++, or i+=1
-    $$ This is planned
-    print(i);
-}
-print()
+math = [];
 
-print("Numbers 0 through 9, Range style");
-for var i in 10 {
-    print(i);
-}
-print()
+$$ DON'T DO THIS, THIS IS BAD.
+$cInlineStart 
+VarRawSet(scope, "numberMeta",&MetatableNumber);
+$cInlineEnd 
 
-print("Numbers 0 through 9 in a while loop");
-var i = 0;
-while(i < 10){
-    print(i);
-    i = i + 1;
-}
-print()
+numberMeta.get = math;
 
-var funList = [1, 2, 3, x = "Hello!", y = "World!"]
-print("Iterate through all the keys in a list")
-for var key in funList {
-    print(key, funList[key]);
+function math.add2(n){
+    return n+2;
 }
-print()
 
-print("Iterate through all the values in a list")
-for var value in values(funList){
-    print(value);
-}
-print()
-
-print("Iterate through all the key-value pairs in a list.")
-for (var key, var value) in pairs(funList) {
-    print(key, value);
-}
-print()
+print(7:add2())

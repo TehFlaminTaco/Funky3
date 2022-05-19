@@ -7,6 +7,7 @@
 #include "hashmap.h"
 
 #include "libs/list.c"
+#include "libs/string.c"
 
 Var* Print(Var* scope, Var* args){
     DebugPrint("PRINT\n");
@@ -148,6 +149,11 @@ void PopulateGlobals(Var* globals){
     Var* list = VarNewList();
     VarRawSet(globals, VarNewString("list"), list);
     PopulateListLib(list);
+
+    // String
+    Var* string = VarNewList();
+    VarRawSet(globals, VarNewString("string"), string);
+    PopulateStringLib(string);
 }
 
 #endif

@@ -45,7 +45,7 @@ public static class Tokenizer {
                 else
                     tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column, k, end - k));
                 // Move the index to the end of the identifier
-                k = end;
+                k = end+1;
                 continue;
                 //}
             }
