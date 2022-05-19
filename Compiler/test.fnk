@@ -3,7 +3,7 @@ math = [];
 
 $$ DON'T DO THIS, THIS IS BAD.
 $cInlineStart 
-VarRawSet(scope, "numberMeta",&MetatableNumber);
+VarRawSet(scope, VarNewString("numberMeta") ,&MetatableNumber);
 $cInlineEnd 
 
 numberMeta.get = math;

@@ -12,7 +12,8 @@ Var* StringMatch(Var* scope, Var* args){
         return &NIL;
     }
 
-    int result = smallregex_match(haystack -> value, needle -> value);
+    //int result = smallregex_match(haystack -> value, needle -> value);
+    return &NIL;
 }
 
 void PopulateStringLib(Var* string){

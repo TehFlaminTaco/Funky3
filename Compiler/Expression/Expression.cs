@@ -69,8 +69,9 @@ public abstract class Expression {
                     case "while":               return RightParse(While.TryParse(tokens, index), tokens);
                     case "with":                return RightParse(With.TryParse(tokens, index), tokens);
                     case "return": case "break":return RightParse(Return.TryParse(tokens, index), tokens);
-                    case "$CodeChunk":          return RightParse(CodeChunk.TryParse(tokens, index), tokens);
-                    default:                    return (null, index);
+                    default:
+                        if(tokens[index].Value.StartsWith("$CodeChunk")) return RightParse(CodeChunk.TryParse(tokens, index), tokens);
+                        return (null, index);
                 }
             case TokenType.Punctuation:
                 switch (tokens[index].Value) {
