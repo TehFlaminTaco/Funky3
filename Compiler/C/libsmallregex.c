@@ -180,28 +180,28 @@ struct re_inst
 
 
 #ifdef RE_BUILDWITH_DEBUG
-static const char* typestr[] =
+static char* typestr[] =
 {
     FOREACH_GLOBAL_TYPE(GENERATE_VAL_STRINGS_VAL)
 };
 
-const char* typenames[] =
+char* typenames[] =
 {
     FOREACH_GLOBAL_TYPE(GENERATE_VAR_NAMES_VAL)
 };
 #endif
 
 // Private function declarations:
-static int32_t matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, const char* text);
-static int32_t matchcharclass(char c, const char* str);
+static int32_t matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text, size_t* length);
+static int32_t matchcharclass(char c, char* str);
 static int32_t matchone(struct small_regex * pattern, struct regex_objs_t p, char c);
 static int32_t matchdigit(char c);
 static int32_t matchalpha(char c);
 static int32_t matchwhitespace(char c);
-static int32_t matchmetachar(char c, const char* str);
-static int32_t matchrange(char c, const char* str);
+static int32_t matchmetachar(char c, char* str);
+static int32_t matchrange(char c, char* str);
 static int32_t ismetachar(char c);
-static int32_t __regex_compile_count(const char* pattern, struct args_reg_compile * args);
+static int32_t __regex_compile_count(char* pattern, struct args_reg_compile * args);
 static int32_t __check_state_size(uint32_t sp, uint32_t * reacnt, uint32_t default_dep, void ** ptr, size_t structsize, uint32_t max_reallocs);
 
 static int32_t
@@ -279,7 +279,7 @@ regex_free(struct small_regex * regex)
 }
 
 int32_t
-regex_match(const char* pattern, const char* text)
+regex_match(char* pattern, char* text, size_t* length)
 {
     int32_t ret = -1;
     struct small_regex * reg = regex_compile(pattern);
@@ -289,7 +289,7 @@ regex_match(const char* pattern, const char* text)
     }
     else
     {
-        ret = regex_matchp(reg, text);
+        ret = regex_matchp(reg, text, length);
         KFREE(reg);
     }
 
@@ -297,7 +297,7 @@ regex_match(const char* pattern, const char* text)
 }
 
 int32_t
-regex_matchp(struct small_regex * regx, const char* text)
+regex_matchp(struct small_regex * regx, char* text, size_t* length)
 {
 	ASSERT_NULL_R(regx, -1);
 	ASSERT_NULL_R(text, -1);
@@ -308,14 +308,14 @@ regex_matchp(struct small_regex * regx, const char* text)
 	if (objs[0].type == BEGIN)
 	{
 		//starts from begin ^
-		return ( (matchpattern(regx, objs, text)) ? 0 : -1 );
+		return ( (matchpattern(regx, objs, text, length)) ? 0 : -1 );
 	}
 	else
 	{
 		do
 		{
 			idx += 1;
-			if (matchpattern(regx, objs, text))
+			if (matchpattern(regx, objs, text, length))
 			{
 				return idx;
 			}
@@ -326,7 +326,7 @@ regex_matchp(struct small_regex * regx, const char* text)
 }
 
 static int32_t
-__regex_compile_count(const char* pattern, struct args_reg_compile * args)
+__regex_compile_count(char* pattern, struct args_reg_compile * args)
 {
     uint32_t i = 0;         //current character index
     unsigned char c = 0;    //character
@@ -452,7 +452,7 @@ __regex_compile_count(const char* pattern, struct args_reg_compile * args)
 }
 
 struct small_regex *
-regex_compile(const char* pattern)
+regex_compile(char* pattern)
 {
 	ASSERT_NULL_R(pattern, NULL);
 
@@ -746,7 +746,7 @@ regex_compile(const char* pattern)
 
                 re_obj[j].ccl = patoff;
 				//copy data to the structure, unsafe operation
-				memmove((void*)&patrns[patoff], (const void*) &pattern[pat_begin], pat_len);
+				memmove((void*)&patrns[patoff], (void*) &pattern[pat_begin], pat_len);
 
                 patoff += pat_len + 1; //+null
 
@@ -887,7 +887,7 @@ regex_printstrlegend(void)
 }
 
 void
-regex_printstr(const char * text, size_t textlen, struct state * state)
+regex_printstr(char * text, size_t textlen, struct state * state)
 {
     for (size_t i = 0; i<textlen; i++)
     {
@@ -945,7 +945,7 @@ matchalphanum(char c)
 }
 
 static int32_t
-matchrange(char c, const char* str)
+matchrange(char c, char* str)
 {
     DPROBE("-->%s %s with %c\r\n", __FUNCTION__, str, c);
 	return ((c != '-') && (str[0] != '-') && (str[1] == '-') && (str[2] != '\0') && ((c >= str[0]) && (c <= str[2])));
@@ -958,7 +958,7 @@ ismetachar(char c)
 }
 
 static int32_t
-matchmetachar(char c, const char* str)
+matchmetachar(char c, char* str)
 {
 	switch (str[0])
 	{
@@ -992,7 +992,7 @@ matchmetachar(char c, const char* str)
 }
 
 static int32_t
-matchcharclass(char c, const char* str)
+matchcharclass(char c, char* str)
 {
     do
     {
@@ -1046,10 +1046,10 @@ matchone(struct small_regex * pattern, struct regex_objs_t p, char c)
             }
 
 		case CHAR_CLASS:
-		return matchcharclass(c, (const char*)OFFSET_TO_PATTERN(pattern, p.ccl));
+		return matchcharclass(c, (char*)OFFSET_TO_PATTERN(pattern, p.ccl));
 
 		case INV_CHAR_CLASS:
-		return !matchcharclass(c, (const char*)OFFSET_TO_PATTERN(pattern, p.ccl));
+		return !matchcharclass(c, (char*)OFFSET_TO_PATTERN(pattern, p.ccl));
 
 		case DIGIT:
 		return matchdigit(c);
@@ -1083,8 +1083,9 @@ matchone(struct small_regex * pattern, struct regex_objs_t p, char c)
 }
 
 static int32_t
-matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, const char* text)
+matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text, size_t* length)
 {
+    *length = 0;
     uint32_t stackrealcnt = 1;
     if (reg->pstsize == 0)
     {
@@ -1141,11 +1142,13 @@ matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, const char
                     if (pattern[STP.offset].type == END)
                     {
                         uint32_t est = STP.st;
+                        *length = STP.st;
                         KFREE(state);
                         return (text[est] == '\0') ? evalres : 0;
                     }
                     else
                     {
+                        *length = STP.st;
                         KFREE(state);
                         return evalres;
                     }

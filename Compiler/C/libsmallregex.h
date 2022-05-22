@@ -158,10 +158,10 @@ void regex_free(struct small_regex * regex);
  * The size of the data section is stored in the field totalsize.
  * But, the array can be readed until the instance of struct regex_objs_t field.type == UNUSED
  *
- * pattern (const char*) regex pattern (null terminated string)
+ * pattern (char*) regex pattern (null terminated string)
  * returns: a valid pointer to the intance or NULL on fail
  */
-struct small_regex * regex_compile(const char* pattern);
+struct small_regex * regex_compile(char* pattern);
 
 /* regex_get_size
  * 
@@ -177,15 +177,15 @@ uint32_t regex_get_size(struct small_regex * regex);
  * Find matches of the compiled pattern inside text.
  * 
  * regex (struct small_regex*) a valid pointer to the compiled regex pattern
- * text (const char*) a text on which pattern is applied
+ * text (char*) a text on which pattern is applied
  * returns: 0 or larger on success, -1 on error
  */
 
-int32_t regex_matchp(struct small_regex * pattern, const char* text);
+int32_t regex_matchp(struct small_regex * pattern, char* text, size_t* length);
 
 
 // Find matches of the txt pattern inside text (will compile automatically first).
-int32_t regex_match(const char* pattern, const char* text);
+int32_t regex_match(char* pattern, char* text, size_t* length);
 
 #ifndef BUILD_WITH_ERRORMSG
     #define LOGERR(...)
@@ -219,7 +219,7 @@ void regex_print(struct small_regex * pattern);
 
 #ifdef RE_BUILDWITH_TRACEMATCH_PROC
 void regex_printstrlegend(void);
-void regex_printstr(const char * text, size_t textlen, struct state * state);
+void regex_printstr(char * text, size_t textlen, struct state * state);
 #else
 #define regex_printstr(...)
 #define regex_printstrlegend(...)

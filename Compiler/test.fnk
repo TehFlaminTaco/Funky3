@@ -1,15 +1,27 @@
+$$ Match
+var text = "Quick Brown Fox Jumps Over The Lazy Dog"
+print("MATCH");
+print("",text:match("\\w+"));           $$ "Quick"
+print("",text:match("\\w+", 6));        $$ "Brown"
+print("",text:match("B\\w+"));          $$ "Brown"
+print("",text:match("\\w+\\s\\w+"));    $$ "Quick Brown"
+print("",text:match("\\d+"));           $$ "nil"
+print("",text:match("\\w+$"));          $$ "Dog"
 
-math = [];
+$$ Find
+var text = "Quick Brown Fox Jumps Over The Lazy Dog"
+print("FIND");
+print("",text:find("\\w+"));            $$ 0
+print("",text:find("\\w+", 5));         $$ 6
+print("",text:find("B\\w+"));           $$ 6
+print("",text:find("\\d+"));            $$ -1
+print("",text:find("\\w+$"));           $$ 36
 
-$$ DON'T DO THIS, THIS IS BAD.
-$cInlineStart 
-VarRawSet(scope, VarNewString("numberMeta") ,&MetatableNumber);
-$cInlineEnd 
-
-numberMeta.get = math;
-
-function math.add2(n){
-    return n+2;
-}
-
-print(7:add2())
+$$ Sub
+var text = "Text";
+print("SUB");
+print("",text:sub(0,2));                $$ "Te"
+print("",text:sub(2));                  $$ "xt"
+print("",text:sub(-2));                 $$ "xt"
+print("",text:sub(1, -2));              $$ "e"
+print("",text:sub(-4, 12));             $$ "TextTextText"

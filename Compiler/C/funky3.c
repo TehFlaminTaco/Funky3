@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "libsmallregex.c"
+
 #include "funky3.h"
 
 #include "tgc.c"
