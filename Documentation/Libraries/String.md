@@ -18,7 +18,7 @@ string.find(haystack, needle)
 ## match
 **Description:**\
 Match a string against a regular expression. If it matches, return the full match. If it doesn't match, return `nil`.\
-An optional third "offset" argument can be provided to start the search at a given position.
+An optional third "offset" argument can be provided to start the search at a given position. If the Regex contains groups, the returned array will contain the matches in the order of the groups, where `0` is the entire match.
 
 **Arguments:**
 * string **haystack**: The string to match against.
@@ -28,6 +28,21 @@ An optional third "offset" argument can be provided to start the search at a giv
 ```coffeescript
 string.match(haystack, "^[a-z]+$")
 string.match(haystack, "^[a-z]+$", 7)
+```
+
+## matches
+**Description:**\
+Matches operates like match, but returns an iterator that yields all matches.
+
+**Arguments:**
+* string **haystack**: The string to match against.
+* string **needle**: The regular expression to match.
+* number? **offset**: The offset to start the search at. If not provided, the search will start at the beginning of the string.
+
+```coffeescript
+for s in string.matches(haystack, "^[a-z]+$"){
+    print(s)
+}
 ```
 
 ## sub

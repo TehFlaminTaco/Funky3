@@ -10,6 +10,14 @@ print("",text:match("\\w+$"));          $$ "Dog"
 
 $$ Groups
 print("",text:match("(\\w+) (\\w+)")); $$ ["Quick Brown", "Quick", "Brown"]
+print("",text:match("(\\w+) (\\w+)", 6)); $$ ["Brown Fox", "Brown", "Fox"]
+
+$$ Matches
+print("MATCHES");
+var text = "Quick Brown Fox Jumps Over The Lazy Dog"
+for s in text:matches("\\w+"){
+    print("",s);
+}
 
 $$ Find
 var text = "Quick Brown Fox Jumps Over The Lazy Dog"
@@ -19,6 +27,11 @@ print("",text:find("\\w+", 5));         $$ 6
 print("",text:find("B\\w+"));           $$ 6
 print("",text:find("\\d+"));            $$ -1
 print("",text:find("\\w+$"));           $$ 36
+
+$$ Replace
+var text = "Quick Brown Fox Jumps Over The Lazy Dog"
+print("REPLACE");
+print("",text:replace("\\w+", "Dog"));   $$ "Dog Dog Dog Dog Dog Dog"
 
 $$ Sub
 var text = "Text";
