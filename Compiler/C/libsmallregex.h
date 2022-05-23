@@ -101,6 +101,7 @@ typedef struct regex_objs_t
     {
         uint8_t  ch;        //the character itself
         uint32_t ccl;       //an offset to characters in class
+        uint8_t group;      //the group number
     };
 } regex_objs_t;
 
@@ -113,8 +114,16 @@ typedef struct small_regex
     uint32_t objoffset;     //indicates the start of the regex objs
     uint32_t totalsize;     //total size of data[]
     uint32_t pstsize;       //predicted stack size
+    uint8_t maxgroup;       //maximum group number
     uint8_t data[];         //data
 } small_regex_t;
+
+typedef struct match_group
+{
+    uint32_t start;
+    uint32_t end;
+    uint8_t matched;
+} match_group_t;
 
 //returns the pointer to the struct regex_objs_t instances
 #define SECTION_OBJECTS(_pat_) \
@@ -181,11 +190,11 @@ uint32_t regex_get_size(struct small_regex * regex);
  * returns: 0 or larger on success, -1 on error
  */
 
-int32_t regex_matchp(struct small_regex * pattern, char* text, size_t* length);
+int32_t regex_matchp(struct small_regex * pattern, char* text, size_t* groupc, match_group_t** groups);
 
 
 // Find matches of the txt pattern inside text (will compile automatically first).
-int32_t regex_match(char* pattern, char* text, size_t* length);
+int32_t regex_match(char* pattern, char* text, size_t* groupc, match_group_t** groups);
 
 #ifndef BUILD_WITH_ERRORMSG
     #define LOGERR(...)

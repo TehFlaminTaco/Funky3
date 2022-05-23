@@ -192,7 +192,7 @@ char* typenames[] =
 #endif
 
 // Private function declarations:
-static int32_t matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text, size_t* length);
+static int32_t matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text, size_t* groupc, match_group_t** groups);
 static int32_t matchcharclass(char c, char* str);
 static int32_t matchone(struct small_regex * pattern, struct regex_objs_t p, char c);
 static int32_t matchdigit(char c);
@@ -279,7 +279,7 @@ regex_free(struct small_regex * regex)
 }
 
 int32_t
-regex_match(char* pattern, char* text, size_t* length)
+regex_match(char* pattern, char* text, size_t* groupc, match_group_t** groups)
 {
     int32_t ret = -1;
     struct small_regex * reg = regex_compile(pattern);
@@ -289,7 +289,7 @@ regex_match(char* pattern, char* text, size_t* length)
     }
     else
     {
-        ret = regex_matchp(reg, text, length);
+        ret = regex_matchp(reg, text, groupc, groups);
         KFREE(reg);
     }
 
@@ -297,7 +297,7 @@ regex_match(char* pattern, char* text, size_t* length)
 }
 
 int32_t
-regex_matchp(struct small_regex * regx, char* text, size_t* length)
+regex_matchp(struct small_regex * regx, char* text, size_t* groupc, match_group_t** groups)
 {
 	ASSERT_NULL_R(regx, -1);
 	ASSERT_NULL_R(text, -1);
@@ -308,14 +308,14 @@ regex_matchp(struct small_regex * regx, char* text, size_t* length)
 	if (objs[0].type == BEGIN)
 	{
 		//starts from begin ^
-		return ( (matchpattern(regx, objs, text, length)) ? 0 : -1 );
+		return ( (matchpattern(regx, objs, text, groupc, groups)) ? 0 : -1 );
 	}
 	else
 	{
 		do
 		{
 			idx += 1;
-			if (matchpattern(regx, objs, text, length))
+			if (matchpattern(regx, objs, text, groupc, groups))
 			{
 				return idx;
 			}
@@ -459,6 +459,10 @@ regex_compile(char* pattern)
 	struct re_inst * inst = NULL;
     struct small_regex * re_compiled = NULL;
     struct regex_objs_t * re_obj = NULL;
+
+    uint8_t groupStack[256];
+    uint8_t groupStackIdx = 0;
+    uint8_t maxGroup = 1;
 
     //temp
     inst = (struct re_inst*) KMALLOC(DEFAULT_TEMP_LEN, sizeof(struct re_inst));
@@ -616,6 +620,8 @@ regex_compile(char* pattern)
                 re_obj[j].type = GROUPSTART;
                 re_obj[j].falseoffset = inst[resel].failoff;  //offset to the end of the group
                 re_obj[j].trueoffset = j+1;
+                re_obj[j].group = maxGroup;
+                groupStack[groupStackIdx++] = maxGroup++;
 			break;
 
 			case ')':
@@ -635,7 +641,7 @@ regex_compile(char* pattern)
                 re_obj[j].type = GROUPEND;
                 re_obj[j].falseoffset = inst[resel].failoff;  //offset to the end of the block/group
                 re_obj[j].trueoffset = j+1;
-
+                re_obj[j].group = groupStack[--groupStackIdx];
 			break;
 
 			/* Escaped character-classes (\s \w ...): */
@@ -775,7 +781,7 @@ regex_compile(char* pattern)
 
 	//move next, j now indicates the amount of the recs from 0..j-1
 	j++;
-
+    re_compiled->maxgroup = maxGroup;
 	KFREE(inst);
 
 	return re_compiled;
@@ -1083,9 +1089,10 @@ matchone(struct small_regex * pattern, struct regex_objs_t p, char c)
 }
 
 static int32_t
-matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text, size_t* length)
+matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text, size_t* groupc, match_group_t** groups)
 {
-    *length = 0;
+    *groups = KMALLOC(sizeof(match_group_t), reg->maxgroup);
+    *groupc = reg->maxgroup;
     uint32_t stackrealcnt = 1;
     if (reg->pstsize == 0)
     {
@@ -1142,13 +1149,17 @@ matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text
                     if (pattern[STP.offset].type == END)
                     {
                         uint32_t est = STP.st;
-                        *length = STP.st;
+                        (*groups)[0].start = 0;
+                        (*groups)[0].end = STP.st;
+                        (*groups)[0].matched = !!evalres;
                         KFREE(state);
                         return (text[est] == '\0') ? evalres : 0;
                     }
                     else
                     {
-                        *length = STP.st;
+                        (*groups)[0].start = 0;
+                        (*groups)[0].end = STP.st;
+                        (*groups)[0].matched = !!evalres;
                         KFREE(state);
                         return evalres;
                     }
@@ -1180,7 +1191,7 @@ matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text
                     STP.offset = pattern[STP.offset].trueoffset;
 
                     //check further if it matches the next char
-                    if ( ( (pattern[offset0].type != END) && (pattern[offset0].type != UNUSED)) && (pattern[offset0].type != BRANCH) && (STP.st0 != STP.st) )
+                    if ( ( (pattern[offset0].type != END) && (pattern[offset0].type != UNUSED)) && (pattern[offset0].type != BRANCH) && (pattern[offset0].type != GROUPEND) && (STP.st0 != STP.st) )
                     {
                             DPROBE("PROBING FORWARD: offset0: %d text: %c st: %d\r\n", offset0, text[STP.st], STP.st);
 
@@ -1274,7 +1285,7 @@ matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text
 
             case GROUPEND: //leaving group T: next F: EXIT or next GROUPEND/BRANCH
                 DPROBE("LEAVING GROUP from [%.4d](%s) ", STP.offset, typenames[pattern[STP.offset].type]);
-
+                //printf("GROUP: %i, START: %i, END: %i, EVALRES: %i\n", pattern[STP.offset].group, brtxcoff, STP.st, evalres);
                 if (evalres == 0)
                 {
                     //restore the st
@@ -1283,6 +1294,9 @@ matchpattern(struct small_regex * reg, struct regex_objs_t * pattern, char* text
                 }
                 else
                 {
+                    (*groups)[pattern[STP.offset].group].start = brtxcoff;
+                    (*groups)[pattern[STP.offset].group].end = STP.st;
+                    (*groups)[pattern[STP.offset].group].matched = 1;
                     STP.offset = pattern[STP.offset].trueoffset;
                     brtxcoff = 0; //reset current offset
                 }

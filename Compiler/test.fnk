@@ -8,6 +8,9 @@ print("",text:match("\\w+\\s\\w+"));    $$ "Quick Brown"
 print("",text:match("\\d+"));           $$ "nil"
 print("",text:match("\\w+$"));          $$ "Dog"
 
+$$ Groups
+print("",text:match("(\\w+) (\\w+)")); $$ ["Quick Brown", "Quick", "Brown"]
+
 $$ Find
 var text = "Quick Brown Fox Jumps Over The Lazy Dog"
 print("FIND");
