@@ -53,6 +53,59 @@ Var* StringMatch(Var* scope, Var* args){
     return out;
 }
 
+Var* _stringMatches(Var* scope, Var* args){
+    Var* haystack = VarAsString(VarRawGet(scope, VarNewString("haystack")));
+    Var* needle = VarAsString(VarRawGet(scope, VarNewString("needle")));
+    Var* offVar = VarRawGet(scope, VarNewString("offset"));
+    if(haystack -> type != VAR_STRING || needle -> type != VAR_STRING){
+        return &UNDEFINED;
+    }
+    if(offVar -> type != VAR_NUMBER){
+        return &UNDEFINED;
+    }
+    double offD = 0;
+    memcpy(&offD, &offVar -> value, sizeof(double));
+    int offset = (int)offD;
+    if(offset < 0){
+        offset = 0;
+    }
+    int haystackLen = strlen(haystack -> value);
+    if(offset >= haystackLen){
+        return &UNDEFINED;
+    }
+
+    match_group_t* groups;
+    size_t groupc;
+    int result = regex_match(needle -> value, (haystack -> value) + offset, &groupc, &groups);
+    if(result < 0){
+        free(groups);
+        return &NIL;
+    }
+    if(groupc == 1){ // No groups, return just a string.
+        size_t out_len = groups[0].end - groups[0].start;
+        char* out = malloc(out_len + 1);
+        memcpy(out, haystack -> value + result + offset, out_len);
+        out[out_len] = '\0';
+        Var* out_var = VarNewString(out);
+        free(out);
+        return out_var;
+    }
+    Var* out = VarNewList();
+    for(int i=0; i<groupc; i++){
+        char* str = calloc(groups[i].end - groups[i].start + 1, sizeof(char));
+        strncpy(str, (haystack -> value) + groups[i].start, groups[i].end - groups[i].start);
+        str[groups[i].end - groups[i].start] = '\0';
+        VarRawSet(out, VarNewNumber(i), VarNewString(str));
+        free(str);
+    }
+    free(groups);
+    return out;
+}
+
+Var* StringMatches(Var* scope, Var* args){
+
+}
+
 Var* StringFind(Var* scope, Var* args){
     Var* haystack = VarAsString(ArgVarGet(args, 0, "haystack"));
     Var* needle = VarAsString(ArgVarGet(args, 1, "needle"));
