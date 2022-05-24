@@ -13,7 +13,7 @@
 #include "linkedlist.h"
 
 inline static int ISUNDEFINED(Var* var){
-    return var == NULL || (var->type == VAR_NULL && var->value == 0);
+    return var == NULL || var->type == VAR_NULL && var->value == 0;
 }
 
 Var* VarNew(char type, long long value, Var* metatable){
