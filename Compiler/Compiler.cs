@@ -120,6 +120,8 @@ public static class Compiler
     }
 
     public static void Compile(string sourceCode, StreamWriter bodyOutput, StreamWriter headerOutput){
+        CHeader.HeaderCodeChunks.Clear();
+        CInline.InlineCodeChunks.Clear();
         string preprocessedCode = Preprocessor.Process(sourceCode);
         WebServer.PreCompiled[WebServer.CurrentSession] =  (preprocessedCode, DateTime.Now);
         CurrentCode = preprocessedCode;
