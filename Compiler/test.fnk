@@ -1,53 +1,49 @@
-$$ Match
-var text = "Quick Brown Fox Jumps Over The Lazy Dog"
-print("MATCH");
-print("",text:match("\\w+"));           $$ "Quick"
-print("",text:match("\\w+", 6));        $$ "Brown"
-print("",text:match("B\\w+"));          $$ "Brown"
-print("",text:match("\\w+\\s\\w+"));    $$ "Quick Brown"
-print("",text:match("\\d+"));           $$ "nil"
-print("",text:match("\\w+$"));          $$ "Dog"
+$$ Abs
+print("ABS")
+print("", math.abs(1));    $$ 1
+print("", math.abs(-1));   $$ 1
 
-$$ Groups
-print("",text:match("(\\w+) (\\w+)")); $$ ["Quick Brown", "Quick", "Brown"]
-print("",text:match("(\\w+) (\\w+)", 6)); $$ ["Brown Fox", "Brown", "Fox"]
+$$ Round
+print("ROUND")
+print("", math.round(1.5));         $$ 2
+print("", math.round(1.4));         $$ 1
+print("", math.round(16.5, 10));    $$ 20
+print("", math.round(1.66, 0.1));   $$ 1.7
 
-$$ Matches
-print("MATCHES");
-var text = "Quick Brown Fox Jumps Over The Lazy Dog"
-for s in text:matches("\\w+"){
-    print("",s);
-}
+$$ Floor
+print("FLOOR")
+print("", math.floor(1));           $$ 1
+print("", math.floor(1.5));         $$ 1
+print("", math.floor(1.6));         $$ 1
+print("", math.floor(16.5, 10));    $$ 10
+print("", math.floor(1.65, 0.1));   $$ 1.6
 
-$$ Find
-var text = "Quick Brown Fox Jumps Over The Lazy Dog"
-print("FIND");
-print("",text:find("\\w+"));            $$ 0
-print("",text:find("\\w+", 5));         $$ 6
-print("",text:find("B\\w+"));           $$ 6
-print("",text:find("\\d+"));            $$ -1
-print("",text:find("\\w+$"));           $$ 36
 
-$$ Replace
-var text = "Quick Brown Fox Jumps Over The Lazy Dog"
-print("REPLACE");
-print("",text:replace("\\w+", "Dog"));   $$ "Dog Dog Dog Dog Dog Dog"
-print("",text:replace("\\w+", "W($0)")); $$ "W(Quick) W(Brown) W(Fox) W(Jumps) W(Over) W(The) W(Lazy) W(Dog)"
-print("",text:replace("(\\w+) (\\w+)", "$2 $1,")); $$ "Brown Quick, Jumps Fox, The Over, Dog Lazy,"
-print("",text:replace("\\w+", string.reverse)); $$ "kciuQ nworB xoF spmuJ revO ehT yzaL goD"
+$$ Ceil
+print("CEIL")
+print("", math.ceil(1));            $$ 1
+print("", math.ceil(1.5));          $$ 2
+print("", math.ceil(1.4));          $$ 2
+print("", math.ceil(16.5, 10));     $$ 20
+print("", math.ceil(1.65, 0.1));    $$ 1.7
 
-$$ Sub
-var text = "Text";
-print("SUB");
-print("",text:sub(0,2));                $$ "Te"
-print("",text:sub(2));                  $$ "xt"
-print("",text:sub(-2));                 $$ "xt"
-print("",text:sub(1, -2));              $$ "e"
-print("",text:sub(-4, 12));             $$ "TextTextText"
+$$ Min
+print("MIN")
+print("", math.min(8));             $$ 8
+print("", math.min(1, 2));          $$ 1
+print("", math.min(3, 1, 2));       $$ 1
 
-$$ Upper, Lower
-print("REVERSE, UPPER, LOWER")
-var text = "Quick Brown Fox Jumps Over The Lazy Dog"
-print("",text:reverse()); $$ "doG yzal eht revO spmuJ xoF nworb uickQ"
-print("", text:upper()) $$ "QUICK BROWN FOX JUMPS OVER THE LAZY DOG"
-print("", text:lower()) $$ "quick brown fox jumps over the lazy dog"
+$$ Max
+print("MAX")
+print("", math.max(8));             $$ 8
+print("", math.max(1, 2));          $$ 2
+print("", math.max(3, 1, 2));       $$ 3
+
+$$ Clamp
+print("CLAMP")
+print("", math.clamp(0, 1, 2));     $$ 1
+print("", math.clamp(1, 2, 0));     $$ 1
+print("", math.clamp(2, 0, 1));     $$ 1
+print("", math.clamp(2, 1, 0));     $$ 1
+print("", math.clamp(1, 0, 2));     $$ 1
+print("", math.clamp(0, 2, 1));     $$ 1

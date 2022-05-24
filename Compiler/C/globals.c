@@ -8,6 +8,7 @@
 
 #include "libs/list.c"
 #include "libs/string.c"
+#include "libs/math.c"
 
 Var* Print(Var* scope, Var* args){
     DebugPrint("PRINT\n");
@@ -154,6 +155,11 @@ void PopulateGlobals(Var* globals){
     Var* string = VarNewList();
     VarRawSet(globals, VarNewString("string"), string);
     PopulateStringLib(string);
+
+    // Math
+    Var* math = VarNewList();
+    VarRawSet(globals, VarNewString("math"), math);
+    PopulateMathLib(math);
 }
 
 #endif
