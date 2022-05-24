@@ -129,9 +129,9 @@ Var* MathClamp(Var* scope, Var* args){
     ArgVarSet(cArgs, 1, "right", A);
     int CA = VarTruthy(VarFunctionCall(cLT, cArgs));
 
-    if(AB && BC || !AB && !BC)return B;
-    if(BC && CA || !BC && !CA)return C;
-    if(CA && AB || !CA && !AB)return A;
+    if(AB == BC)return B;
+    if(BC == CA)return C;
+    if(CA == AB)return A;
     return &NIL; // Shouldn't happen, unless someone messed with metatables.
 }
 
