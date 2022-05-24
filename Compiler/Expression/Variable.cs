@@ -146,7 +146,7 @@ public class IndexVariable : Variable, ILeftProvider {
                 sb.Append(valueBody);
                 // Use VarCurryGet if curried
                 if(IsCurry) {
-                    sb.AppendLine($"{resultHolder} = VarCurryGet({valueStackName}, VarNewString(\"{Identifier}\"));");
+                    sb.AppendLine($"Var* {resultHolder} = VarCurryGet({valueStackName}, VarNewString(\"{Identifier}\"));");
                 }else{
                     sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, VarNewString(\"{Identifier}\"));");
                 }
