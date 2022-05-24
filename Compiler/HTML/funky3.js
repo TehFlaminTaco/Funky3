@@ -387,13 +387,15 @@ function convertJsFunctionToWasm(func, sig) {
       'i': 'i32',
       'j': 'i64',
       'f': 'f32',
-      'd': 'f64'
+      'd': 'f64',
+      'p': 'i32',
     };
     var type = {
       parameters: [],
       results: sig[0] == 'v' ? [] : [typeNames[sig[0]]]
     };
     for (var i = 1; i < sig.length; ++i) {
+      assert(sig[i] in typeNames, 'invalid signature char: ' + sig[i]);
       type.parameters.push(typeNames[sig[i]]);
     }
     return new WebAssembly.Function(type, func);
@@ -409,6 +411,7 @@ function convertJsFunctionToWasm(func, sig) {
   var sigParam = sig.slice(1);
   var typeCodes = {
     'i': 0x7f, // i32
+    'p': 0x7f, // i32
     'j': 0x7e, // i64
     'f': 0x7d, // f32
     'd': 0x7c, // f64
@@ -417,6 +420,7 @@ function convertJsFunctionToWasm(func, sig) {
   // Parameters, length + signatures
   typeSection = typeSection.concat(uleb128Encode(sigParam.length));
   for (var i = 0; i < sigParam.length; ++i) {
+    assert(sigParam[i] in typeCodes, 'invalid signature char: ' + sigParam[i]);
     typeSection.push(typeCodes[sigParam[i]]);
   }
 
@@ -608,50 +612,6 @@ if (typeof WebAssembly != 'object') {
   abort('no native wasm support detected');
 }
 
-// include: runtime_safe_heap.js
-
-
-// In MINIMAL_RUNTIME, setValue() and getValue() are only available when
-// building with safe heap enabled, for heap safety checking.
-// In traditional runtime, setValue() and getValue() are always available
-// (although their use is highly discouraged due to perf penalties)
-
-/** @param {number} ptr
-    @param {number} value
-    @param {string} type
-    @param {number|boolean=} noSafe */
-function setValue(ptr, value, type = 'i8', noSafe) {
-  if (type.endsWith('*')) type = 'i32';
-  switch (type) {
-    case 'i1': HEAP8[((ptr)>>0)] = value; break;
-    case 'i8': HEAP8[((ptr)>>0)] = value; break;
-    case 'i16': HEAP16[((ptr)>>1)] = value; break;
-    case 'i32': HEAP32[((ptr)>>2)] = value; break;
-    case 'i64': (tempI64 = [value>>>0,(tempDouble=value,(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[((ptr)>>2)] = tempI64[0],HEAP32[(((ptr)+(4))>>2)] = tempI64[1]); break;
-    case 'float': HEAPF32[((ptr)>>2)] = value; break;
-    case 'double': HEAPF64[((ptr)>>3)] = value; break;
-    default: abort('invalid type for setValue: ' + type);
-  }
-}
-
-/** @param {number} ptr
-    @param {string} type
-    @param {number|boolean=} noSafe */
-function getValue(ptr, type = 'i8', noSafe) {
-  if (type.endsWith('*')) type = 'i32';
-  switch (type) {
-    case 'i1': return HEAP8[((ptr)>>0)];
-    case 'i8': return HEAP8[((ptr)>>0)];
-    case 'i16': return HEAP16[((ptr)>>1)];
-    case 'i32': return HEAP32[((ptr)>>2)];
-    case 'i64': return HEAP32[((ptr)>>2)];
-    case 'float': return HEAPF32[((ptr)>>2)];
-    case 'double': return Number(HEAPF64[((ptr)>>3)]);
-    default: abort('invalid type for getValue: ' + type);
-  }
-}
-
-// end include: runtime_safe_heap.js
 // Wasm globals
 
 var wasmMemory;
@@ -709,7 +669,10 @@ function ccall(ident, returnType, argTypes, args, opts) {
   };
 
   function convertReturnValue(ret) {
-    if (returnType === 'string') return UTF8ToString(ret);
+    if (returnType === 'string') {
+      
+      return UTF8ToString(ret);
+    }
     if (returnType === 'boolean') return Boolean(ret);
     return ret;
   }
@@ -857,7 +820,6 @@ function UTF8ArrayToString(heapOrArray, idx, maxBytesToRead) {
  * @return {string}
  */
 function UTF8ToString(ptr, maxBytesToRead) {
-  ;
   return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : '';
 }
 
@@ -1456,12 +1418,16 @@ function abort(what) {
   // Use a wasm runtime error, because a JS error might be seen as a foreign
   // exception, which means we'd run destructors on it. We need the error to
   // simply make the program stop.
+  // FIXME This approach does not work in Wasm EH because it currently does not assume
+  // all RuntimeErrors are from traps; it decides whether a RuntimeError is from
+  // a trap or not based on a hidden field within the object. So at the moment
+  // we don't have a way of throwing a wasm trap from JS. TODO Make a JS API that
+  // allows this in the wasm spec.
 
   // Suppress closure compiler warning here. Closure compiler's builtin extern
   // defintion for WebAssembly.RuntimeError claims it takes no arguments even
   // though it can.
   // TODO(https://github.com/google/closure-compiler/pull/3913): Remove if/when upstream closure gets fixed.
-
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
 
@@ -1762,6 +1728,25 @@ var ASM_CONSTS = {
         });
     }
 
+  
+    /** @param {number} ptr
+        @param {string} type
+        @param {number|boolean=} noSafe */
+  function getValue(ptr, type = 'i8', noSafe) {
+      if (type.endsWith('*')) type = 'u32';
+      switch (type) {
+        case 'i1': return HEAP8[((ptr)>>0)];
+        case 'i8': return HEAP8[((ptr)>>0)];
+        case 'i16': return HEAP16[((ptr)>>1)];
+        case 'i32': return HEAP32[((ptr)>>2)];
+        case 'i64': return HEAP32[((ptr)>>2)];
+        case 'float': return HEAPF32[((ptr)>>2)];
+        case 'double': return Number(HEAPF64[((ptr)>>3)]);
+        default: abort('invalid type for getValue: ' + type);
+      }
+      return null;
+    }
+
   var wasmTableMirror = [];
   function getWasmTableEntry(funcPtr) {
       var func = wasmTableMirror[funcPtr];
@@ -1802,6 +1787,25 @@ var ASM_CONSTS = {
       return error.stack.toString();
     }
 
+  
+    /** @param {number} ptr
+        @param {number} value
+        @param {string} type
+        @param {number|boolean=} noSafe */
+  function setValue(ptr, value, type = 'i8', noSafe) {
+      if (type.endsWith('*')) type = 'u32';
+      switch (type) {
+        case 'i1': HEAP8[((ptr)>>0)] = value; break;
+        case 'i8': HEAP8[((ptr)>>0)] = value; break;
+        case 'i16': HEAP16[((ptr)>>1)] = value; break;
+        case 'i32': HEAP32[((ptr)>>2)] = value; break;
+        case 'i64': (tempI64 = [value>>>0,(tempDouble=value,(+(Math.abs(tempDouble))) >= 1.0 ? (tempDouble > 0.0 ? ((Math.min((+(Math.floor((tempDouble)/4294967296.0))), 4294967295.0))|0)>>>0 : (~~((+(Math.ceil((tempDouble - +(((~~(tempDouble)))>>>0))/4294967296.0)))))>>>0) : 0)],HEAP32[((ptr)>>2)] = tempI64[0],HEAP32[(((ptr)+(4))>>2)] = tempI64[1]); break;
+        case 'float': HEAPF32[((ptr)>>2)] = value; break;
+        case 'double': HEAPF64[((ptr)>>3)] = value; break;
+        default: abort('invalid type for setValue: ' + type);
+      }
+    }
+
   function setWasmTableEntry(idx, func) {
       wasmTable.set(idx, func);
       // With ABORT_ON_WASM_EXCEPTIONS wasmTable.get is overriden to return wrapped
@@ -1816,13 +1820,17 @@ var ASM_CONSTS = {
       return demangleAll(js);
     }
 
+  function ___assert_fail(condition, filename, line, func) {
+      abort('Assertion failed: ' + UTF8ToString(condition) + ', at: ' + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
+    }
+
   function __emscripten_throw_longjmp() { throw Infinity; }
 
   function _emscripten_memcpy_big(dest, src, num) {
       HEAPU8.copyWithin(dest, src, src + num);
     }
 
-  function _emscripten_get_heap_max() {
+  function getHeapMax() {
       return HEAPU8.length;
     }
   
@@ -1863,7 +1871,6 @@ var ASM_CONSTS = {
         return ret;
       }};
   function _fd_write(fd, iov, iovcnt, pnum) {
-      ;
       // hack to support printf in SYSCALLS_REQUIRE_FILESYSTEM=0
       var num = 0;
       for (var i = 0; i < iovcnt; i++) {
@@ -1875,7 +1882,7 @@ var ASM_CONSTS = {
         }
         num += len;
       }
-      HEAP32[((pnum)>>2)] = num;
+      HEAPU32[((pnum)>>2)] = num;
       return 0;
     }
 
@@ -1919,6 +1926,7 @@ function checkIncomingModuleAPI() {
   ignoredModuleProp('fetchSettings');
 }
 var asmLibraryArg = {
+  "__assert_fail": ___assert_fail,
   "_emscripten_throw_longjmp": __emscripten_throw_longjmp,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
@@ -2015,8 +2023,6 @@ function invoke_vi(index,a1) {
 
 unexportedRuntimeFunction('ccall', false);
 unexportedRuntimeFunction('cwrap', false);
-unexportedRuntimeFunction('setValue', false);
-unexportedRuntimeFunction('getValue', false);
 unexportedRuntimeFunction('allocate', false);
 unexportedRuntimeFunction('UTF8ArrayToString', false);
 unexportedRuntimeFunction('UTF8ToString', false);
@@ -2079,6 +2085,7 @@ Module["checkStackCookie"] = checkStackCookie;
 unexportedRuntimeFunction('ptrToString', false);
 unexportedRuntimeFunction('zeroMemory', false);
 unexportedRuntimeFunction('stringToNewUTF8', false);
+unexportedRuntimeFunction('getHeapMax', false);
 unexportedRuntimeFunction('abortOnCannotGrowMemory', false);
 unexportedRuntimeFunction('emscripten_realloc_buffer', false);
 unexportedRuntimeFunction('ENV', false);
@@ -2120,10 +2127,23 @@ unexportedRuntimeFunction('asmjsMangle', false);
 unexportedRuntimeFunction('asyncLoad', false);
 unexportedRuntimeFunction('alignMemory', false);
 unexportedRuntimeFunction('mmapAlloc', false);
+unexportedRuntimeFunction('writeI53ToI64', false);
+unexportedRuntimeFunction('writeI53ToI64Clamped', false);
+unexportedRuntimeFunction('writeI53ToI64Signaling', false);
+unexportedRuntimeFunction('writeI53ToU64Clamped', false);
+unexportedRuntimeFunction('writeI53ToU64Signaling', false);
+unexportedRuntimeFunction('readI53FromI64', false);
+unexportedRuntimeFunction('readI53FromU64', false);
+unexportedRuntimeFunction('convertI32PairToI53', false);
+unexportedRuntimeFunction('convertI32PairToI53Checked', false);
+unexportedRuntimeFunction('convertU32PairToI53', false);
 unexportedRuntimeFunction('reallyNegative', false);
 unexportedRuntimeFunction('unSign', false);
+unexportedRuntimeFunction('strLen', false);
 unexportedRuntimeFunction('reSign', false);
 unexportedRuntimeFunction('formatString', false);
+unexportedRuntimeFunction('setValue', false);
+unexportedRuntimeFunction('getValue', false);
 unexportedRuntimeFunction('PATH', false);
 unexportedRuntimeFunction('PATH_FS', false);
 unexportedRuntimeFunction('SYSCALLS', false);
@@ -2150,6 +2170,8 @@ unexportedRuntimeFunction('fillOrientationChangeEventData', false);
 unexportedRuntimeFunction('registerOrientationChangeEventCallback', false);
 unexportedRuntimeFunction('fillFullscreenChangeEventData', false);
 unexportedRuntimeFunction('registerFullscreenChangeEventCallback', false);
+unexportedRuntimeFunction('JSEvents_requestFullscreen', false);
+unexportedRuntimeFunction('JSEvents_resizeCanvasForFullscreen', false);
 unexportedRuntimeFunction('registerRestoreOldStyle', false);
 unexportedRuntimeFunction('hideEverythingExceptGivenElement', false);
 unexportedRuntimeFunction('restoreHiddenElements', false);
@@ -2180,15 +2202,6 @@ unexportedRuntimeFunction('stackTrace', false);
 unexportedRuntimeFunction('getEnvStrings', false);
 unexportedRuntimeFunction('checkWasiClock', false);
 unexportedRuntimeFunction('flush_NO_FILESYSTEM', false);
-unexportedRuntimeFunction('writeI53ToI64', false);
-unexportedRuntimeFunction('writeI53ToI64Clamped', false);
-unexportedRuntimeFunction('writeI53ToI64Signaling', false);
-unexportedRuntimeFunction('writeI53ToU64Clamped', false);
-unexportedRuntimeFunction('writeI53ToU64Signaling', false);
-unexportedRuntimeFunction('readI53FromI64', false);
-unexportedRuntimeFunction('readI53FromU64', false);
-unexportedRuntimeFunction('convertI32PairToI53', false);
-unexportedRuntimeFunction('convertU32PairToI53', false);
 unexportedRuntimeFunction('dlopenMissingError', false);
 unexportedRuntimeFunction('setImmediateWrapped', false);
 unexportedRuntimeFunction('clearImmediateWrapped', false);
@@ -2265,14 +2278,15 @@ function callMain(args) {
   var entryFunction = Module['_main'];
 
   args = args || [];
+  args.unshift(thisProgram);
 
-  var argc = args.length+1;
+  var argc = args.length;
   var argv = stackAlloc((argc + 1) * 4);
-  HEAP32[argv >> 2] = allocateUTF8OnStack(thisProgram);
-  for (var i = 1; i < argc; i++) {
-    HEAP32[(argv >> 2) + i] = allocateUTF8OnStack(args[i - 1]);
-  }
-  HEAP32[(argv >> 2) + argc] = 0;
+  var argv_ptr = argv >> 2;
+  args.forEach((arg) => {
+    HEAP32[argv_ptr++] = allocateUTF8OnStack(arg);
+  });
+  HEAP32[argv_ptr] = 0;
 
   try {
 
