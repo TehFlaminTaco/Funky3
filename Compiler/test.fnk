@@ -32,6 +32,9 @@ $$ Replace
 var text = "Quick Brown Fox Jumps Over The Lazy Dog"
 print("REPLACE");
 print("",text:replace("\\w+", "Dog"));   $$ "Dog Dog Dog Dog Dog Dog"
+print("",text:replace("\\w+", "W($0)")); $$ "W(Quick) W(Brown) W(Fox) W(Jumps) W(Over) W(The) W(Lazy) W(Dog)"
+print("",text:replace("(\\w+) (\\w+)", "$2 $1,")); $$ "Brown Quick, Jumps Fox, The Over, Dog Lazy,"
+print("",text:replace("\\w+", string.reverse)); $$ "kciuQ nworB xoF spmuJ revO ehT yzaL goD"
 
 $$ Sub
 var text = "Text";
@@ -41,3 +44,10 @@ print("",text:sub(2));                  $$ "xt"
 print("",text:sub(-2));                 $$ "xt"
 print("",text:sub(1, -2));              $$ "e"
 print("",text:sub(-4, 12));             $$ "TextTextText"
+
+$$ Upper, Lower
+print("REVERSE, UPPER, LOWER")
+var text = "Quick Brown Fox Jumps Over The Lazy Dog"
+print("",text:reverse()); $$ "doG yzal eht revO spmuJ xoF nworb uickQ"
+print("", text:upper()) $$ "QUICK BROWN FOX JUMPS OVER THE LAZY DOG"
+print("", text:lower()) $$ "quick brown fox jumps over the lazy dog"

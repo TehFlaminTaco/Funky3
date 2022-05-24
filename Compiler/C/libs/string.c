@@ -6,6 +6,8 @@
 #include "../libsmallregex.h"
 #include "../linkedlist.h"
 
+#include <ctype.h>
+
 Var* StringMatch(Var* scope, Var* args){
     Var* haystack = VarAsString(ArgVarGet(args, 0, "haystack"));
     Var* needle = VarAsString(ArgVarGet(args, 1, "needle"));
@@ -160,6 +162,51 @@ Var* StringFind(Var* scope, Var* args){
     return VarNewNumber(result + offset);
 }
 
+char* _singleReplacement(char* replacement, size_t groupc, char** groups){
+    LinkedVarList* combined = LinkedListNew();
+    int newStringLength = 0;
+    for(char* c = replacement; *c; c++){
+        if(*c == '$' && *(c+1) != '\0'){
+            c++;
+            if(*c >= '0' && *c <= '9'){
+                int group = *c - '0';
+                if(group < groupc){
+                    newStringLength += strlen(groups[group]);
+                    LinkedListPush(combined, VarNewString(groups[group]));
+                }
+            }else{
+                newStringLength++;
+                char* oneChar = malloc(2);
+                oneChar[0] = *c;
+                oneChar[1] = '\0';
+                LinkedListPush(combined, VarNewString(oneChar));
+                free(oneChar);
+            }
+        }else{
+            newStringLength++;
+            char* oneChar = malloc(2);
+            oneChar[0] = *c;
+            oneChar[1] = '\0';
+            LinkedListPush(combined, VarNewString(oneChar));
+            free(oneChar);
+        }
+    }
+
+    // Concatenate the strings in reverse order
+    newStringLength++;
+    char* string = tgc_calloc(&gc, newStringLength, sizeof(char));
+    int index = newStringLength-1;
+    string[newStringLength] = '\0';
+    for(Linklett* current = combined->first; current != NULL; current = current->next){
+        char* curString = current->var->value;
+        int curStringLength = strlen(curString);
+        index -= curStringLength;
+        strncpy(string + index, curString, curStringLength);
+    }
+    LinkedListFree(combined);
+    return string;
+}
+
 Var* StringReplace(Var* scope, Var* args){
     Var* haystack = VarAsString(ArgVarGet(args, 0, "haystack"));
     Var* needle = VarAsString(ArgVarGet(args, 1, "needle"));
@@ -170,9 +217,9 @@ Var* StringReplace(Var* scope, Var* args){
     }
     if(replacement -> type != VAR_FUNCTION){
         replacement = VarAsString(replacement);
-    }
-    if(replacement -> type != VAR_STRING){
-        return &NIL;
+        if(replacement -> type != VAR_STRING){
+            return &NIL;
+        }
     }
     double offD = 0;
     if(offVar -> type == VAR_NUMBER){
@@ -205,10 +252,10 @@ Var* StringReplace(Var* scope, Var* args){
 
         // Add the string before the match.
         newStringLength += result - lastMatch;
-        char* str = calloc(result - lastMatch, sizeof(char));
+        char* str = calloc((result - lastMatch) + 1, sizeof(char));
         strncpy(str, (haystack -> value) + lastMatch, result - lastMatch);
         str[result - lastMatch] = '\0';
-        LinkedListInsert(combined, VarNewString(str), 0);
+        LinkedListPush(combined, VarNewString(str));
 
         // If the replacement is a function, call it with the match.
         if(replacement -> type == VAR_FUNCTION){
@@ -216,7 +263,7 @@ Var* StringReplace(Var* scope, Var* args){
             for(int i=0; i < groupc; i++){
                 size_t match_len = groups[i].end - groups[i].start;
                 char* match_str = malloc(match_len + 1);
-                memcpy(match_str, haystack -> value + result + offset, match_len);
+                memcpy(match_str, haystack -> value + groups[i].start + offset, match_len);
                 match_str[match_len] = '\0';
                 VarRawSet(args, VarNewNumber(i), VarNewString(match_str));
                 free(match_str);
@@ -226,31 +273,47 @@ Var* StringReplace(Var* scope, Var* args){
                 break;
             }
             newStringLength += strlen(out -> value);
-            LinkedListInsert(combined, out, 0);
+            LinkedListPush(combined, out);
         }
         // Otherwise, Use the replacement string.
         else{
             // Get the full match
+            char** groupStrings = calloc(groupc, sizeof(char*));
+            for(int i=0; i < groupc; i++){
+                size_t match_len = groups[i].end - groups[i].start;
+                char* match_str = malloc(match_len + 1);
+                memcpy(match_str, haystack -> value + groups[i].start + offset, match_len);
+                match_str[match_len] = '\0';
+                groupStrings[i] = match_str;
+            }
             size_t match_len = groups[0].end - groups[0].start;
             char* match_str = malloc(match_len + 1);
-            memcpy(match_str, haystack -> value + result + offset, match_len);
+            memcpy(match_str, haystack -> value + groups[0].start + offset, match_len);
             match_str[match_len] = '\0';
             Var* match_var = VarNewString(match_str);
-            printf("??: %s\n", match_str);
             free(match_str);
-            newStringLength += strlen(replacement -> value);
-            LinkedListInsert(combined, replacement, 0);
+            char* repl = _singleReplacement(replacement -> value, groupc, groupStrings);
+            for(int i=0; i < groupc; i++){
+                free(groupStrings[i]);
+            }
+            free(groupStrings);
+            newStringLength += strlen(repl);
+            LinkedListPush(combined, VarNewString(repl));
+            free(repl);
         }
-
         offset += groups[0].end + 1;
+        lastMatch = offset - 1;
         free(groups);
-        regex_free(reg);
+        if(offset >= haystackLen){
+            break;
+        }
     }
+    regex_free(reg);
 
     // Concatenate the strings in reverse order
     newStringLength++;
     char* string = tgc_calloc(&gc, newStringLength, sizeof(char));
-    int index = newStringLength;
+    int index = newStringLength-1;
     string[newStringLength] = '\0';
     for(Linklett* current = combined->first; current != NULL; current = current->next){
         char* curString = current->var->value;
@@ -317,6 +380,54 @@ Var* StringSub(Var* scope, Var* args){
     return out;
 }
 
+Var* StringReverse(Var* scope, Var* args){
+    Var* string = VarAsString(ArgVarGet(args, 0, "string"));
+    if(string -> type != VAR_STRING){
+        return &NIL;
+    }
+    int length = strlen(string -> value);
+    char* newString = malloc(length + 1);
+    for(int i = 0; i < length; i++){
+        newString[i] = ((char*)string -> value)[length - i - 1];
+    }
+    newString[length] = '\0';
+    Var* out = VarNewString(newString);
+    free(newString);
+    return out;
+}
+
+Var* StringUpper(Var* scope, Var* args){
+    Var* string = VarAsString(ArgVarGet(args, 0, "string"));
+    if(string -> type != VAR_STRING){
+        return &NIL;
+    }
+    int length = strlen(string -> value);
+    char* newString = malloc(length + 1);
+    for(int i = 0; i < length; i++){
+        newString[i] = toupper(((char*)string -> value)[i]);
+    }
+    newString[length] = '\0';
+    Var* out = VarNewString(newString);
+    free(newString);
+    return out;
+}
+
+Var* StringLower(Var* scope, Var* args){
+    Var* string = VarAsString(ArgVarGet(args, 0, "string"));
+    if(string -> type != VAR_STRING){
+        return &NIL;
+    }
+    int length = strlen(string -> value);
+    char* newString = malloc(length + 1);
+    for(int i = 0; i < length; i++){
+        newString[i] = tolower(((char*)string -> value)[i]);
+    }
+    newString[length] = '\0';
+    Var* out = VarNewString(newString);
+    free(newString);
+    return out;
+}
+
 void PopulateStringLib(Var* string){
     VarRawSet(&MetatableString, VarNewString("get"), string);
 
@@ -325,6 +436,9 @@ void PopulateStringLib(Var* string){
     VarRawSet(string, VarNewString("replace"), VarNewFunction(StringReplace));
     VarRawSet(string, VarNewString("find"), VarNewFunction(StringFind));
     VarRawSet(string, VarNewString("sub"), VarNewFunction(StringSub));
+    VarRawSet(string, VarNewString("reverse"), VarNewFunction(StringReverse));
+    VarRawSet(string, VarNewString("upper"), VarNewFunction(StringUpper));
+    VarRawSet(string, VarNewString("lower"), VarNewFunction(StringLower));
 }
 
 #endif

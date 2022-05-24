@@ -45,6 +45,34 @@ for s in string.matches(haystack, "^[a-z]+$"){
 }
 ```
 
+## replace
+**Description:**\
+Replace all occurrences of a regular expression with a string.\
+May optionally be provided a function instead, which will be called for each match.\
+An optional fourth "offset" argument can be provided to start the search at a given position.\
+
+**Arguments:**
+* string **haystack**: The string to search.
+* string **needle**: The regular expression to search for.
+* string|function **replacement**: The string to replace the matches with.
+* number? **offset**: The offset to start the search at. If not provided, the search will start at the beginning of the string.
+
+```coffeescript
+string.replace(haystack, "^[a-z]+$", "foo")
+string.replace(haystack, "^[a-z]+$", string.reverse)
+```
+
+## reverse
+**Description:**\
+Reverse a string.
+
+**Arguments:**
+* string **string**: The string to reverse.
+
+```coffeescript
+string.reverse(haystack)
+```
+
 ## sub
 **Description:**\
 Get a substring of a string.\
