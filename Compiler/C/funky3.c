@@ -4,7 +4,15 @@
 #include <stdint.h>
 #include <math.h>
 
+
 #include "funky3.h"
+#ifdef DEBUG
+    #define BUILD_WITH_ERRORMSG 1
+    #define RE_BUILDWITH_DEBUG 1
+    #define RE_BUILDWITH_PROBES 1
+    #define RE_BUILDWITH_TRACEMATCH_PROC 1
+#endif
+#include "libsmallregex.c"
 
 #include "tgc.c"
 

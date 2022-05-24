@@ -33,19 +33,19 @@ public static class Tokenizer {
                 //}else if(firstChar != '$') {
                     // Identifier
                     // Continue until the next non-letter, digit, or underscore
-                int end = k;
+                int end = k+1;
                 while (end < code.Length && (char.IsLetterOrDigit(code[end]) || code[end] == '_')) {
                     end++;
                 }
                 // Generate the token
                 int line = code[..k].Split('\n').Length;
                 int column = k - code[..k].LastIndexOf('\n');
-                if(keywords.Any(c=>c==code[k..end]))
+                if(firstChar == '$' || keywords.Any(c=>c==code[k..end]))
                     tokens.Add(new Token(TokenType.Keyword, code[k..end], line, column, k, end-k));
                 else
                     tokens.Add(new Token(TokenType.Identifier, code[k..end], line, column, k, end - k));
-                // Move the index to the end of the identifier
                 k = end;
+                // Move the index to the end of the identifier
                 continue;
                 //}
             }

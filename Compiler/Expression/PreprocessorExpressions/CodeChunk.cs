@@ -7,20 +7,10 @@ public class CodeChunk : Expression {
 
     public static (CodeChunk?, int) TryParse(List<Token> tokens, int index) {
         int i = index;
-        if(tokens[i].Type != TokenType.Keyword || tokens[i].Value != "$CodeChunk") {
+        if(tokens[i].Type != TokenType.Keyword || !tokens[i].Value.StartsWith("$CodeChunk")) {
             return (null, index);
         }
-        Parser.RegisterFurthest(i);
-        i++;
-
-        // Get an index
-        if(i >= tokens.Count) {
-            return (null, index);
-        }
-        if(tokens[i].Type != TokenType.Number) {
-            return (null, index);
-        }
-        string name = tokens[i].Value;
+        string name = tokens[i].Value["$CodeChunk".Length..];
         Parser.RegisterFurthest(i);
         i++;
 
