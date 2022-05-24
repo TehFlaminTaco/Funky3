@@ -12,7 +12,7 @@
 
 #include "linkedlist.h"
 
-inline int ISUNDEFINED(Var* var){
+inline static int ISUNDEFINED(Var* var){
     return var == NULL || (var->type == VAR_NULL && var->value == 0);
 }
 
