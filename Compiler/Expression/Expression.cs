@@ -220,6 +220,11 @@ public abstract class Expression {
                         if(IsBlocked<If>())
                             return result;
                         return RightParse(If.TryParse(result.expression, tokens, result.index), tokens, result);
+                    case "!":
+                        // Cache
+                        if(IsBlocked<Cache>())
+                            return result;
+                        return RightParse(Cache.TryParse(result.expression, tokens, result.index), tokens, result);
                 }
                 return result;
             case TokenType.Keyword:
