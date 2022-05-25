@@ -69,3 +69,16 @@ print("SORT")
 var list = [1, 9, 2, 4, 8]
 print("",list:sort@<) $$ [1, 2, 4, 8, 9]
 print("",list:sort@>) $$ [9, 8, 4, 2, 1]
+
+$$ Min
+print("MIN, MAX")
+var list = [1, 9, 2, 4, 8]
+print("",list:min()) $$ 1
+print("",list:max()) $$ 9
+print("",list:max(x=>x/2)) $$ 4.5
+
+$$ Sum
+print("SUM")
+var list = [1, 9, 2, 4, 8]
+print("",list:sum()) $$ 24
+print("",list:sum(x=>x/2)) $$ 12
