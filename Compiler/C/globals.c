@@ -6,9 +6,18 @@
 #include "funky3.h"
 #include "hashmap.h"
 
+#define CONSTANT(name, value) VarRawSet(LIBNAME, VarNewString(#name), value)
+#define ALIAS(name, alias) VarRawSet(LIBNAME, VarNewString(#alias), VarRawGet(LIBNAME, VarNewString(#name)))
+
+#define LIBNAME list
 #include "libs/list.c"
+#define LIBNAME string
 #include "libs/string.c"
+#define LIBNAME math
 #include "libs/math.c"
+
+#undef CONSTANT
+#undef ALIAS
 
 Var* Print(Var* scope, Var* args){
     DebugPrint("PRINT\n");

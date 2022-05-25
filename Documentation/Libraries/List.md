@@ -84,6 +84,20 @@ Returns a new list with the results of applying the given function to each eleme
 list.map(l, v => v + 1)
 ```
 
+## min*, max*
+**Description:**\
+Returns the minimum or maximum value in a list.\
+Optionally takes a function to select the value to compare.
+
+**Arguments:**
+* list **list**: The list to find the minimum or maximum value in.
+* function(value, key, list)? **fn**: The function to select the value to compare.
+
+```coffeescript
+list.min(l)
+list.min(l, v => v.length)
+```
+
 ## reduce*
 **Description:**\
 Reduces a list to a single value.
@@ -112,11 +126,25 @@ list.remove(l, 1);
 list.pop(l);
 ```
 
+## product*
+**Description:**\
+Calculate the product of all the elements in a list.\
+Optionally takes a function to select the value to multiply.
+
+**Arguments:**
+* list **list**: The list to calculate the product of.
+* function(value, key, list)? **fn**: The function to select the value to multiply.
+
+```coffeescript
+list.product(l)
+list.product(l, v => v.length)
+```
+
 ## reverse*
 **Description:**\
 Returns a new list with the elements in the original list in reverse order.
 
-**Arguments:**\
+**Arguments:**
 * list **list**: The list to reverse.
 
 ```coffeescript
@@ -127,12 +155,26 @@ list.reverse(l)
 **Description:**\
 Returns a new list with the elements in the original list sorted.
 
-**Arguments:**\
+**Arguments:**
 * list **list**: The list to sort.
 * function(a, b) **fn**: The comparison function. Truthy values will be sorted before falsy values.
 
 ```coffeescript
 list.sort(l, @<);
+```
+
+## sum*
+**Description:**\
+Returns the sum of all the elements in the list.\
+If a function is provided, the sum of the results of applying the function to each element in the list will be returned.
+
+**Arguments:**
+* list **list**: The list to sum.
+* function(value, key, list)? **fn**: The function to apply to each element in the list.
+
+```coffeescript
+list.sum(l)
+list.sum(l, v => v.length)
 ```
 
 ## where

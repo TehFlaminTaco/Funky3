@@ -551,6 +551,7 @@ Var* VarSubScope(Var* scope){
     Var* newScope = VarNewList();
     HashMap* map = newScope -> value;
     map -> parent = scope;
+    newScope -> metatable = &MetatableBase;
     return newScope;
 }
 

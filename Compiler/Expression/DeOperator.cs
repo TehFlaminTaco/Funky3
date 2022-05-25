@@ -4,6 +4,7 @@ public class DeOperator : Expression, IRightProvider
     public BinaryOperator? BinaryOp {get; set;}
     public UnaryOperator? UnaryOp {get; set;}
     public Expression? Expr {get; set;}
+    public bool indexed = false;
     public string Code {get; set;}
 
     public DeOperator(UnaryOperator? unaryOperator, BinaryOperator? binaryOperator, string code){
@@ -57,11 +58,19 @@ public class DeOperator : Expression, IRightProvider
             string code = Compiler.CurrentCode[start..end];
             return (new DeOperator(unaryOperator.Item1, null, code), unaryOperator.Item2);
         }
+        // Try get get an INDEX expression
+        Variable doepHolder = new DeopVar();
+        var indexExpr = RightParse(IndexVariable.TryParse(doepHolder, tokens, i), tokens);
+        if(indexExpr.expression != null){
+            int end = tokens[indexExpr.index-1].Index + tokens[indexExpr.index-1].Length;
+            string code = Compiler.CurrentCode[start..end];
+            return (new DeOperator(indexExpr.expression, code){indexed = true}, indexExpr.index);
+        }
 
         // Get an expression
         var expression = Expression.TryParseAny(tokens, i);
         if(expression.expression != null){
-            int end = tokens[expression.Item2-1].Index + tokens[expression.Item2-1].Length;
+            int end = tokens[expression.index-1].Index + tokens[expression.index-1].Length;
             string code = Compiler.CurrentCode[start..end];
             return (new DeOperator(expression.expression, code), expression.index);
         }
@@ -113,6 +122,9 @@ public class DeOperator : Expression, IRightProvider
             headerSB.AppendLine($"// Deoperator Method");
             headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
             headerSB.AppendLine($"\tVar* _ = &NIL;");
+            if(indexed){
+                headerSB.AppendLine($"\tVar* this = ArgVarGet(args, 0, \"this\");");
+            }
             headerSB.AppendLine($"\t// Expression");
             var expressionBody = Expr.GenerateInline(header, out string expressionStackName);
             if(!String.IsNullOrEmpty(expressionBody)){
@@ -178,5 +190,19 @@ public class DeOperator : Expression, IRightProvider
 
     public int GetPrecedence(){
         return IExpressionProvider.NO_PRECEDENCE;
+    }
+
+    // Stands for the "this" variable.
+    private class DeopVar : Variable{
+        public override string GenerateInline(StreamWriter header, out string stackName){
+            stackName = $"this";
+            return "";
+        }
+
+        public override string GenerateSetterInline(StreamWriter header, out string stackName, string value)
+        {
+            stackName = $"(this = {value})";
+            return "";
+        }
     }
 }
