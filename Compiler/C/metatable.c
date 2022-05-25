@@ -63,7 +63,7 @@ Var* VarGetMeta(Var* var, char* key){
     }
     // Assert the Var's metatable is a list
     if(var->metatable->type != 0x04){
-        DebugPrint("VarGetMeta: Assertion failed: var->metatable->type != 0x04\n");
+        DebugPrint("VarGetMeta: Assertion failed: var->metatable->type != 0x04 (was 0x%02x)\n", var->metatable->type);
         return VarRawGet(&MetatableBase, keyVar);
     }
     DebugPrint("VarGetMeta: Assertion passed\n");

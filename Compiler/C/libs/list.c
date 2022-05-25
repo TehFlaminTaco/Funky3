@@ -411,6 +411,61 @@ Var* ListClone(Var* scope, Var* args){
     return newList;
 }
 
+Var* cmpFunc;
+int _listCmp(Var** A, Var** B){
+    Var* a = *A;
+    Var* b = *B;
+    DebugPrint("ListSort: CmpFunc. %i\n", a->type);
+    Var* args = VarNewList();
+    ArgVarSet(args, 0, "left", a);
+    ArgVarSet(args, 1, "right", b);
+    if(VarTruthy(VarFunctionCall(cmpFunc, args))){
+        return -1;
+    }
+    // Otherwise, Flip the Arguments. a < b becomes b < a.
+    ArgVarSet(args, 0, "left", b);
+    ArgVarSet(args, 1, "right", a);
+    // If truthy, a > b, Otherwise, a == b
+    return VarTruthy(VarFunctionCall(cmpFunc, args));
+}
+
+Var* ListSort(Var* scope, Var* args){
+    DebugPrint("ListSort\n");
+    Var* func = VarAsFunction(ArgVarGet(args, 1, "func"));
+    if(list -> type != VAR_LIST){
+        return &NIL;
+    }
+    if(func -> type != VAR_FUNCTION){
+        return &NIL;
+    }
+    int count = 0;
+    while(!ISUNDEFINED(VarRawGet(list, VarNewNumber(count)))){
+        count++;
+    }
+    // Store all the elements in an array to save operations.
+    Var** elements = tgc_calloc(&gc, count, sizeof(Var*));
+    for(int i = 0; i < count; i++){
+        elements[i] = VarRawGet(list, VarNewNumber(i));
+    }
+
+    // Sort the array.
+    Var* lastCmpFunc = cmpFunc;
+    cmpFunc = func;
+    DebugPrint("ListSort: cmpFunc set\n");
+    qsort(elements, count, sizeof(Var*), _listCmp);
+    DebugPrint("ListSort: qsort done\n");
+    cmpFunc = lastCmpFunc;
+
+    // Generate a new List
+    Var* newList = VarNewList();
+    DebugPrint("ListSort: newList created\n");
+    for(int i = 0; i < count; i++){
+        VarRawSet(newList, VarNewNumber(i), elements[i]);
+    }
+    DebugPrint("ListSort: newList populated\n");
+    return newList;
+}
+
 void PopulateListLib(Var* list){
     // Set the default getter for List's to point to this library.
     VarRawSet(&MetatableList, VarNewString("get"), list);
@@ -428,6 +483,7 @@ void PopulateListLib(Var* list){
     VarRawSet(list, VarNewString("pop"), VarNewFunction(ListRemove)); // Pop is an alias for remove.
     VarRawSet(list, VarNewString("dequeue"), VarNewFunction(ListDequeue));
     VarRawSet(list, VarNewString("clone"), VarNewFunction(ListClone));
+    VarRawSet(list, VarNewString("sort"), VarNewFunction(ListSort));
 
 }
 
