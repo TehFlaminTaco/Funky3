@@ -42,6 +42,17 @@ math.clamp(1, 3, 2) == 2
 math.clamp(3, 1, 2) == 2
 ```
 
+## deg
+**Description:**\
+Convert an angle from radians to degrees.
+
+**Arguments:**
+* number **radians**: The angle in radians.
+
+```coffeescript
+math.deg(math.pi) == 180
+```
+
 ## floor
 **Description:**\
 Return the number rounded to negative infinity. An optional second argument can be provided to round to a specific radix.
@@ -81,6 +92,17 @@ math.min(1, 2, 3) == 1
 math.min("Hello", "World") == "Hello"
 ```
 
+## rad
+**Description:**\
+Return the number of radians for the given number of degrees.
+
+**Arguments:**
+* number **degrees**: The number of degrees.
+
+```coffeescript
+math.rad(180) == math.pi
+```
+
 ## round
 **Description:**\
 Return the number rounded to the nearest integer. An optional second argument can be provided to round to a specific radix.
@@ -94,3 +116,103 @@ math.round(1.5) == 2
 math.round(1.4) == 1
 math.round(15, 10) == 20
 ```
+
+## sqrt
+**Description:**\
+Return the square root of a number.
+
+**Arguments:**
+* number **number**: The number to get the square root of.
+
+```coffeescript
+math.sqrt(4) == 2
+```
+
+# Trigonometry
+
+## acos
+**Description:**\
+Return the arc cosine of a number.
+
+**Arguments:**
+* number **number**: The number to get the arc cosine of.
+
+```coffeescript
+math.acos(0) == math.pi / 2
+math.acos(1) == 0
+math.acos(-1) == math.pi
+```
+
+## asin
+**Description:**\
+Return the arc sine of a number.
+
+**Arguments:**
+* number **number**: The number to get the arc sine of.
+
+```coffeescript
+math.asin(0) == 0
+math.asin(1) == math.pi / 2
+```
+
+## atan
+**Description:**\
+Return the arc tangent of a number.\
+May optionally accept a second argument to calculate the Arc Tangent of `y/x`.
+
+
+**Arguments:**
+* number **y**: The number to get the arc tangent of.
+* number? **x**: The number to get the arc tangent of.
+
+```coffeescript
+math.atan(0) == 0
+math.atan(1,1) == math.pi / 4
+```
+
+## cos
+**Description:**\
+Return the cosine of a number.
+
+**Arguments:**
+* number **number**: The number to get the cosine of.
+
+```coffeescript
+math.cos(0) == 1
+math.cos(math.pi / 2) == 0
+math.cos(math.pi * 2) == 1
+```
+
+## sin
+**Description:**\
+Return the sine of a number.
+
+**Arguments:**
+* number **number**: The number to get the sine of.
+
+```coffeescript
+math.sin(0) == 0
+math.sin(math.pi / 2) == 1
+math.sin(math.pi * 2) == 0
+```
+
+## tan
+**Description:**\
+Return the tangent of a number.
+
+**Arguments:**
+* number **number**: The number to get the tangent of.
+
+```coffeescript
+math.tan(0) == 0
+```
+
+# Constants
+* **pi:** `3.141593`
+* **e:** `2.718282`
+* **huge:** `inf`<sup>1</sup>
+* **inf:** `inf`
+* **nan:** `nan`
+* **epsilon:** `0.000001`
+
+<sup>1</sup>Whilst `huge` and `inf` both stringify as `"inf"`, `huge` is not actually `inf`, and is just a number that is larger than any other number. Consequently, it is not considered equal to `inf`.
