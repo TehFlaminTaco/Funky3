@@ -32,12 +32,14 @@ print("MIN")
 print("", math.min(8));             $$ 8
 print("", math.min(1, 2));          $$ 1
 print("", math.min(3, 1, 2));       $$ 1
+print("", math.min("Hello", "World!")); $$ "Hello"
 
 $$ Max
 print("MAX")
 print("", math.max(8));             $$ 8
 print("", math.max(1, 2));          $$ 2
 print("", math.max(3, 1, 2));       $$ 3
+print("", math.max("Hello", "World!")); $$ "World!"
 
 $$ Clamp
 print("CLAMP")

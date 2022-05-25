@@ -431,6 +431,7 @@ int _listCmp(Var** A, Var** B){
 
 Var* ListSort(Var* scope, Var* args){
     DebugPrint("ListSort\n");
+    Var* list = ArgVarGet(args, 0, "this");
     Var* func = VarAsFunction(ArgVarGet(args, 1, "func"));
     if(list -> type != VAR_LIST){
         return &NIL;
