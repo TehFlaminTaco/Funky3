@@ -135,7 +135,105 @@ Var* MathClamp(Var* scope, Var* args){
     return &NIL; // Shouldn't happen, unless someone messed with metatables.
 }
 
+Var* MathSqrt(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(sqrt(j));
+}
+
+Var* MathRad(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(j * M_PI / 180);
+}
+
+Var* MathDeg(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(j * 180 / M_PI);
+}
+
+
+// TRIG
+Var* MathSin(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(sin(j));
+}
+Var* MathCos(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(cos(j));
+}
+Var* MathTan(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(tan(j));
+}
+Var* MathASin(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(asin(j));
+}
+Var* MathACos(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    return VarNewNumber(acos(j));
+}
+Var* MathATan(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "y");
+    Var* v2 = ArgVarGet(args, 1, "x");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    if(!ISUNDEFINED(v2)){
+        if(v2->type != VAR_NUMBER){
+            return &NIL;
+        }
+        double j2;
+        memcpy(&j2, &v2->value, sizeof(double));
+        return VarNewNumber(atan2(j, j2));
+    }
+    return VarNewNumber(atan(j));
+}
+
 void PopulateMathLib(Var* math){
+    VarRawSet(&MetatableNumber, VarNewString("get"), math);
+
     VarRawSet(math, VarNewString("abs"), VarNewFunction(MathAbs));
     VarRawSet(math, VarNewString("round"), VarNewFunction(MathRound));
     VarRawSet(math, VarNewString("floor"), VarNewFunction(MathFloor));
@@ -143,6 +241,24 @@ void PopulateMathLib(Var* math){
     VarRawSet(math, VarNewString("min"), VarNewFunction(MathMin));
     VarRawSet(math, VarNewString("max"), VarNewFunction(MathMax));
     VarRawSet(math, VarNewString("clamp"), VarNewFunction(MathClamp));
+    VarRawSet(math, VarNewString("sqrt"), VarNewFunction(MathSqrt));
+    VarRawSet(math, VarNewString("rad"), VarNewFunction(MathRad));
+    VarRawSet(math, VarNewString("deg"), VarNewFunction(MathDeg));
+
+    VarRawSet(math, VarNewString("pi"), VarNewNumber(M_PI));
+    VarRawSet(math, VarNewString("e"), VarNewNumber(M_E));
+    VarRawSet(math, VarNewString("huge"), VarNewNumber(HUGE_VAL));
+    VarRawSet(math, VarNewString("inf"), VarNewNumber(INFINITY));
+    VarRawSet(math, VarNewString("nan"), VarNewNumber(NAN));
+    VarRawSet(math, VarNewString("epsilon"), VarNewNumber(0.000001));
+
+    VarRawSet(math, VarNewString("sin"), VarNewFunction(MathSin));
+    VarRawSet(math, VarNewString("cos"), VarNewFunction(MathCos));
+    VarRawSet(math, VarNewString("tan"), VarNewFunction(MathTan));
+    VarRawSet(math, VarNewString("asin"), VarNewFunction(MathASin));
+    VarRawSet(math, VarNewString("acos"), VarNewFunction(MathACos));
+    VarRawSet(math, VarNewString("atan"), VarNewFunction(MathATan));
+
 }
 
 #endif
