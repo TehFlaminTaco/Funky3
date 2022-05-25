@@ -54,6 +54,7 @@ int main(int argc, char** argv){
     UNDEFINED.metatable = &MetatableNull;
 
     Var* scope = VarNewList();
+    scope -> metatable = &MetatableBase;
     tgc_set_flags(&gc, scope, TGC_ROOT);
     PopulateGlobals(scope);
     DebugPrint("B\n");

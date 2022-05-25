@@ -1,6 +1,8 @@
 #ifndef STRING_C
 #define STRING_C
 
+#include "lib.h"
+
 #include "../funky3.h"
 #include "../metatable.h"
 #include "../libsmallregex.h"
@@ -431,14 +433,23 @@ Var* StringLower(Var* scope, Var* args){
 void PopulateStringLib(Var* string){
     VarRawSet(&MetatableString, VarNewString("get"), string);
 
-    VarRawSet(string, VarNewString("match"), VarNewFunction(StringMatch));
-    VarRawSet(string, VarNewString("matches"), VarNewFunction(StringMatches));
-    VarRawSet(string, VarNewString("replace"), VarNewFunction(StringReplace));
-    VarRawSet(string, VarNewString("find"), VarNewFunction(StringFind));
-    VarRawSet(string, VarNewString("sub"), VarNewFunction(StringSub));
-    VarRawSet(string, VarNewString("reverse"), VarNewFunction(StringReverse));
-    VarRawSet(string, VarNewString("upper"), VarNewFunction(StringUpper));
-    VarRawSet(string, VarNewString("lower"), VarNewFunction(StringLower));
+    CONSTANT(match, VarNewFunction(StringMatch));
+    CONSTANT(matches, VarNewFunction(StringMatches));
+    CONSTANT(replace, VarNewFunction(StringReplace));
+    CONSTANT(find, VarNewFunction(StringFind));
+    CONSTANT(sub, VarNewFunction(StringSub));
+    CONSTANT(reverse, VarNewFunction(StringReverse));
+    CONSTANT(upper, VarNewFunction(StringUpper));
+    CONSTANT(lower, VarNewFunction(StringLower));
+
+    ALIAS(match, m);
+    ALIAS(matches, M);
+    ALIAS(replace, r);
+    ALIAS(find, f);
+    ALIAS(sub, s);
+    ALIAS(reverse, R);
+    ALIAS(upper, u);
+    ALIAS(lower, l);
 }
 
 #endif

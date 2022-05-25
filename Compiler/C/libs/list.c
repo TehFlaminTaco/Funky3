@@ -1,6 +1,8 @@
 #ifndef LIST_C
 #define LIST_C
 
+#include "lib.h"
+
 #include "../funky3.h"
 #include "../metatable.h"
 #include "../hashmap.h"
@@ -467,25 +469,203 @@ Var* ListSort(Var* scope, Var* args){
     return newList;
 }
 
+Var* ListSum(Var* scope, Var* args){
+    Var* list = ArgVarGet(args, 0, "this");
+    Var* selector = VarAsFunction(ArgVarGet(args, 1, "func"));
+    Var* initial = ArgVarGet(args, 2, "initial");
+    if(list -> type != VAR_LIST){
+        return &NIL;
+    }
+    Var* newList = VarNewList();
+    HashMap* map = list -> value;
+    HashMap* newMap = newList -> value;
+    // Copy the Metatable.
+    newList -> metatable = list -> metatable;
+
+    // Iterate over each element in the old list
+    int i = 0;
+    Var* key;
+    Var* value = VarRawGet(list, key = VarNewNumber(i++));
+    if(ISUNDEFINED(initial)){ // No first argument, skip and use first instead.
+        initial = value;
+        value = VarRawGet(list, key = VarNewNumber(i++));
+        if(selector -> type == VAR_FUNCTION){
+            Var* cArgs = VarNewList();
+            ArgVarSet(cArgs, 0, "value", initial);
+            ArgVarSet(cArgs, 1, "index", VarNewNumber(0));
+            ArgVarSet(cArgs, 2, "list", list);
+            initial = VarFunctionCall(selector, cArgs);
+        }
+    }
+    Var* func = VarGetMeta(initial, "add");
+    while(!ISUNDEFINED(value)){
+        if(selector -> type == VAR_FUNCTION){
+            Var* cArgs = VarNewList();
+            ArgVarSet(cArgs, 0, "value", value);
+            ArgVarSet(cArgs, 1, "index", VarNewNumber(0));
+            ArgVarSet(cArgs, 2, "list", list);
+            value = VarFunctionCall(selector, cArgs);
+        }
+        Var* args = VarNewList();
+        ArgVarSet(args, 0, "left", initial);
+        ArgVarSet(args, 1, "right", value);
+        initial = VarFunctionCall(func, args);
+        value = VarRawGet(list, key = VarNewNumber(i++));
+    }
+    return initial;
+}
+
+Var* ListProduct(Var* scope, Var* args){
+    Var* list = ArgVarGet(args, 0, "this");
+    Var* initial = ArgVarGet(args, 1, "initial");
+    if(list -> type != VAR_LIST){
+        return &NIL;
+    }
+    Var* newList = VarNewList();
+    HashMap* map = list -> value;
+    HashMap* newMap = newList -> value;
+    // Copy the Metatable.
+    newList -> metatable = list -> metatable;
+
+    // Iterate over each element in the old list
+    int i = 0;
+    Var* key;
+    Var* value = VarRawGet(list, key = VarNewNumber(i++));
+    if(ISUNDEFINED(initial)){ // No first argument, skip and use first instead.
+        initial = value;
+        value = VarRawGet(list, key = VarNewNumber(i++));
+    }
+    Var* func = VarGetMeta(initial, "mul");
+    while(!ISUNDEFINED(value)){
+        Var* args = VarNewList();
+        ArgVarSet(args, 0, "left", initial);
+        ArgVarSet(args, 1, "right", value);
+        initial = VarFunctionCall(func, args);
+        value = VarRawGet(list, key = VarNewNumber(i++));
+    }
+    return initial;
+}
+
+Var* ListMax(Var* scope, Var* args){
+    Var* list = ArgVarGet(args, 0, "this");
+    Var* selector = VarAsFunction(ArgVarGet(args, 1, "func"));
+    if(list -> type != VAR_LIST){
+        return &NIL;
+    }
+    Var* curr = VarRawGet(list, VarNewNumber(0));
+    if(ISUNDEFINED(curr)){
+        return &NIL;
+    }
+    if(!ISUNDEFINED(selector)){
+        Var* cargs = VarNewList();
+        ArgVarSet(cargs, 0, "value", curr);
+        ArgVarSet(cargs, 1, "index", VarNewNumber(0));
+        ArgVarSet(cargs, 2, "list", list);
+        curr = VarFunctionCall(selector, cargs);
+    }
+    Var* right;
+    for(int i = 1; !ISUNDEFINED(right=VarRawGet(list, VarNewNumber(i))); i++){
+        Var* cargs = VarNewList();
+        if(!ISUNDEFINED(selector)){
+            ArgVarSet(cargs, 0, "value", right);
+            ArgVarSet(cargs, 1, "index", VarNewNumber(i));
+            ArgVarSet(cargs, 2, "list", list);
+            right = VarFunctionCall(selector, cargs);
+            cargs = VarNewList();
+        }
+        Var* lt = VarGetMeta(curr, "lt");
+        if(lt -> type != VAR_FUNCTION){
+            return &NIL;
+        }
+        ArgVarSet(cargs, 0, "left", curr);
+        ArgVarSet(cargs, 1, "right", right);
+        if(VarTruthy(VarFunctionCall(lt, cargs))){
+            curr = right;
+        }   
+    }
+    return curr;
+}
+
+Var* ListMin(Var* scope, Var* args){
+    Var* list = ArgVarGet(args, 0, "this");
+    Var* selector = VarAsFunction(ArgVarGet(args, 1, "func"));
+    if(list -> type != VAR_LIST){
+        return &NIL;
+    }
+    Var* curr = VarRawGet(list, VarNewNumber(0));
+    if(ISUNDEFINED(curr)){
+        return &NIL;
+    }
+    if(!ISUNDEFINED(selector)){
+        Var* cargs = VarNewList();
+        ArgVarSet(cargs, 0, "value", curr);
+        ArgVarSet(cargs, 1, "index", VarNewNumber(0));
+        ArgVarSet(cargs, 2, "list", list);
+        curr = VarFunctionCall(selector, cargs);
+    }
+    Var* right;
+    for(int i = 1; !ISUNDEFINED(right=VarRawGet(list, VarNewNumber(i))); i++){
+        Var* cargs = VarNewList();
+        if(!ISUNDEFINED(selector)){
+            ArgVarSet(cargs, 0, "value", right);
+            ArgVarSet(cargs, 1, "index", VarNewNumber(i));
+            ArgVarSet(cargs, 2, "list", list);
+            right = VarFunctionCall(selector, cargs);
+            cargs = VarNewList();
+        }
+        Var* gt = VarGetMeta(curr, "gt");
+        if(gt -> type != VAR_FUNCTION){
+            return &NIL;
+        }
+        ArgVarSet(cargs, 0, "left", curr);
+        ArgVarSet(cargs, 1, "right", right);
+        if(VarTruthy(VarFunctionCall(gt, cargs))){
+            curr = right;
+        }   
+    }
+    return curr;
+}
+
 void PopulateListLib(Var* list){
     // Set the default getter for List's to point to this library.
     VarRawSet(&MetatableList, VarNewString("get"), list);
 
-    VarRawSet(list, VarNewString("where"), VarNewFunction(ListWhere));
-    VarRawSet(list, VarNewString("map"), VarNewFunction(ListMap));
-    VarRawSet(list, VarNewString("fold"), VarNewFunction(ListFold));
-    VarRawSet(list, VarNewString("reduce"), VarNewFunction(ListReduce));
-    VarRawSet(list, VarNewString("cumulate"), VarNewFunction(ListCumulate));
-    VarRawSet(list, VarNewString("reverse"), VarNewFunction(ListReverse));
-    VarRawSet(list, VarNewString("insert"), VarNewFunction(ListInsert));
-    VarRawSet(list, VarNewString("push"), VarNewFunction(ListInsert)); // Push is an alias for insert.
-    VarRawSet(list, VarNewString("enqueue"), VarNewFunction(ListInsert)); // Enqueue is an alias for insert.
-    VarRawSet(list, VarNewString("remove"), VarNewFunction(ListRemove));
-    VarRawSet(list, VarNewString("pop"), VarNewFunction(ListRemove)); // Pop is an alias for remove.
-    VarRawSet(list, VarNewString("dequeue"), VarNewFunction(ListDequeue));
-    VarRawSet(list, VarNewString("clone"), VarNewFunction(ListClone));
-    VarRawSet(list, VarNewString("sort"), VarNewFunction(ListSort));
+    CONSTANT(where, VarNewFunction(ListWhere));
+    CONSTANT(map, VarNewFunction(ListMap));
+    CONSTANT(fold, VarNewFunction(ListFold));
+    CONSTANT(reduce, VarNewFunction(ListReduce));
+    CONSTANT(cumulate, VarNewFunction(ListCumulate));
+    CONSTANT(reverse, VarNewFunction(ListReverse));
+    CONSTANT(insert, VarNewFunction(ListInsert));
+    ALIAS(insert, push);
+    ALIAS(insert, enqueue);
+    CONSTANT(remove, VarNewFunction(ListRemove));
+    ALIAS(remove, pop);
+    CONSTANT(dequeue, VarNewFunction(ListDequeue));
+    CONSTANT(clone, VarNewFunction(ListClone));
+    CONSTANT(sort, VarNewFunction(ListSort));
 
+    CONSTANT(sum, VarNewFunction(ListSum));
+    CONSTANT(product, VarNewFunction(ListProduct));
+    CONSTANT(max, VarNewFunction(ListMax));
+    CONSTANT(min, VarNewFunction(ListMin));
+
+    ALIAS(where, w);
+    ALIAS(map, m);
+    ALIAS(fold, f);
+    ALIAS(reduce, r);
+    ALIAS(cumulate, c);
+    ALIAS(reverse, R);
+    ALIAS(insert, p);
+    ALIAS(remove, P);
+    ALIAS(dequeue, d);
+    ALIAS(clone, C);
+    ALIAS(sort, S);
+
+    ALIAS(sum, s);
+    ALIAS(product, M);
+    ALIAS(min, x);
+    ALIAS(max, X);
 }
 
 #endif

@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#include "lib.h"
+
 #include "../funky3.h"
 #include "../metatable.h"
 
@@ -234,31 +236,51 @@ Var* MathATan(Var* scope, Var* args){
 void PopulateMathLib(Var* math){
     VarRawSet(&MetatableNumber, VarNewString("get"), math);
 
-    VarRawSet(math, VarNewString("abs"), VarNewFunction(MathAbs));
-    VarRawSet(math, VarNewString("round"), VarNewFunction(MathRound));
-    VarRawSet(math, VarNewString("floor"), VarNewFunction(MathFloor));
-    VarRawSet(math, VarNewString("ceil"), VarNewFunction(MathCeil));
-    VarRawSet(math, VarNewString("min"), VarNewFunction(MathMin));
-    VarRawSet(math, VarNewString("max"), VarNewFunction(MathMax));
-    VarRawSet(math, VarNewString("clamp"), VarNewFunction(MathClamp));
-    VarRawSet(math, VarNewString("sqrt"), VarNewFunction(MathSqrt));
-    VarRawSet(math, VarNewString("rad"), VarNewFunction(MathRad));
-    VarRawSet(math, VarNewString("deg"), VarNewFunction(MathDeg));
+    CONSTANT(abs, VarNewFunction(MathAbs));
+    CONSTANT(round, VarNewFunction(MathRound));
+    CONSTANT(floor, VarNewFunction(MathFloor));
+    CONSTANT(ceil, VarNewFunction(MathCeil));
+    CONSTANT(min, VarNewFunction(MathMin));
+    CONSTANT(max, VarNewFunction(MathMax));
+    CONSTANT(clamp, VarNewFunction(MathClamp));
+    CONSTANT(sqrt, VarNewFunction(MathSqrt));
+    CONSTANT(rad, VarNewFunction(MathRad));
+    CONSTANT(deg, VarNewFunction(MathDeg));
 
-    VarRawSet(math, VarNewString("pi"), VarNewNumber(M_PI));
-    VarRawSet(math, VarNewString("e"), VarNewNumber(M_E));
-    VarRawSet(math, VarNewString("huge"), VarNewNumber(HUGE_VAL));
-    VarRawSet(math, VarNewString("inf"), VarNewNumber(INFINITY));
-    VarRawSet(math, VarNewString("nan"), VarNewNumber(NAN));
-    VarRawSet(math, VarNewString("epsilon"), VarNewNumber(0.000001));
+    CONSTANT(pi, VarNewNumber(M_PI));
+    CONSTANT(e, VarNewNumber(M_E));
+    CONSTANT(huge, VarNewNumber(HUGE_VAL));
+    CONSTANT(inf, VarNewNumber(INFINITY));
+    CONSTANT(nan, VarNewNumber(NAN));
+    CONSTANT(epsilon, VarNewNumber(0.000001));
 
-    VarRawSet(math, VarNewString("sin"), VarNewFunction(MathSin));
-    VarRawSet(math, VarNewString("cos"), VarNewFunction(MathCos));
-    VarRawSet(math, VarNewString("tan"), VarNewFunction(MathTan));
-    VarRawSet(math, VarNewString("asin"), VarNewFunction(MathASin));
-    VarRawSet(math, VarNewString("acos"), VarNewFunction(MathACos));
-    VarRawSet(math, VarNewString("atan"), VarNewFunction(MathATan));
+    CONSTANT(sin, VarNewFunction(MathSin));
+    CONSTANT(cos, VarNewFunction(MathCos));
+    CONSTANT(tan, VarNewFunction(MathTan));
+    CONSTANT(asin, VarNewFunction(MathASin));
+    CONSTANT(acos, VarNewFunction(MathACos));
+    CONSTANT(atan, VarNewFunction(MathATan));
 
+    ALIAS(abs, a);
+    ALIAS(round, r);
+    ALIAS(floor, f);
+    ALIAS(ceil, F);
+    ALIAS(min, x);
+    ALIAS(max, X);
+    ALIAS(clamp, c);
+    ALIAS(sqrt, s);
+    ALIAS(rad, R);
+    ALIAS(deg, D);
+
+    ALIAS(pi, p);
+    ALIAS(inf, i);
+
+    ALIAS(sin, S);
+    ALIAS(cos, C);
+    ALIAS(tan, T);
+    ALIAS(asin, as);
+    ALIAS(acos, ac);
+    ALIAS(atan, at);
 }
 
 #endif
