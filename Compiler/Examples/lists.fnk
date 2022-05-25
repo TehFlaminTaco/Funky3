@@ -63,3 +63,9 @@ print("CONCATENATION");
 var a = [1, 2, 3];
 var b = [4, 5, 6];
 print("",[a..., b...]); $$ [1, 2, 3, 4, 5, 6]
+
+$$ Sort
+print("SORT")
+var list = [1, 9, 2, 4, 8]
+print("",list:sort@<) $$ [1, 2, 4, 8, 9]
+print("",list:sort@>) $$ [9, 8, 4, 2, 1]

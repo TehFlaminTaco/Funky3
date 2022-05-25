@@ -1,0 +1,88 @@
+$$ Abs
+print("ABS")
+print("", math.abs(1));    $$ 1
+print("", math.abs(-1));   $$ 1
+
+$$ Round
+print("ROUND")
+print("", math.round(1.5));         $$ 2
+print("", math.round(1.4));         $$ 1
+print("", math.round(16.5, 10));    $$ 20
+print("", math.round(1.66, 0.1));   $$ 1.7
+
+$$ Floor
+print("FLOOR")
+print("", math.floor(1));           $$ 1
+print("", math.floor(1.5));         $$ 1
+print("", math.floor(1.6));         $$ 1
+print("", math.floor(16.5, 10));    $$ 10
+print("", math.floor(1.65, 0.1));   $$ 1.6
+
+
+$$ Ceil
+print("CEIL")
+print("", math.ceil(1));            $$ 1
+print("", math.ceil(1.5));          $$ 2
+print("", math.ceil(1.4));          $$ 2
+print("", math.ceil(16.5, 10));     $$ 20
+print("", math.ceil(1.65, 0.1));    $$ 1.7
+
+$$ Min
+print("MIN")
+print("", math.min(8));             $$ 8
+print("", math.min(1, 2));          $$ 1
+print("", math.min(3, 1, 2));       $$ 1
+print("", math.min("Hello", "World!")); $$ "Hello"
+
+$$ Max
+print("MAX")
+print("", math.max(8));             $$ 8
+print("", math.max(1, 2));          $$ 2
+print("", math.max(3, 1, 2));       $$ 3
+print("", math.max("Hello", "World!")); $$ "World!"
+
+$$ Clamp
+print("CLAMP")
+print("", math.clamp(0, 1, 2));     $$ 1
+print("", math.clamp(1, 2, 0));     $$ 1
+print("", math.clamp(2, 0, 1));     $$ 1
+print("", math.clamp(2, 1, 0));     $$ 1
+print("", math.clamp(1, 0, 2));     $$ 1
+print("", math.clamp(0, 2, 1));     $$ 1
+
+$$ Sqrt
+print("SQRT")
+print("", math.sqrt(4));            $$ 2
+print("", math.sqrt(9));            $$ 3
+print("", math.sqrt(16));           $$ 4
+print("", math.sqrt(5));            $$ 2.236068
+
+$$ Rad
+print("RAD")
+print("", math.rad(180));           $$ 3.14159
+print("", math.rad(360));           $$ 6.28318
+
+$$ Deg
+print("DEG")
+print("", math.deg(math.pi));       $$ 180
+print("", math.deg(math.pi*2));     $$ 360
+
+$$ Constants
+print("CONSTANTS")
+print("","pi", math.pi);                $$ 3.141593
+print("","e", math.e);                  $$ 2.718282
+print("","huge", math.huge);            $$ inf
+print("","inf", math.inf);              $$ inf
+print("","NaN", math.nan);              $$ nan
+print("","epsilon", math.epsilon);      $$ 0.000001
+
+$$ Trig
+print("TRIG")
+print("","SIN", math.sin(0));          $$ 0
+print("","COS", math.cos(0));          $$ 1
+print("","TAN", math.tan(0));          $$ 0
+print("","TAN", math.tan(math.pi));    $$ 0
+print("","ASIN", math.asin(0));        $$ 0
+print("","ACOS", math.acos(0));        $$ math.pi/2
+print("","ATAN", math.atan(0));        $$ 0
+print("","ATAN", math.atan(4, 4));     $$ math.pi/4
