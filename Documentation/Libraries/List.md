@@ -123,6 +123,18 @@ Returns a new list with the elements in the original list in reverse order.
 list.reverse(l)
 ```
 
+## sort*
+**Description:**\
+Returns a new list with the elements in the original list sorted.
+
+**Arguments:**\
+* list **list**: The list to sort.
+* function(a, b) **fn**: The comparison function. Truthy values will be sorted before falsy values.
+
+```coffeescript
+list.sort(l, @<);
+```
+
 ## where
 **Description:**\
 Returns a list of all the elements in a list that match a predicate.\

@@ -149,12 +149,59 @@ Var* StringUnp(Var* scope, Var* args){
     return VarNewNumber(atof(string -> value));
 }
 
+Var* StringLt(Var* scope, Var* args){
+    Var* left = ArgVarGet(args, 0, "left");
+    Var* right = ArgVarGet(args, 1, "right");
+    Var* inverted = ArgVarGet(args, 2, "inverted");
+    if(left -> type != VAR_STRING){
+        return &NIL;
+    }
+    if(right -> type != VAR_STRING){
+        if(!VarTruthy(inverted)){
+            Var* rMetaMethod = VarGetMeta(right, "lt");
+            if(ISUNDEFINED(rMetaMethod))return &NIL;
+            Var* nArgs = VarNewList();
+            ArgVarSet(nArgs, 0, "left", right);
+            ArgVarSet(nArgs, 1, "right", left);
+            ArgVarSet(nArgs, 2, "inverted", VarTrue());
+            return VarFunctionCall(rMetaMethod, nArgs);
+        }
+        return &NIL;
+    }
+    return VarNewNumber(strcmp(left -> value, right -> value) < 0);
+}
+
+Var* StringGt(Var* scope, Var* args){
+    Var* left = ArgVarGet(args, 0, "left");
+    Var* right = ArgVarGet(args, 1, "right");
+    Var* inverted = ArgVarGet(args, 2, "inverted");
+    if(left -> type != VAR_STRING){
+        return &NIL;
+    }
+    if(right -> type != VAR_STRING){
+        if(!VarTruthy(inverted)){
+            Var* rMetaMethod = VarGetMeta(right, "gt");
+            if(ISUNDEFINED(rMetaMethod))return &NIL;
+            Var* nArgs = VarNewList();
+            ArgVarSet(nArgs, 0, "left", right);
+            ArgVarSet(nArgs, 1, "right", left);
+            ArgVarSet(nArgs, 2, "inverted", VarTrue());
+            return VarFunctionCall(rMetaMethod, nArgs);
+        }
+        return &NIL;
+    }
+    return VarNewNumber(strcmp(left -> value, right -> value) > 0);
+}
+
+
 
 void PopulateStringMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tocode"), VarNewFunction(StringToCode));
     VarRawSet(metatable, VarNewString("add"), VarNewFunction(BaseConcat));
     VarRawSet(metatable, VarNewString("iter"), VarNewFunction(StringIterator));
     VarRawSet(metatable, VarNewString("unp"), VarNewFunction(StringUnp));
+    VarRawSet(metatable, VarNewString("lt"), VarNewFunction(StringLt));
+    VarRawSet(metatable, VarNewString("gt"), VarNewFunction(StringGt));
 }
 
 #endif
