@@ -1,6 +1,5 @@
 /* ACE EDITOR */
 .ace_editor {
-    margin:0;
     position: fixed;
     left:0;
     top:0;
@@ -108,30 +107,3 @@ iframe {
 }
 
 /* RUN */
-#run {
-    position:absolute;
-    right: calc(50% + 16px);
-    top: 10%;
-
-    border-radius:50%;
-    border:none;
-    margin:0;
-    padding:0;
-    width:64px;
-    height:64px;
-    box-shadow:4px 4px 2px #0008;
-    font-size:32pt;
-    line-height:64px;
-    padding-left:12px;
-}
-#run:hover {
-    cursor:pointer;
-}
-
-@media screen and (max-width: 30cm) {
-    #run {
-        right:16px;
-        bottom: calc(50% + 16px);
-        top:unset;
-    }
-}
