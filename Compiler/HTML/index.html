@@ -13,6 +13,15 @@
             window.addEventListener("load", ev => {
                 console.log("Loaded!");
                 window.editor = ace.edit("code");
+                {
+                    editor.setOptions({
+                        useWrapMode: true,
+                        highlightActiveLine: true,
+                        showPrintMargin: false,
+                        theme: 'ace/theme/solarized_dark',
+                        mode: 'ace/mode/javascript'
+                    })
+                }
 
                 {
                     let xhr = new XMLHttpRequest();
@@ -91,11 +100,12 @@
         <textarea id="code"></textarea> 
         <div id="tabHolder">
             <div id="tabButtons">
-                <button id="tabOutputButton" class="tabButton active">Output</button>
-                <button id="tabPreCompiledButton" class="tabButton">Pre-Compiled</button>
-                <button id="tabCompiledButton" class="tabButton">Compiled</button>
-                <button id="tabErrorButton" class="tabButton">Error</button>
-                <button id="tabSaveLoadButton" class="tabButton">Save / Examples</button>
+                <button id="run"><span class="icon">▶️</span><span class="text">Run</span></button>
+                <button id="tabOutputButton" class="tabButton active"><span class="icon">🧾</span><span class="text">Output</span></button>
+                <button id="tabPreCompiledButton" class="tabButton"><span class="icon">📥</span><span class="text">Pre-Compiled</span></button>
+                <button id="tabCompiledButton" class="tabButton"><span class="icon">📤</span><span class="text">Compiled</span></button>
+                <button id="tabErrorButton" class="tabButton"><span class="icon">⚠️</span><span class="text">Error</span></button>
+                <button id="tabSaveLoadButton" class="tabButton"><span class="icon">💾</span><span class="text">Save / Examples</span></button>
             </div>
             <div id="tabBodies">
                 <div id="tabOutput" class="tabBody active">
@@ -126,6 +136,5 @@
                 </div>
             </div>
         </div>
-        <button id="run">▶</button>
     </body>
 </html>

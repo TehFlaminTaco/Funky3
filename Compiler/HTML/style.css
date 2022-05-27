@@ -8,7 +8,7 @@
     right:50%;
 }
 
-@media screen and (max-width: 30cm) {
+@media screen and (max-width: 15cm) {
     .ace_editor {
         right:0;
         bottom:50%;
@@ -39,7 +39,8 @@
     border-top:solid 1px white;
     background-color:#111;
 }
-.tabButton{
+#tabButtons button{
+    min-width:0px;
     border:none;
     border-radius: 4px 4px 0px 0px;
     border: solid 1px white;
@@ -50,14 +51,28 @@
     font-family:monospace;
     margin-bottom:-1px;
 }
-.tabButton:not(.active):hover {
+#tabButtons button:not(.active):hover {
     background-color:#333;
     cursor:pointer;
 }
-.tabButton:not(.active):active {
+#tabButtons button:not(.active):active {
     background-color:#FFF;
     color:#111;
     cursor:pointer;
+}
+@media screen and (max-width: 15cm) {
+    #tabButtons button{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        font-size:8pt;
+    }
+    #tabButtons button:not(.active) .text{
+        display:none;
+    }
+    #tabButtons .icon{
+        font-size:20pt;
+    }
 }
 .tabBody{
     width:100%;
@@ -66,11 +81,11 @@
 .tabBody:not(.active){
     display:none;
 }
-.tabButton.active{
+#tabButtons button.active{
     color:#111;
     background-color:#FFF;
 }
-@media screen and (max-width: 30cm) {
+@media screen and (max-width: 15cm) {
     #tabHolder {
         left:0;
         top:50%;
@@ -96,6 +111,7 @@ iframe {
     border: solid 1px white;
     background-color:#111;
     color:white;
+    font-family:monospace;
 }
 #tabSaveLoad button:hover {
     background-color:#333;
@@ -108,30 +124,11 @@ iframe {
 }
 
 /* RUN */
-#run {
-    position:absolute;
-    right: calc(50% + 16px);
-    top: 10%;
-
-    border-radius:50%;
-    border:none;
-    margin:0;
-    padding:0;
-    width:64px;
-    height:64px;
-    box-shadow:4px 4px 2px #0008;
-    font-size:32pt;
-    line-height:64px;
-    padding-left:12px;
-}
-#run:hover {
-    cursor:pointer;
+button#run {
+    margin-right:8px;
+    background-color:darkgreen;
 }
 
-@media screen and (max-width: 30cm) {
-    #run {
-        right:16px;
-        bottom: calc(50% + 16px);
-        top:unset;
-    }
+button#run:active{
+    background-color:lightgreen;
 }
