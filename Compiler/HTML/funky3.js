@@ -14,6 +14,20 @@
 // before the code. Then that object will be used in the code, and you
 // can continue to use Module afterwards as well.
 var Module = typeof Module != 'undefined' ? Module : {};
+Module = {
+  preRun: [],
+  postRun: [],
+  print: (function() {
+      return function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          this.postMessage(text + "\n");
+      };
+  })(),
+  totalDependencies: 0,
+  monitorRunDependencies: function(left) {
+  this.totalDependencies = Math.max(this.totalDependencies, left);
+  }
+};
 
 // See https://caniuse.com/mdn-javascript_builtins_object_assign
 

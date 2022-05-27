@@ -132,3 +132,9 @@ button#run {
 button#run:active{
     background-color:lightgreen;
 }
+
+/* OUTPUT */
+#output {
+    padding-left:1em;
+    color:#FFF;
+}

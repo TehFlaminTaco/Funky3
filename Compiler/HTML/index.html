@@ -32,7 +32,7 @@
                                 params.set('code', code);
                                 window.history.replaceState(null, null, '?' + params.toString());
                             }
-                        }else if(params.has('file')){
+                        }else if(params.has('file')){ // Pop the query, so they know they need to save.
                             window.history.replaceState(null, null, '?');
                         }
                     });
@@ -53,7 +53,11 @@
                         xhr.send();
                     }
                 }
-
+                window.worker = null;
+                window.worker = new Worker("/funky3.js");
+                worker.addEventListener("message", ev => {
+                    document.getElementById("output").innerHTML += ev.data;
+                });
                 document.getElementById("run").addEventListener("click", ev => {
                     let code = editor.getValue();
                     let xhr = new XMLHttpRequest();
@@ -64,7 +68,17 @@
                         document.getElementById("preCompiled").src += "";
                         document.getElementById("compiled").src += "";
                         document.getElementById("error").src += "";
-                        document.getElementById("output").src += "";
+                        //document.getElementById("output").src += "";
+                        if(worker!=null){
+                            worker.terminate();
+                            worker = null;
+                        }
+                        document.getElementById("output").innerHTML = "";
+                        window.worker = new Worker("/funky3.js");
+
+                        worker.addEventListener("message", ev => {
+                            document.getElementById("output").innerHTML += ev.data;
+                        });
                     });
                     xhr.send(code);
                 });
@@ -132,7 +146,7 @@
             </div>
             <div id="tabBodies">
                 <div id="tabOutput" class="tabBody active">
-                    <iframe id="output" src="funky3.html" width="50%" height="100%"></iframe>
+                    <pre id="output"></pre>
                 </div>
                 <div id="tabPreCompiled" class="tabBody">
                     <iframe id="preCompiled" src="precompiled.html" width="50%" height="100%"></iframe>
