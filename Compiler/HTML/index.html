@@ -20,18 +20,38 @@
                         showPrintMargin: false,
                         theme: 'ace/theme/solarized_dark',
                         mode: 'ace/mode/javascript'
-                    })
+                    });
+
+                    editor.on('change', function(){
+                        // MAYBE change the save url.
+                        var code = editor.getValue();
+                        var params = new URLSearchParams(window.location.search);
+                        if(code.length < 512){
+                            // If we've loaded a file, don't change the URL.
+                            if(!params.has('file')){
+                                params.set('code', code);
+                                window.history.replaceState(null, null, '?' + params.toString());
+                            }
+                        }else if(params.has('file')){
+                            window.history.replaceState(null, null, '?');
+                        }
+                    });
                 }
 
                 {
-                    let xhr = new XMLHttpRequest();
-                    xhr.open("GET", "/currentCode.txt", true);
-                    xhr.setRequestHeader("Content-Type", "application/json");
-                    xhr.addEventListener("load", ev => {
-                        console.log("Loaded code!");
-                        window.editor.setValue(xhr.responseText);
-                    });
-                    xhr.send();
+                    var params = new URLSearchParams(window.location.search);
+                    if(params.has('code')){
+                        window.editor.setValue(params.get('code'));
+                    }else{
+                        let xhr = new XMLHttpRequest();
+                        xhr.open("GET", "/currentCode.txt", true);
+                        xhr.setRequestHeader("Content-Type", "application/json");
+                        xhr.addEventListener("load", ev => {
+                            console.log("Loaded code!");
+                            window.editor.setValue(xhr.responseText);
+                        });
+                        xhr.send();
+                    }
                 }
 
                 document.getElementById("run").addEventListener("click", ev => {
@@ -55,9 +75,12 @@
                     xhr.open("POST", "/save", true);
                     xhr.setRequestHeader("Content-Type", "application/json");
                     xhr.addEventListener("load", ev => {
-                        if(xhr.code == 200) {
+                        if(xhr.status == 200) {
                             console.log("Saved!");
-                            document.location = `/index.html?file=${xhr.responseText}`;
+                            document.location = `/index.html${xhr.responseText}`;
+                        }else{
+                            console.log(`Error saving! ${xhr.status}`);
+                            console.log(xhr.responseText);
                         }
                     });
                     xhr.send(code);

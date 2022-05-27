@@ -198,22 +198,32 @@ public class WebServer {
             if(url.LocalPath == "/save"){
                 // CRC the sent file
                 string sentCode = new StreamReader(request.InputStream).ReadToEnd();
-                using System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
-                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(sentCode));
-                string hashString = Convert.ToHexString(hash);
-                if(!Directory.Exists("savedCode")){
-                    Directory.CreateDirectory("savedCode");
-                }
-                if(File.Exists(Path.Combine("savedCode", hashString))){
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Close();
-                    continue;
-                }else{
-                    File.WriteAllText(Path.Combine("savedCode", hashString), sentCode);
+                // Just store the code in the URL.
+                if(sentCode.Length < 512){
                     response.StatusCode = 200;
-                    response.OutputStream.Write(Encoding.UTF8.GetBytes(hashString));
+                    response.OutputStream.Write(Encoding.UTF8.GetBytes("?code=" + HttpUtility.UrlEncode(sentCode)));
                     response.Close();
                     continue;
+
+                // Save it to disk and use a CRC to retreive it.
+                }else{
+                    using System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create();
+                    byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(sentCode));
+                    string hashString = Convert.ToHexString(hash);
+                    if(!Directory.Exists("savedCode")){
+                        Directory.CreateDirectory("savedCode");
+                    }
+                    if(File.Exists(Path.Combine("savedCode", hashString))){
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        response.Close();
+                        continue;
+                    }else{
+                        File.WriteAllText(Path.Combine("savedCode", hashString), sentCode);
+                        response.StatusCode = 200;
+                        response.OutputStream.Write(Encoding.UTF8.GetBytes("?file=" + hashString));
+                        response.Close();
+                        continue;
+                    }
                 }
             }
 
