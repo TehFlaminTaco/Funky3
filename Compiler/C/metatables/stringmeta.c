@@ -193,7 +193,13 @@ Var* StringGt(Var* scope, Var* args){
     return VarNewNumber(strcmp(left -> value, right -> value) > 0);
 }
 
-
+Var* StringLen(Var* scope, Var* args){
+    Var* string = ArgVarGet(args, 0, "value");
+    if(string -> type != VAR_STRING){
+        return &NIL;
+    }
+    return VarNewNumber(strlen(string -> value));
+}
 
 void PopulateStringMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tocode"), VarNewFunction(StringToCode));
@@ -202,6 +208,7 @@ void PopulateStringMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("unp"), VarNewFunction(StringUnp));
     VarRawSet(metatable, VarNewString("lt"), VarNewFunction(StringLt));
     VarRawSet(metatable, VarNewString("gt"), VarNewFunction(StringGt));
+    VarRawSet(metatable, VarNewString("len"), VarNewFunction(StringLen));
 }
 
 #endif
