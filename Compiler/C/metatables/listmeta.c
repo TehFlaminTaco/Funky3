@@ -6,6 +6,7 @@
 #include "../var.h"
 #include "../funky3.h"
 #include "../hashmap.h"
+#include "../linkedlist.h"
 
 Var* ListToString(Var* scope, Var* args){
     tgc_run(&gc);
@@ -114,11 +115,24 @@ Var* ListIterator(Var* scope, Var* args){
 }
 
 
+Var* ListLen(Var* scope, Var* args){
+    Var* list = ArgVarGet(args, 0, "obj");
+    if(list -> type != VAR_LIST){
+        return &UNDEFINED;
+    }
+    int len = 0;
+    while(!ISUNDEFINED(VarRawGet(list, VarNewNumber(len)))){
+        len++;
+    }
+    return VarNewNumber(len);
+}
+
 void PopulateListMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(ListToString));
     VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(ListToString));
 
     VarRawSet(metatable, VarNewString("iter"), VarNewFunction(ListIterator));
+    VarRawSet(metatable, VarNewString("len"), VarNewFunction(ListLen));
 }
 
 #endif
