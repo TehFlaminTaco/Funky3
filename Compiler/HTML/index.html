@@ -8,6 +8,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.0/ace.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/theme-solarized_dark.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/keybinding-vscode.min.js" defer></script>
         <link rel="stylesheet" href="style.css">
         <script>
             window.addEventListener("load", ev => {
@@ -21,7 +22,8 @@
                         theme: 'ace/theme/solarized_dark',
                         mode: 'ace/mode/javascript'
                     });
-
+                    require("ace/keyboard/vscode");
+                    editor.setKeyboardHandler("ace/keyboard/vscode");
                     editor.on('change', function(){
                         // MAYBE change the save url.
                         var code = editor.getValue();
@@ -36,6 +38,14 @@
                             window.history.replaceState(null, null, '?');
                         }
                     });
+                    editor.commands.addCommand({
+                        name: 'run',
+                        bindKey: {win: 'Ctrl-R', mac: 'Command-R'},
+                        exec: function(editor){
+                            document.getElementById('run').click();
+                        },
+                        readOnly: true // false if this command should not apply in readOnly mode
+                    })
                 }
 
                 {
