@@ -16,24 +16,77 @@
 #define LIBNAME math
 #include "libs/math.c"
 
-#undef CONSTANT
-#undef ALIAS
-
-Var* Print(Var* scope, Var* args){
+Var* GlobalPrint(Var* scope, Var* args){
     DebugPrint("PRINT\n");
     int index = 0;
+    Var* sep = VarRawGet(args, VarNewString("sep"));
+    Var* end = VarRawGet(args, VarNewString("end"));
     Var* arg = ArgVarGet(args, index, NULL);
     if(ISUNDEFINED(arg)){
         DebugPrint("PRINT: No arguments\n");
+    }
+    if(ISUNDEFINED(sep)){
+        sep = VarNewString("\t");
+    }else{
+        sep = VarAsString(sep);
+        if(sep -> type != VAR_STRING){
+            sep = VarNewString("\t");
+        }
+    }
+    if(ISUNDEFINED(end)){
+        end = VarNewString("\n");
+    }else{
+        end = VarAsString(end);
+        if(end -> type != VAR_STRING){
+            end = VarNewString("\n");
+        }
     }
     while(!ISUNDEFINED(arg)){
         DebugPrint("%i, %i\n", index, arg -> type);
         printf("%s", VarAsString(arg)->value);
         arg = ArgVarGet(args, ++index, NULL);
-        if(arg != NULL)
-            printf("\t");
+        if(!ISUNDEFINED(arg))
+            printf(sep -> value);
     }
-    printf("\n");
+    printf(end -> value);
+    return &NIL;
+}
+
+// Literally just PRINT with different defaults.
+// Bad, I know.
+Var* GlobalWrite(Var* scope, Var* args){
+    DebugPrint("WRITE\n");
+    int index = 0;
+    Var* sep = VarRawGet(args, VarNewString("sep"));
+    Var* end = VarRawGet(args, VarNewString("end"));
+    Var* arg = ArgVarGet(args, index, NULL);
+    if(ISUNDEFINED(arg)){
+        DebugPrint("WRITE: No arguments\n");
+    }
+    if(ISUNDEFINED(sep)){
+        sep = VarNewString(" ");
+    }else{
+        sep = VarAsString(sep);
+        if(sep -> type != VAR_STRING){
+            sep = VarNewString(" ");
+        }
+    }
+    if(ISUNDEFINED(end)){
+        end = VarNewString("");
+    }else{
+        end = VarAsString(end);
+        if(end -> type != VAR_STRING){
+            end = VarNewString("");
+        }
+    }
+    while(!ISUNDEFINED(arg)){
+        DebugPrint("%i, %i\n", index, arg -> type);
+        printf("%s", VarAsString(arg)->value);
+        arg = ArgVarGet(args, ++index, NULL);
+        if(!ISUNDEFINED(arg))
+            printf(sep -> value);
+    }
+    printf(end -> value);
     return &NIL;
 }
 
@@ -62,14 +115,14 @@ Var* _values(Var* scope, Var* args){
     return val;
 }
 
-Var* Values(Var* scope, Var* args){
-    DebugPrint("Values\n");
+Var* GlobalValues(Var* scope, Var* args){
+    DebugPrint("GlobalValues\n");
     Var* list = ArgVarGet(args, 0, "obj");
     if(list -> type != VAR_LIST){
-        DebugPrint("Values: not a list\n");
+        DebugPrint("GlobalValues: not a list\n");
         return &UNDEFINED;
     }
-    DebugPrint("Values: %p\n", list);
+    DebugPrint("GlobalValues: %p\n", list);
     Var* valuesList = VarNewList();
 
     HashMap* map = (HashMap*)list -> value;
@@ -115,14 +168,14 @@ Var* _pairs(Var* scope, Var* args){
     return val;
 }
 
-Var* Pairs(Var* scope, Var* args){
-    DebugPrint("Pairs\n");
+Var* GlobalPairs(Var* scope, Var* args){
+    DebugPrint("GlobalPairs\n");
     Var* list = ArgVarGet(args, 0, "obj");
     if(list -> type != VAR_LIST){
-        DebugPrint("Pairs: not a list\n");
+        DebugPrint("GlobalPairs: not a list\n");
         return &UNDEFINED;
     }
-    DebugPrint("Pairs: %p\n", list);
+    DebugPrint("GlobalPairs: %p\n", list);
     Var* pairsList = VarNewList();
 
     HashMap* map = (HashMap*)list -> value;
@@ -147,28 +200,99 @@ Var* Pairs(Var* scope, Var* args){
     return func;
 }
 
+Var* GlobalGetMeta(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "obj");
+    return v -> metatable;
+}
+
+Var* GlobalSetMeta(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "obj");
+    Var* m = ArgVarGet(args, 1, "metatable");
+    v -> metatable = m;
+    return v -> metatable;
+}
+
+Var* GlobalRawGet(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "obj");
+    Var* k = ArgVarGet(args, 1, "key");
+    return VarRawGet(v, k);
+}
+
+Var* GlobalRawSet(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "obj");
+    Var* k = ArgVarGet(args, 1, "key");
+    Var* v2 = ArgVarGet(args, 2, "value");
+    VarRawSet(v, k, v2);
+    return v2;
+}
+
+Var* GlobalToList(Var* scope, Var* args){
+    // Get the iterator of the object and make a list out of it.
+    Var* v = ArgVarGet(args, 0, "obj");
+    if(v -> type == VAR_LIST){
+        return v;
+    }
+    Var* func;
+    Var* nArgs = VarNewList();
+    ArgVarSet(nArgs, 0, "obj", v);
+    if(v->type == VAR_FUNCTION){
+        func = v;
+    }else{
+        func = VarAsFunction(VarGetMeta(v, "iter"));
+        if(func -> type != VAR_FUNCTION){ // Not iteratable.. :(
+            return &NIL;
+        }
+        func = VarFunctionCall(func, nArgs);
+    }
+    if(func -> type != VAR_FUNCTION){ // Not iteratable.. :(
+        return &NIL;
+    }
+    Var* outList = VarNewList();
+    Var* res;
+    int index = 0;
+    while(!ISUNDEFINED(res = VarFunctionCall(func, nArgs))){
+        VarRawSet(outList, VarNewNumber(index++), res);
+        ArgVarSet(nArgs, 1, "last", res);
+    }
+    return outList;
+}
+
 void PopulateGlobals(Var* globals){
     // Populate the globals with some basic functions.
-    VarRawSet(globals, VarNewString("pairs"), VarNewFunction(Pairs));
-    VarRawSet(globals, VarNewString("print"), VarNewFunction(Print));
-    VarRawSet(globals, VarNewString("values"), VarNewFunction(Values));
+#define LIBNAME globals
+    CONSTANT(pairs, VarNewFunction(GlobalPairs));
+    CONSTANT(values, VarNewFunction(GlobalValues));
+    CONSTANT(print, VarNewFunction(GlobalPrint));
+    CONSTANT(write, VarNewFunction(GlobalWrite));
+
+    CONSTANT(getMeta, VarNewFunction(GlobalGetMeta));
+    CONSTANT(setMeta, VarNewFunction(GlobalSetMeta));
+
+    CONSTANT(rawGet, VarNewFunction(GlobalRawGet));
+    CONSTANT(rawSet, VarNewFunction(GlobalRawSet));
+
+    CONSTANT(toList, VarNewFunction(GlobalToList));
+    ALIAS(toList, tL);
 
     // Libs
 
     // List
     Var* list = VarNewList();
-    VarRawSet(globals, VarNewString("list"), list);
+    CONSTANT(list, list);
     PopulateListLib(list);
 
     // String
     Var* string = VarNewList();
-    VarRawSet(globals, VarNewString("string"), string);
+    CONSTANT(string, string);
     PopulateStringLib(string);
 
     // Math
     Var* math = VarNewList();
-    VarRawSet(globals, VarNewString("math"), math);
+    CONSTANT(math, math);
     PopulateMathLib(math);
 }
+
+#undef CONSTANT
+#undef ALIAS
 
 #endif
