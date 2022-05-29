@@ -1,6 +1,9 @@
 # Aliases
 Each library contains shortened versions of the same functions. These are called aliases. Not every function has an alias, but the ones that do are listed below.
 
+## Globals
+`tolist` -> `tL`
+
 ## List
 `where` -> `w`\
 `map` -> `m`\
@@ -27,8 +30,10 @@ Each library contains shortened versions of the same functions. These are called
 `max` -> `X`\
 `clamp` -> `c`\
 `sqrt` -> `s`\
-`rad` -> `R`\
+`rad` -> `d`\
 `deg` -> `D`\
+`random` -> `R`\
+`randomseed` -> `RS`\
 `pi` -> `p`\
 `inf` -> `i`\
 `sin` -> `S`\
