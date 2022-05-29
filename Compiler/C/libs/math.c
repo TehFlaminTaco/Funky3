@@ -2,6 +2,7 @@
 #define MATH_C
 
 #include <math.h>
+#include <time.h>
 
 #include "lib.h"
 
@@ -167,6 +168,39 @@ Var* MathDeg(Var* scope, Var* args){
     return VarNewNumber(j * 180 / M_PI);
 }
 
+// Generate a random number.
+// If no arguments are supplied, generate a number between [0, 1)
+// If one argument is supplied, generate a number between [0,arg)
+// If two arguments are supplied, generate a number between [arg, arg2)
+// The output is not garunteed to be a whole number.
+Var* MathRandom(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    Var* v2 = ArgVarGet(args, 1, "n2");
+    if(v->type != VAR_NUMBER){
+        return VarNewNumber(rand() / (double)RAND_MAX);
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    if(v2->type != VAR_NUMBER){j;
+        return VarNewNumber(rand() / (double)RAND_MAX * j);
+    }
+    double j2;
+    memcpy(&j2, &v2->value, sizeof(double));
+    return VarNewNumber(rand() / (double)RAND_MAX * (j2 - j) + j);
+}
+
+// Seed the random number generator
+Var* MathRandomSeed(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "n");
+    if(v->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double j;
+    memcpy(&j, &v->value, sizeof(double));
+    srand((int)j);
+    return &NIL;
+}
+
 
 // TRIG
 Var* MathSin(Var* scope, Var* args){
@@ -234,6 +268,8 @@ Var* MathATan(Var* scope, Var* args){
 }
 
 void PopulateMathLib(Var* math){
+    srand (time ( NULL));
+
     VarRawSet(&MetatableNumber, VarNewString("get"), math);
 
     CONSTANT(abs, VarNewFunction(MathAbs));
@@ -246,6 +282,8 @@ void PopulateMathLib(Var* math){
     CONSTANT(sqrt, VarNewFunction(MathSqrt));
     CONSTANT(rad, VarNewFunction(MathRad));
     CONSTANT(deg, VarNewFunction(MathDeg));
+    CONSTANT(random, VarNewFunction(MathRandom));
+    CONSTANT(randomSeed, VarNewFunction(MathRandomSeed));
 
     CONSTANT(pi, VarNewNumber(M_PI));
     CONSTANT(e, VarNewNumber(M_E));
@@ -269,8 +307,10 @@ void PopulateMathLib(Var* math){
     ALIAS(max, X);
     ALIAS(clamp, c);
     ALIAS(sqrt, s);
-    ALIAS(rad, R);
+    ALIAS(rad, d);
     ALIAS(deg, D);
+    ALIAS(random, R);
+    ALIAS(randomSeed, RS);
 
     ALIAS(pi, p);
     ALIAS(inf, i);

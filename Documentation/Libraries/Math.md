@@ -103,6 +103,36 @@ Return the number of radians for the given number of degrees.
 math.rad(180) == math.pi
 ```
 
+## random
+**Description:**\
+Return a random number.\
+If no arguments are provided, the number will be between 0 and 1.\
+If one argument is provided, the number will be between 0 and the argument.\
+If two arguments are provided, the number will be between the first and second argument.\
+The output is a floating point number. To make it an integer, try int-dividing the result by one.
+
+**Arguments:**
+* number? **min**: The minimum value.
+* number? **max**: The maximum value.
+
+```coffeescript
+math.random() == [0, 1)
+math.random(10) == [0, 10)
+math.random(10, 20) == [10, 20)
+```
+
+## randomseed
+**Description:**\
+Set the seed for the random number generator.\
+This is cast to an integer, so `1.2` and `1` will both set the seed to 1.
+
+**Arguments:**
+* number **seed**: The seed to use.
+
+```coffeescript
+math.randomseed(12)
+```
+
 ## round
 **Description:**\
 Return the number rounded to the nearest integer. An optional second argument can be provided to round to a specific radix.
