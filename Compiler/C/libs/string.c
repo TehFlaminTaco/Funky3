@@ -258,6 +258,7 @@ Var* StringReplace(Var* scope, Var* args){
         strncpy(str, (haystack -> value) + lastMatch, result - lastMatch);
         str[result - lastMatch] = '\0';
         LinkedListPush(combined, VarNewString(str));
+        free(str);
 
         // If the replacement is a function, call it with the match.
         if(replacement -> type == VAR_FUNCTION){
@@ -265,7 +266,7 @@ Var* StringReplace(Var* scope, Var* args){
             for(int i=0; i < groupc; i++){
                 size_t match_len = groups[i].end - groups[i].start;
                 char* match_str = malloc(match_len + 1);
-                memcpy(match_str, haystack -> value + groups[i].start + offset, match_len);
+                memcpy(match_str, haystack -> value + groups[i].start + result, match_len);
                 match_str[match_len] = '\0';
                 VarRawSet(args, VarNewNumber(i), VarNewString(match_str));
                 free(match_str);
@@ -284,13 +285,13 @@ Var* StringReplace(Var* scope, Var* args){
             for(int i=0; i < groupc; i++){
                 size_t match_len = groups[i].end - groups[i].start;
                 char* match_str = malloc(match_len + 1);
-                memcpy(match_str, haystack -> value + groups[i].start + offset, match_len);
+                memcpy(match_str, haystack -> value + groups[i].start + result, match_len);
                 match_str[match_len] = '\0';
                 groupStrings[i] = match_str;
             }
             size_t match_len = groups[0].end - groups[0].start;
             char* match_str = malloc(match_len + 1);
-            memcpy(match_str, haystack -> value + groups[0].start + offset, match_len);
+            memcpy(match_str, haystack -> value + groups[0].start + result, match_len);
             match_str[match_len] = '\0';
             Var* match_var = VarNewString(match_str);
             free(match_str);
@@ -303,13 +304,19 @@ Var* StringReplace(Var* scope, Var* args){
             LinkedListPush(combined, VarNewString(repl));
             free(repl);
         }
-        offset += groups[0].end + 1;
-        lastMatch = offset - 1;
+        offset = groups[0].end + result;
+        lastMatch = offset;
         free(groups);
         if(offset >= haystackLen){
             break;
         }
     }
+    newStringLength += haystackLen - lastMatch;
+    char* str = calloc((haystackLen - lastMatch) + 1, sizeof(char));
+    strncpy(str, (haystack -> value) + lastMatch, haystackLen - lastMatch);
+    str[haystackLen - lastMatch] = '\0';
+    LinkedListPush(combined, VarNewString(str));
+    free(str);
     regex_free(reg);
 
     // Concatenate the strings in reverse order
