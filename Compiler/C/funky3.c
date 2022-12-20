@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <math.h>
+#include <emscripten.h>
 
 
 #include "funky3.h"
@@ -36,6 +37,7 @@
 
 #include "header.c"
 
+
 Var* Funky3Code(Var* scope){
     Var* _;
     DebugPrint("USER GENERATED CODE:\n");
@@ -43,6 +45,7 @@ Var* Funky3Code(Var* scope){
     DebugPrint("USER GENERATED CODE END\n");
 }
 
+EMSCRIPTEN_KEEPALIVE
 int main(int argc, char** argv){
     tgc_start(&gc, &argc);
     tgc_pause(&gc);
@@ -61,6 +64,6 @@ int main(int argc, char** argv){
     tgc_run(&gc);
     Funky3Code(scope);
     
-    tgc_stop(&gc);
+    //tgc_stop(&gc);
     return 0;
 }

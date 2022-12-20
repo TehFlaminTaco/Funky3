@@ -4,14 +4,155 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Funky3!!!</title>
+        <title>Funky3</title>
+        <style>/* ACE EDITOR */
+.ace_editor {
+    margin:0;
+    position: fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    right:50%;
+}
+
+@media screen and (max-width: 15cm) {
+    .ace_editor {
+        right:0;
+        bottom:50%;
+    }
+}
+
+/* TABS */
+#tabHolder {
+    position:fixed;
+    left:50%;
+    top:0;
+    right:0;
+    bottom:0;
+
+    display:flex;
+    flex-direction:column;
+}
+#tabButtons {
+    display:flex;
+    flex-grow:0;
+    flex-direction:row;
+    background-color:#333;
+    padding-top:4px;
+    padding-right:4px;
+}
+#tabBodies{
+    flex-grow:1;
+    border-top:solid 1px white;
+    background-color:#111;
+}
+#tabButtons button{
+    min-width:0px;
+    border:none;
+    border-radius: 4px 4px 0px 0px;
+    border: solid 1px white;
+    border-bottom: solid 1px #111;
+    margin-left:4px;
+    color:white;
+    background-color:#111;
+    font-family:monospace;
+    margin-bottom:-1px;
+}
+#tabButtons button:not(.active):hover {
+    background-color:#333;
+    cursor:pointer;
+}
+#tabButtons button:not(.active):active {
+    background-color:#FFF;
+    color:#111;
+    cursor:pointer;
+}
+@media screen and (max-width: 15cm) {
+    #tabButtons button{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        font-size:8pt;
+    }
+    #tabButtons button:not(.active) .text{
+        display:none;
+    }
+    #tabButtons .icon{
+        font-size:20pt;
+    }
+}
+.tabBody{
+    width:100%;
+    height:100%;
+}
+.tabBody:not(.active){
+    display:none;
+}
+#tabButtons button.active{
+    color:#111;
+    background-color:#FFF;
+}
+@media screen and (max-width: 15cm) {
+    #tabHolder {
+        left:0;
+        top:50%;
+    }
+}
+
+/* IFRAME */
+iframe {
+    width:100%;
+    height:100%;
+    border:none;
+}
+
+/* SAVELOAD */
+#tabSaveLoad {
+    color:white;
+    font-family: monospace;
+    padding: 1em;
+}
+
+#tabSaveLoad button {
+    border-radius:4px;
+    border: solid 1px white;
+    background-color:#111;
+    color:white;
+    font-family:monospace;
+}
+#tabSaveLoad button:hover {
+    background-color:#333;
+    cursor:pointer;
+}
+#tabSaveLoad button:active {
+    background-color:#FFF;
+    color:#111;
+    cursor:pointer;
+}
+
+/* RUN */
+button#run {
+    margin-right:8px;
+    background-color:darkgreen;
+}
+
+button#run:active{
+    background-color:lightgreen;
+}
+
+/* OUTPUT */
+#output {
+    padding-left:1em;
+    color:#FFF;
+    overflow: auto;
+}</style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.0/ace.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/theme-solarized_dark.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/keybinding-vscode.min.js" defer></script>
-        <link rel="stylesheet" href="style.css">
         <script>
             window.addEventListener("load", ev => {
+                try{
                 console.log("Loaded!");
                 window.editor = ace.edit("code");
                 {
@@ -19,8 +160,7 @@
                         useWrapMode: true,
                         highlightActiveLine: true,
                         showPrintMargin: false,
-                        theme: 'ace/theme/solarized_dark',
-                        mode: 'ace/mode/javascript'
+                        theme: 'ace/theme/solarized_dark'
                     });
                     require("ace/keyboard/vscode");
                     editor.setKeyboardHandler("ace/keyboard/vscode");
@@ -65,8 +205,12 @@
                 }
                 window.worker = null;
                 window.worker = new Worker("/funky3.js");
+                var htmlCanvas = document.getElementById("canvas");
+                var offscreen = htmlCanvas.transferControlToOffscreen();
+                window.worker.postMessage({canvas: offscreen}, [offscreen])
+                
                 worker.addEventListener("message", ev => {
-                    document.getElementById("output").innerHTML += ev.data;
+                    document.getElementById("output").innerHTML += ev.data + "\n";
                 });
                 document.getElementById("run").addEventListener("click", ev => {
                     let code = editor.getValue();
@@ -85,9 +229,14 @@
                         }
                         document.getElementById("output").innerHTML = "";
                         window.worker = new Worker("/funky3.js");
+                        htmlCanvas.replaceWith(htmlCanvas = document.createElement("canvas"));
+                        htmlCanvas.width = 512;
+                        htmlCanvas.height = 512;
+                        offscreen = htmlCanvas.transferControlToOffscreen();
+                        window.worker.postMessage({canvas: offscreen}, [offscreen])
 
                         worker.addEventListener("message", ev => {
-                            document.getElementById("output").innerHTML += ev.data;
+                            document.getElementById("output").innerHTML += ev.data + "\n";
                         });
                     });
                     xhr.send(code);
@@ -140,6 +289,9 @@
                         xhr.send();
                     });
                 }
+                }catch(e){
+                    document.getElementById("output").innerHTML = "Failed to load: "+e;
+                }
             });
         </script>
     </head>
@@ -149,6 +301,7 @@
             <div id="tabButtons">
                 <button id="run"><span class="icon">▶️</span><span class="text">Run</span></button>
                 <button id="tabOutputButton" class="tabButton active"><span class="icon">🧾</span><span class="text">Output</span></button>
+                <button id="tabCanvasButton" class="tabButton">🎨<span class="icon"></span><span class="text">Canvas</span></button>
                 <button id="tabPreCompiledButton" class="tabButton"><span class="icon">📥</span><span class="text">Pre-Compiled</span></button>
                 <button id="tabCompiledButton" class="tabButton"><span class="icon">📤</span><span class="text">Compiled</span></button>
                 <button id="tabErrorButton" class="tabButton"><span class="icon">⚠️</span><span class="text">Error</span></button>
@@ -157,6 +310,9 @@
             <div id="tabBodies">
                 <div id="tabOutput" class="tabBody active">
                     <pre id="output"></pre>
+                </div>
+                <div id="tabCanvas" class="tabBody">
+                    <canvas width="512" height="512" id="canvas">
                 </div>
                 <div id="tabPreCompiled" class="tabBody">
                     <iframe id="preCompiled" src="precompiled.html" width="50%" height="100%"></iframe>

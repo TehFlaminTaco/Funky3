@@ -72,6 +72,7 @@ public class With : Expression {
         string BlockReturnValue = UniqueValueName("blockReturnValue");
         sb.AppendLine($"Var* {BlockReturnValue} = &NIL;");
         sb.AppendLine("{");
+        Block.PushCurrentScope();
         stackName = BlockReturnValue;
         string expressionBody = Expression.GenerateInline(header, out string expressionHolder);
         if(!String.IsNullOrEmpty(expressionBody)) {
@@ -86,6 +87,7 @@ public class With : Expression {
             };
             sb.AppendLine($"\t{BlockReturnValue} = {retVal};");
         }
+        Block.PopCurrentScope();
         sb.AppendLine("}");
         return sb.ToString();
     }

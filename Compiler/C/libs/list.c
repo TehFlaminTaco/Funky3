@@ -2,6 +2,7 @@
 #define LIST_C
 
 #include "lib.h"
+#include <math.h>
 
 #include "../funky3.h"
 #include "../metatable.h"

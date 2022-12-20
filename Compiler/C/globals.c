@@ -15,6 +15,10 @@
 #include "libs/string.c"
 #define LIBNAME math
 #include "libs/math.c"
+#define LIBNAME draw
+#include "libs/draw.c"
+#define LIBNAME os
+#include "libs/os.c"
 
 Var* GlobalPrint(Var* scope, Var* args){
     DebugPrint("PRINT\n");
@@ -290,6 +294,16 @@ void PopulateGlobals(Var* globals){
     Var* math = VarNewList();
     CONSTANT(math, math);
     PopulateMathLib(math);
+
+    // Draw
+    Var* draw = VarNewList();
+    CONSTANT(draw, draw);
+    PopulateDrawLib(draw);
+
+    // OS
+    Var* os = VarNewList();
+    CONSTANT(os, os);
+    PopulateOSLib(os);
 }
 
 #undef CONSTANT

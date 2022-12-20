@@ -6,44 +6,55 @@ using System.Diagnostics;
 public static class Compiler
 {
     public static string CurrentCode { get; set; } = "";
-    public static void Compile(string code){
+    public static void Compile(string code)
+    {
         // Generate a Temporary folder for compiling
         var temp = Path.Combine(Path.GetTempPath(), "Funky3Compiler");
         var folder = Path.Combine(temp, Path.GetRandomFileName());
         Directory.CreateDirectory(folder);
         Directory.CreateDirectory(Path.Combine(folder, "metatables"));
         Directory.CreateDirectory(Path.Combine(folder, "libs"));
-        try {
+        Block.ResetScopes();
+        try
+        {
             // Copy all the C code into the folder
-            foreach(var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c=>c.StartsWith("Funky3_Compiler.C.")).Where(c=>c.EndsWith(".c") || c.EndsWith(".h"))){
+            foreach (var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c => c.StartsWith("Funky3_Compiler.C.")).Where(c => c.EndsWith(".c") || c.EndsWith(".h")))
+            {
                 // Get a local folder name from s
                 var targetFile = s["Funky3_Compiler.C.".Length..].Replace('.', Path.DirectorySeparatorChar);
                 var lastSlash = targetFile.LastIndexOf(Path.DirectorySeparatorChar);
                 // Replace the last Slash with a dot
-                if(lastSlash > 0){
+                if (lastSlash > 0)
+                {
                     targetFile = string.Concat(targetFile.AsSpan(0, lastSlash), ".", targetFile.AsSpan(lastSlash + 1));
                 }
                 var file = Path.Combine(folder, targetFile);
                 //Console.WriteLine(file);
-                using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(s)){
-                    using(var fileStream = File.Create(file)){
+                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(s))
+                {
+                    using (var fileStream = File.Create(file))
+                    {
                         stream!.CopyTo(fileStream);
                     }
                 }
             }
-            
-            using (StreamWriter bodyStream = new StreamWriter(Path.Combine(folder, "main.c"))) {
-                using (StreamWriter headerStream = new StreamWriter(Path.Combine(folder, "header.c"))) {
+
+            using (StreamWriter bodyStream = new StreamWriter(Path.Combine(folder, "main.c")))
+            {
+                using (StreamWriter headerStream = new StreamWriter(Path.Combine(folder, "header.c")))
+                {
                     Compile(code, bodyStream, headerStream);
                 }
             }
-            
+
             // And also the header.c
-            using (StreamReader reader = new StreamReader(Path.Combine(folder, "header.c"))) {
+            using (StreamReader reader = new StreamReader(Path.Combine(folder, "header.c")))
+            {
                 WebServer.CompiledHeader[WebServer.CurrentSession] = (reader.ReadToEnd(), DateTime.Now);
             }
             // For debugging, print the main.c
-            using (StreamReader reader = new StreamReader(Path.Combine(folder, "main.c"))) {
+            using (StreamReader reader = new StreamReader(Path.Combine(folder, "main.c")))
+            {
                 WebServer.CompiledBody[WebServer.CurrentSession] = (reader.ReadToEnd(), DateTime.Now);
             }
 
@@ -51,11 +62,14 @@ public static class Compiler
             // TODO: Check if this is windows or linux and run accordingly.
             ProcessStartInfo compilerStart;
             // If Windows
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -o output/funky3.js");
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=512MB -sEXPORTED_FUNCTIONS='[\"_main\",\"_DrawHook\"]' -o output/funky3.js");
                 compilerStart = new("cmd", "/c build.bat");
-            } else {
-                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -w -fweb -o output/funky3.js");
+            }
+            else
+            {
+                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -w -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=512MB -sEXPORTED_FUNCTIONS='[\"_main\",\"DrawHook\"]' -o output/funky3.js");
                 compilerStart = new("bash", "build.sh");
             }
             compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
@@ -65,23 +79,29 @@ public static class Compiler
             compilerStart.CreateNoWindow = true;
             Process compiler = Process.Start(compilerStart)!;
             compiler.WaitForExit();
-            if(compiler.ExitCode != 0){
+            if (compiler.ExitCode != 0)
+            {
                 WebServer.WriteError(compiler.StandardOutput.ReadToEnd());
                 WebServer.WriteError(compiler.StandardError.ReadToEnd());
                 throw new Exception("Compilation failed");
             }
 
             // Copy result to the output folder
-            if(Directory.Exists("Funky3Compiled")){
-                Directory.Delete("Funky3Compiled", true);
+            if (Directory.Exists("Funky3Compiled2"))
+            {
+                Directory.Delete("Funky3Compiled2", true);
             }
-            Directory.CreateDirectory("Funky3Compiled");
-            CopyDirectory(Path.Combine(folder, "output"), Path.Combine("Funky3Compiled"), true);
+            Directory.CreateDirectory("Funky3Compiled2");
+            CopyDirectory(Path.Combine(folder, "output"), Path.Combine("Funky3Compiled2"), true);
             WebServer.CompiledWasm[WebServer.CurrentSession] = (File.ReadAllBytes(Path.Combine(folder, "output", "funky3.wasm")), DateTime.Now);
             WebServer.WriteError("Compilation successful");
-        }catch(Exception e){
+        }
+        catch (Exception e)
+        {
             WebServer.WriteError(e.ToString());
-        }finally{
+        }
+        finally
+        {
             Directory.Delete(temp, true);
         }
     }
@@ -119,16 +139,18 @@ public static class Compiler
         }
     }
 
-    public static void Compile(string sourceCode, StreamWriter bodyOutput, StreamWriter headerOutput){
+    public static void Compile(string sourceCode, StreamWriter bodyOutput, StreamWriter headerOutput)
+    {
         CHeader.HeaderCodeChunks.Clear();
         CInline.InlineCodeChunks.Clear();
         Define.Macros.Clear();
         string preprocessedCode = Preprocessor.Process(sourceCode);
-        WebServer.PreCompiled[WebServer.CurrentSession] =  (preprocessedCode, DateTime.Now);
+        WebServer.PreCompiled[WebServer.CurrentSession] = (preprocessedCode, DateTime.Now);
         CurrentCode = preprocessedCode;
         var tokens = Tokenizer.Tokenize(preprocessedCode);
 
-        foreach(var headCode in CHeader.HeaderCodeChunks){
+        foreach (var headCode in CHeader.HeaderCodeChunks)
+        {
             headerOutput.WriteLine(headCode);
         }
 

@@ -21,6 +21,7 @@ Var* VarNewFunction(Var* (value)(Var*, Var*));
 inline static Var* VarTrue();
 inline static Var* VarFalse();
 
+Var* VarFunctionCall(Var *function, Var *args);
 Var* VarRawGet(Var* table, Var* key);
 Var* VarRawSet(Var* table, Var* key, Var* value);
 Var* ArgVarGet(Var* args, int index, char* key);
