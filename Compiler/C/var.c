@@ -37,7 +37,7 @@ Var* VarNewString(char* value){
 }
 
 Var* VarNewList(){
-    return VarNew(VAR_LIST, (long long)HashMapNew(256), &MetatableList);
+    return VarNew(VAR_LIST, (long long)HashMapNew(16), &MetatableList);
 }
 
 Var* VarNewFunction(Var* (value)(Var*, Var*)){
