@@ -77,6 +77,7 @@ public class DeOperator : Expression, IRightProvider
         return (null, index);
     }
 
+    public static Dictionary<string, string> KnownOperators = new();
     public override string GenerateInline(StreamWriter header, out string stackName){
         StringBuilder sb = new();
         sb.Append('\"');
@@ -120,6 +121,8 @@ public class DeOperator : Expression, IRightProvider
             var methodName = UniqueValueName("deop");
             StringBuilder headerSB = new();
             headerSB.AppendLine($"// Deoperator Method");
+            Block.PushBadScope();
+            Block.PushCurrentScope();
             headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
             headerSB.AppendLine($"\tVar* _ = &NIL;");
             if(indexed){
@@ -133,14 +136,25 @@ public class DeOperator : Expression, IRightProvider
             headerSB.AppendLine($"\treturn {expressionStackName};");
             headerSB.AppendLine($"}}");
             header.Write(headerSB.ToString());
+            Block.PopCurrentScope();
+            Block.PopCurrentScope();
 
             stackName = $"VarNewFunctionWithScope({methodName}, scope, {sb})";
             return "";
         }else if(BinaryOp != null || UnaryOp != null){
-            var methodName = UniqueValueName("deop");
+            var opName = BinaryOp?.Operator ?? UnaryOp!.Operator;
+            var opMeta = BinaryOp != null ? BinaryOperator.OperatorMetamethods[opName] : UnaryOperator.OperatorMetamethods[opName];
+            if( KnownOperators.ContainsKey(BinaryOp?.Operator ?? UnaryOp!.Operator) ){
+                var oldMethod = KnownOperators[BinaryOp?.Operator ?? UnaryOp!.Operator];
+                stackName = $"VarNewFunctionWithScope({oldMethod}, scope, {sb})";
+                return "";
+            }
+            var methodName = UniqueValueName("deop_"+opMeta);
             StringBuilder headerSB = new();
             headerSB.AppendLine($"// Deoperator {BinaryOp?.Operator ?? UnaryOp!.Operator}");
             headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
+            Block.PushBadScope();
+            Block.PushCurrentScope();
             headerSB.AppendLine($"\tVar* _ = &NIL;");
             headerSB.AppendLine($"\tVar* left = ArgVarGet(args, 0, \"left\");");
             headerSB.AppendLine($"\tVar* right = ArgVarGet(args, 1, \"right\");");
@@ -170,11 +184,13 @@ public class DeOperator : Expression, IRightProvider
             }
             headerSB.AppendLine($"\t}}");
             headerSB.AppendLine($"\treturn &NIL;");
+            Block.PopCurrentScope();
+            Block.PopCurrentScope();
             headerSB.AppendLine($"}}");
             header.Write(headerSB.ToString());
 
             stackName = $"VarNewFunctionWithScope({methodName}, scope, {sb})";
-
+            KnownOperators[BinaryOp?.Operator ?? UnaryOp!.Operator] = methodName;
             return "";
         }
         throw new Exception("Could not generate inline code for deoperator.");

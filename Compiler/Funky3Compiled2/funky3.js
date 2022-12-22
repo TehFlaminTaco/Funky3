@@ -1207,7 +1207,7 @@ function updateGlobalBufferAndViews(buf) {
 var TOTAL_STACK = 5242880;
 if (Module['TOTAL_STACK']) assert(TOTAL_STACK === Module['TOTAL_STACK'], 'the stack size can no longer be determined at runtime')
 
-var INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 16777216;legacyModuleProp('INITIAL_MEMORY', 'INITIAL_MEMORY');
+var INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 134217728;legacyModuleProp('INITIAL_MEMORY', 'INITIAL_MEMORY');
 
 assert(INITIAL_MEMORY >= TOTAL_STACK, 'INITIAL_MEMORY should be larger than TOTAL_STACK, was ' + INITIAL_MEMORY + '! (TOTAL_STACK=' + TOTAL_STACK + ')');
 
@@ -1217,7 +1217,7 @@ assert(typeof Int32Array != 'undefined' && typeof Float64Array !== 'undefined' &
 
 // If memory is defined in wasm, the user can't provide it.
 assert(!Module['wasmMemory'], 'Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally');
-assert(INITIAL_MEMORY == 16777216, 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
+assert(INITIAL_MEMORY == 134217728, 'Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically');
 
 // include: runtime_init_table.js
 // In regular non-RELOCATABLE mode the table is exported
@@ -1608,7 +1608,7 @@ function createWasm() {
     // This assertion doesn't hold when emscripten is run in --post-link
     // mode.
     // TODO(sbc): Read INITIAL_MEMORY out of the wasm file in post-link mode.
-    //assert(wasmMemory.buffer.byteLength === 16777216);
+    //assert(wasmMemory.buffer.byteLength === 134217728);
     updateGlobalBufferAndViews(wasmMemory.buffer);
 
     wasmTable = Module['asm']['__indirect_function_table'];
@@ -1710,7 +1710,14 @@ var tempI64;
 var ASM_CONSTS = {
   
 };
-
+function canvasBeginPath(){ Module.ctx.beginPath(); }
+function canvasClear(){ Module.ctx.clearRect(0,0,512,512); }
+function canvasFill(){ Module.ctx.fill(); }
+function canvasFillStyle(style){ Module.ctx.fillStyle = UTF8ToString(style); }
+function canvasLineTo(x,y){ Module.ctx.lineTo(x, y); }
+function canvasMoveTo(x,y){ Module.ctx.moveTo(x, y); }
+function canvasStroke(){ Module.ctx.stroke(); }
+function canvasStrokeStyle(style){ Module.ctx.strokeStyle = UTF8ToString(style); }
 
 
 
@@ -1930,6 +1937,14 @@ var asmLibraryArg = {
   "__assert_fail": ___assert_fail,
   "_emscripten_date_now": __emscripten_date_now,
   "_emscripten_throw_longjmp": __emscripten_throw_longjmp,
+  "canvasBeginPath": canvasBeginPath,
+  "canvasClear": canvasClear,
+  "canvasFill": canvasFill,
+  "canvasFillStyle": canvasFillStyle,
+  "canvasLineTo": canvasLineTo,
+  "canvasMoveTo": canvasMoveTo,
+  "canvasStroke": canvasStroke,
+  "canvasStrokeStyle": canvasStrokeStyle,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
   "fd_write": _fd_write,
@@ -1950,6 +1965,9 @@ var _malloc = Module["_malloc"] = createExportWrapper("malloc");
 
 /** @type {function(...*):?} */
 var _saveSetjmp = Module["_saveSetjmp"] = createExportWrapper("saveSetjmp");
+
+/** @type {function(...*):?} */
+var _DrawHook = Module["_DrawHook"] = createExportWrapper("DrawHook");
 
 /** @type {function(...*):?} */
 var _main = Module["_main"] = createExportWrapper("main");

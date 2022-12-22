@@ -11,7 +11,7 @@ public static class Tokenizer {
         "$CodeChunk",
     };
 
-    private static readonly Regex NUMBER = new(@"^(?<negative>-?)(?:(?<integer>0(?:x(?<hex_val>[0-9A-Fa-f]+)|b(?<bin_val>[01]+)))|(?:(?<float>(?<int_comp>\d*)\.(?<float_comp>\d+))|(?<int>\d+))(?:e(?<expon>-?\d+))?)");
+    private static readonly Regex NUMBER = new(@"^(?:(?<integer>0(?:x(?<hex_val>[0-9A-Fa-f]+)|b(?<bin_val>[01]+)))|(?:(?<float>(?<int_comp>\d*)\.(?<float_comp>\d+))|(?<int>\d+))(?:e(?<expon>-?\d+))?)");
 
     public static List<Token> Tokenize(string code) {
         var tokens = new List<Token>();

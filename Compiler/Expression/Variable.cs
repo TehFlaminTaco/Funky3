@@ -51,7 +51,7 @@ public class Variable : Expression
         if (IsLocal)
         {
             StringBuilder sb = new StringBuilder();
-            string varHolder = UniqueValueName("var");
+            string varHolder = UniqueValueName($"var_{Name}");
             sb.AppendLine($"// Get local:{Name}");
             sb.AppendLine($"Var* {varHolder} = VarRawGet(scope, VarNewString(\"{Name}\"));");
             sb.AppendLine($"if(ISUNDEFINED({varHolder})) {{");
@@ -78,8 +78,13 @@ public class Variable : Expression
         // The setter never needs to make the default check, because it always sets a value.
         if (IsLocal)
         {
+            if(Block.GetFromScope(Name!, out var s))
+            {
+                stackName = $"/* Set local:{Name} */ {s} = VarRawSet(scope, VarNewString(\"{Name}\"), {value})";
+                return "";
+            }
             StringBuilder sb = new StringBuilder();
-            string varHolder = UniqueValueName("var");
+            string varHolder = UniqueValueName($"var_{Name}");
             sb.AppendLine($"// Set local:{Name}");
             sb.AppendLine($"Var* {varHolder} = VarRawSet(scope, VarNewString(\"{Name}\"), {value});");
             stackName = varHolder;

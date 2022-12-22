@@ -111,7 +111,7 @@ EMSCRIPTEN_KEEPALIVE
 int DrawHook(){
     Var* frameMethod = VarGet(drawTable, VarNewString("frame"));
     if(ISUNDEFINED(frameMethod))
-        return 0;
+        return 1;
     Var* args = VarNewList();
     // Later: Delta Time?
     return VarTruthy(VarFunctionCall(frameMethod, args));

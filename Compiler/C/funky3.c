@@ -60,6 +60,9 @@ int main(int argc, char** argv){
     scope -> metatable = &MetatableBase;
     tgc_set_flags(&gc, scope, TGC_ROOT);
     PopulateGlobals(scope);
+    VarRawSet(scope, "_G", scope);
+    VarRawSet(scope, "nil", &NIL);
+    VarRawSet(scope, "undefined", &UNDEFINED);
     DebugPrint("B\n");
     tgc_run(&gc);
     Funky3Code(scope);

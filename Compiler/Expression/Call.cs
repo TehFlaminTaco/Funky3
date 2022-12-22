@@ -47,14 +47,18 @@ public class Call : Expression, ILeftProvider {
 
     public override string GenerateInline(StreamWriter header, out string stackName) {
         // Impossible to inline.
-        string retValue = UniqueValueName("retValue");
         string vArgs = UniqueValueName("args");
         string listIndexName = UniqueValueName("listIndex");
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("// Call");
-        sb.AppendLine($"\tVar* {retValue};");
-        sb.AppendLine($"\tVar* {vArgs} = VarNewList();");
-        sb.AppendLine($"\tint {listIndexName} = 0;");
+        if (Arguments.Count > 0)
+        {
+            sb.AppendLine($"\tVar* {vArgs} = VarNewList();");
+            sb.AppendLine($"\tint {listIndexName} = 0;");
+        }else{
+            vArgs = "VarNewList()";
+        }
+
         // Assemble arguments
         int i = 0;
         foreach(var entry in Arguments) {
@@ -94,8 +98,7 @@ public class Call : Expression, ILeftProvider {
             sb.Append(Tabbed(methodBody));
         }
         // Call method
-        sb.AppendLine($"\t{retValue} = VarFunctionCall({vMethod}, {vArgs});");
-        stackName = retValue;
+        stackName = $"VarFunctionCall({vMethod}, {vArgs})";
         return sb.ToString();
     }
 

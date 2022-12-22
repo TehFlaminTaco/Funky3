@@ -277,13 +277,13 @@ public class WebServer
                     if (!Error.ContainsKey(session))
                     {
                         response.ContentType = "text/html";
-                        response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + PreEscape(Error["helloworld.fnk"].ToString()) + "</pre>"));
+                        response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + (Error["helloworld.fnk"].ToString()) + "</pre>"));
                         response.Close();
                         continue;
                     }
 
                     response.ContentType = "text/html";
-                    response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + PreEscape(Error[session].ToString()) + "</pre>"));
+                    response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + (Error[session].ToString()) + "</pre>"));
                     response.Close();
                     continue;
                 }
@@ -293,13 +293,13 @@ public class WebServer
                     if (!PreCompiled.ContainsKey(session))
                     {
                         response.ContentType = "text/html";
-                        response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + PreEscape(PreCompiled["helloworld.fnk"].precompiled) + "</pre>"));
+                        response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + (PreCompiled["helloworld.fnk"].precompiled) + "</pre>"));
                         response.Close();
                         continue;
                     }
 
                     response.ContentType = "text/html";
-                    response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + PreEscape(PreCompiled[session].precompiled) + "</pre>"));
+                    response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + (PreCompiled[session].precompiled) + "</pre>"));
                     response.Close();
                     continue;
                 }
@@ -309,13 +309,13 @@ public class WebServer
                     if (!CompiledHeader.ContainsKey(session))
                     {
                         response.ContentType = "text/html";
-                        response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + "// header.c\n" + PreEscape(CompiledHeader["helloworld.fnk"].compiled) + "\n\n// main.c\n" + PreEscape(CompiledBody["helloworld.fnk"].compiled) + "</pre>"));
+                        response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + "// header.c\n" + (CompiledHeader["helloworld.fnk"].compiled) + "\n\n// main.c\n" + (CompiledBody["helloworld.fnk"].compiled) + "</pre>"));
                         response.Close();
                         continue;
                     }
 
                     response.ContentType = "text/html";
-                    response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + "// header.c\n" + PreEscape(CompiledHeader[session].compiled) + "\n\n// main.c\n" + PreEscape(CompiledBody[session].compiled) + "</pre>"));
+                    response.OutputStream.Write(Encoding.UTF8.GetBytes("<style>pre {color:white;}</style><pre>" + "// header.c\n" + (CompiledHeader[session].compiled) + "\n\n// main.c\n" + (CompiledBody[session].compiled) + "</pre>"));
                     response.Close();
                     continue;
                 }

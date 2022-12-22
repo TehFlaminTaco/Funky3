@@ -1,27 +1,34 @@
 using System.Text;
-public class Function : Expression {
+public class Function : Expression
+{
     public Variable? StoreVariable { get; set; }
+    public string? StoreVariableName { get; set; }
     public List<FunctionArgument> Arguments { get; set; }
     public Expression Body { get; set; }
 
     public string Code { get; set; }
 
-    public Function(Variable? storeVariable, List<FunctionArgument> arguments, Expression body, string code) {
+    public Function(Variable? storeVariable, string? storeVariableName, List<FunctionArgument> arguments, Expression body, string code)
+    {
         StoreVariable = storeVariable;
+        StoreVariableName = storeVariableName;
         Arguments = arguments;
         Body = body;
         Code = code;
     }
 
-    public static (Function?, int) TryParse(List<Token> tokens, int index) {
+    public static (Function?, int) TryParse(List<Token> tokens, int index)
+    {
         int i = index;
-        if(tokens[i].Type == TokenType.Keyword && tokens[i].Value == "function") {
+        if (tokens[i].Type == TokenType.Keyword && tokens[i].Value == "function")
+        {
             Parser.RegisterFurthest(i);
             i++;
             return TryParseKeyword(tokens, i);
         }
 
-        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "(") {
+        if (tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "(")
+        {
             Parser.RegisterFurthest(i);
             i++;
             return TryParseParentheses(tokens, i);
@@ -29,7 +36,8 @@ public class Function : Expression {
 
         // Try and get a single argument
         (FunctionArgument? argument, int index) argument = FunctionArgument.TryParse(tokens, i);
-        if(argument.argument != null) {
+        if (argument.argument != null)
+        {
             Parser.RegisterFurthest(argument.index);
             i = argument.index;
             return TryParseSingleArgument(argument.argument, tokens, i);
@@ -38,40 +46,51 @@ public class Function : Expression {
         return (null, index);
     }
 
-    public static (Function?, int) TryParseKeyword(List<Token> tokens, int index) {
+    public static (Function?, int) TryParseKeyword(List<Token> tokens, int index)
+    {
         int i = index;
         // Try to get a Variable.
-        Expression.PushBlock(new(){
+        Expression.PushBlock(new()
+        {
             typeof(Call),
             typeof(UnpackVariable),
             typeof(Parentheses)
         });
+        int storeVariableNameStart = i;
         var storeVariable = Expression.TryParseAny(tokens, i);
         Expression.PopBlock();
-        if(storeVariable.Item1 != null) {
-            if(storeVariable.Item1 is not Variable v) {
+        if (storeVariable.Item1 != null)
+        {
+            if (storeVariable.Item1 is not Variable v)
+            {
                 return (null, index);
             }
             i = storeVariable.Item2;
         }
-        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "(") {
+        var storeVariableName = Compiler.CurrentCode[tokens[storeVariableNameStart].Index..tokens[i].Index];
+        if (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "(")
+        {
             return (null, index);
         }
         Parser.RegisterFurthest(i);
         i++;
         var arguments = new List<FunctionArgument>();
-        while(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")") {
+        while (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")")
+        {
             var argument = FunctionArgument.TryParse(tokens, i);
-            if(argument.Item1 == null) {
+            if (argument.Item1 == null)
+            {
                 return (null, index);
             }
             arguments.Add(argument.Item1);
             i = argument.Item2;
-            if(argument.Item1.Splat){
+            if (argument.Item1.Splat)
+            {
                 break;
             }
             // Skip over a comma.
-            if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ",") {
+            if (tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ",")
+            {
                 Parser.RegisterFurthest(i);
                 i++;
             }
@@ -79,113 +98,145 @@ public class Function : Expression {
         Parser.RegisterFurthest(i);
         i++;
         var body = TryParseAny(tokens, i);
-        if(body.expression == null) {
+        if (body.expression == null)
+        {
             return (null, index);
         }
-        int start = tokens[index-1].Index;
-        int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
+        int start = tokens[index - 1].Index;
+        int end = tokens[body.index - 1].Index + tokens[body.index - 1].Length;
         string code = Compiler.CurrentCode[start..end];
-        return (new Function(storeVariable.Item1 as Variable, arguments, body.expression, code), body.index);
+        return (new Function(storeVariable.Item1 as Variable, storeVariableName, arguments, body.expression, code), body.index);
     }
 
     // In the form (a, b) => body
-    public static (Function?, int) TryParseParentheses(List<Token> tokens, int index) {
+    public static (Function?, int) TryParseParentheses(List<Token> tokens, int index)
+    {
         int i = index;
         var arguments = new List<FunctionArgument>();
-        while(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")") {
+        while (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ")")
+        {
             var argument = FunctionArgument.TryParse(tokens, i);
-            if(argument.Item1 == null) {
+            if (argument.Item1 == null)
+            {
                 return (null, index);
             }
             arguments.Add(argument.Item1);
             i = argument.Item2;
             // Skip over a comma.
-            if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ",") {
+            if (tokens[i].Type == TokenType.Punctuation && tokens[i].Value == ",")
+            {
                 Parser.RegisterFurthest(i);
                 i++;
             }
         }
         Parser.RegisterFurthest(i);
         i++;
-        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "=") {
+        if (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "=")
+        {
             return (null, index);
         }
         Parser.RegisterFurthest(i);
         i++;
-        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ">") {
+        if (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ">")
+        {
             return (null, index);
         }
         Parser.RegisterFurthest(i);
         i++;
         var body = TryParseAny(tokens, i);
-        if(body.expression == null) {
+        if (body.expression == null)
+        {
             return (null, index);
         }
-        int start = tokens[index-1].Index;
-        int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
+        int start = tokens[index - 1].Index;
+        int end = tokens[body.index - 1].Index + tokens[body.index - 1].Length;
         string code = Compiler.CurrentCode[start..end];
-        return (new Function(null, arguments, body.expression, code), body.index);
+        return (new Function(null, null, arguments, body.expression, code), body.index);
     }
 
     // In the form a => body
-    public static (Function?, int) TryParseSingleArgument(FunctionArgument argument, List<Token> tokens, int index) {
+    public static (Function?, int) TryParseSingleArgument(FunctionArgument argument, List<Token> tokens, int index)
+    {
         int i = index;
-        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "=") {
+        if (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != "=")
+        {
             return (null, index);
         }
         Parser.RegisterFurthest(i);
         i++;
-        if(tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ">") {
+        if (tokens[i].Type != TokenType.Punctuation || tokens[i].Value != ">")
+        {
             return (null, index);
         }
         Parser.RegisterFurthest(i);
         i++;
         var body = TryParseAny(tokens, i);
-        if(body.expression == null) {
+        if (body.expression == null)
+        {
             return (null, index);
         }
-        int start = tokens[index-1].Index;
-        int end = tokens[body.index-1].Index + tokens[body.index-1].Length;
+        int start = tokens[index - 1].Index;
+        int end = tokens[body.index - 1].Index + tokens[body.index - 1].Length;
         string code = Compiler.CurrentCode[start..end];
-        return (new Function(null, new List<FunctionArgument> { argument }, body.expression, code), body.index);
+        return (new Function(null, null, new List<FunctionArgument> { argument }, body.expression, code), body.index);
     }
 
-    public override string GenerateInline(StreamWriter header, out string stackName) {
+    public override string GenerateInline(StreamWriter header, out string stackName)
+    {
         // Write the method to the header.
-        string methodName = UniqueValueName("method");
         StringBuilder headerSB = new();
-        headerSB.AppendLine("// Function Definition");
+        var storeVariableTextAppend = "";
+        if(StoreVariable is not null && StoreVariableName is not null){
+            headerSB.AppendLine($"// Function Definition: {StoreVariableName}");
+            storeVariableTextAppend = $"_{StoreVariableName}";
+        }else {
+            headerSB.AppendLine("// Function Definition");
+
+        }
+        string methodName = UniqueValueName("method" + storeVariableTextAppend);
         headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
+        Block.PushBadScope();
+        Block.PushCurrentScope();
         headerSB.AppendLine($"\ttgc_run(&gc);");
         headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
         // Try loading "this" into the scope... Just if it exists.
         headerSB.AppendLine("\tVarRawSet(scope, VarNewString(\"this\"), VarRawGet(args, VarNewString(\"this\")));");
-        if(Arguments.Count > 0) {
+        if (Arguments.Count > 0)
+        {
             string argIndex = UniqueValueName($"argIndex");
             headerSB.AppendLine($"\tint {argIndex} = 0;");
             // Add the args to the scope.
             // VarRawSet(scope, VarNewString( argument name ), args[i]);
-            for(int i = 0; i < Arguments.Count; i++) {
-                string argName = UniqueValueName($"arg{i}");
+            for (int i = 0; i < Arguments.Count; i++)
+            {
+                string argName = UniqueValueName($"arg_{Arguments[i].Name}");
                 headerSB.AppendLine($"\t// Argument: {Arguments[i].Name} ");
                 // If it's splatted, Dump the rest of the arguments into this in particular.
-                if(Arguments[i].Splat) {
+                if (Arguments[i].Splat)
+                {
                     headerSB.AppendLine($"\t\tVar* {argName} = VarListCopyLShifted(args, {argIndex});");
                     // Remove all arguments by name from the list.
-                    for(int j = 0; j < Arguments.Count; j++) {
+                    for (int j = 0; j < Arguments.Count; j++)
+                    {
                         headerSB.AppendLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
                     }
-                }else{
+                }
+                else
+                {
                     headerSB.AppendLine($"\t\tVar* {argName} = ArgVarGet(args, {argIndex}++, \"{Arguments[i].Name}\");");
                     headerSB.AppendLine($"\t\tif(ISUNDEFINED({argName})) {{");
-                    if(Arguments[i].DefaultValue != null) {
+                    if (Arguments[i].DefaultValue != null)
+                    {
                         string argOut;
                         string argBody = Arguments[i].DefaultValue!.GenerateInline(header, out argOut);
-                        if(!String.IsNullOrEmpty(argBody)){
+                        if (!String.IsNullOrEmpty(argBody))
+                        {
                             headerSB.Append(Tabbed(Tabbed(Tabbed($"{argBody}"))));
                         }
                         headerSB.AppendLine($"\t\t\t{argName} = {argOut};");
-                    }else{
+                    }
+                    else
+                    {
                         headerSB.AppendLine($"\t\t\t{argName} = &NIL;");
                     }
                     headerSB.AppendLine("\t\t}");
@@ -194,16 +245,21 @@ public class Function : Expression {
             }
         }
         string body = Body.GenerateInline(header, out string retVal);
-        if (!String.IsNullOrEmpty(body)) {
+        if (!String.IsNullOrEmpty(body))
+        {
             headerSB.Append(Tabbed(body));
         }
         headerSB.AppendLine($"\treturn {retVal};");
+        Block.PopCurrentScope();
+        Block.PopCurrentScope();
         headerSB.AppendLine($"}}");
         header.Write(headerSB.ToString());
         StringBuilder sb = new();
         sb.Append('\"');
-        foreach(char c in Code) {
-            switch(c){
+        foreach (char c in Code)
+        {
+            switch (c)
+            {
                 case '\a':
                     sb.Append("\\a"); break;
                 case '\b':
@@ -227,9 +283,12 @@ public class Function : Expression {
                 case '\"':
                     sb.Append("\\\""); break;
                 default:
-                    if(c < 32 || c > 126){
+                    if (c < 32 || c > 126)
+                    {
                         sb.Append($"\\x{c:X2}");
-                    }else{
+                    }
+                    else
+                    {
                         sb.Append(c);
                     }
                     break;
@@ -238,9 +297,12 @@ public class Function : Expression {
         sb.Append('\"');
         string constFunctionBody = sb.ToString();
 
-        if(StoreVariable != null) {
+        if (StoreVariable != null)
+        {
             StoreVariable!.GenerateSetterInline(header, out stackName, $"VarNewFunctionWithScope({methodName}, scope, {constFunctionBody})");
-        }else{
+        }
+        else
+        {
             stackName = $"VarNewFunctionWithScope({methodName}, scope,  {constFunctionBody})";
         }
         return "";
@@ -248,49 +310,57 @@ public class Function : Expression {
 
 }
 
-public class FunctionArgument{
+public class FunctionArgument
+{
     public string Name { get; set; }
     public Expression? DefaultValue { get; set; }
     public bool Splat { get; set; }
 
-    public FunctionArgument(string name, Expression? defaultValue, bool splat) {
+    public FunctionArgument(string name, Expression? defaultValue, bool splat)
+    {
         Name = name;
         DefaultValue = defaultValue;
         Splat = splat;
     }
 
-    public static (FunctionArgument?, int) TryParse(List<Token> tokens, int index) {
+    public static (FunctionArgument?, int) TryParse(List<Token> tokens, int index)
+    {
         int i = index;
-        if(tokens[i].Type != TokenType.Identifier) {
+        if (tokens[i].Type != TokenType.Identifier)
+        {
             return (null, index);
         }
         var argument = new FunctionArgument(tokens[i].Value, null, false);
         Parser.RegisterFurthest(i);
         i++;
-        if(tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "=" && (tokens[i+1].Type != TokenType.Punctuation || tokens[i+1].Value != ">")) {
+        if (tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "=" && (tokens[i + 1].Type != TokenType.Punctuation || tokens[i + 1].Value != ">"))
+        {
             Parser.RegisterFurthest(i);
             i++;
             var defaultValue = Expression.TryParseAny(tokens, i);
-            if(defaultValue.expression == null) {
+            if (defaultValue.expression == null)
+            {
                 return (null, index);
             }
             argument.DefaultValue = defaultValue.expression;
             i = defaultValue.index;
         }
         // Splat is defined by having three .'s after the argument.
-        if( argument.DefaultValue == null &&
+        if (argument.DefaultValue == null &&
             tokens[i].Type == TokenType.Punctuation && tokens[i].Value == "." &&
-            tokens[i+1].Type == TokenType.Punctuation && tokens[i+1].Value == "." &&
-            tokens[i+2].Type == TokenType.Punctuation && tokens[i+2].Value == "."
-            ) {
+            tokens[i + 1].Type == TokenType.Punctuation && tokens[i + 1].Value == "." &&
+            tokens[i + 2].Type == TokenType.Punctuation && tokens[i + 2].Value == "."
+            )
+        {
             argument.Splat = true;
-            Parser.RegisterFurthest(i+2);
+            Parser.RegisterFurthest(i + 2);
             i += 3;
         }
         return (argument, i);
     }
 
-    public override string ToString() {
+    public override string ToString()
+    {
         return $"{Name}{(DefaultValue != null ? " = " + DefaultValue.ToString() : "")}{(Splat ? "..." : "")}";
     }
 }

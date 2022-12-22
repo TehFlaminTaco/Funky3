@@ -8,8 +8,10 @@ public abstract class Expression {
     }
 
     public static HashSet<string> TakenNames = new HashSet<string>();
+    public static Regex specialCharacters = new Regex(@"[^a-zA-Z0-9_]");
     public static string UniqueValueName(string prefix){
-        string name = prefix + "_" + Guid.NewGuid().ToString("N")[..6];
+        prefix = "_" + specialCharacters.Replace(prefix, "_");
+        string name = prefix;// + "_" + Guid.NewGuid().ToString("N")[..6];
         while(TakenNames.Contains(name)) {
             name = prefix + "_" + Guid.NewGuid().ToString("N")[..6];
         }

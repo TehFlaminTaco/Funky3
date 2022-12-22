@@ -145,25 +145,36 @@ button#run:active{
     padding-left:1em;
     color:#FFF;
     overflow: auto;
+}
+
+.title{
+    display:inline-block;
+    width:10ch;
+}
+
+.exampleCategory {
+    margin-bottom:1ch;
 }</style>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.0/ace.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/theme-solarized_dark.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/keybinding-vscode.min.js" defer></script>
+        <script src="./mode-funky3.js"></script>
         <script>
             window.addEventListener("load", ev => {
                 try{
-                console.log("Loaded!");
                 window.editor = ace.edit("code");
                 {
                     editor.setOptions({
-                        useWrapMode: true,
+                        wrap: true,
                         highlightActiveLine: true,
                         showPrintMargin: false,
                         theme: 'ace/theme/solarized_dark'
                     });
                     require("ace/keyboard/vscode");
+                    require("ace/mode/funky3")
                     editor.setKeyboardHandler("ace/keyboard/vscode");
+                    editor.session.setMode("ace/mode/funky3")
                     editor.on('change', function(){
                         // MAYBE change the save url.
                         var code = editor.getValue();
@@ -197,7 +208,7 @@ button#run:active{
                         xhr.open("GET", "/currentCode.txt", true);
                         xhr.setRequestHeader("Content-Type", "application/json");
                         xhr.addEventListener("load", ev => {
-                            console.log("Loaded code!");
+                            // console.log("Loaded code!");
                             window.editor.setValue(xhr.responseText);
                         });
                         xhr.send();
@@ -329,13 +340,20 @@ button#run:active{
                     <hr>
                     <h2>Examples</h2>
                     <p>These examples help demonstrate how Funky 3 handles.<br>Clicking any of these buttons <b>WILL</b> make you lose your progress. Save first is you really don't want to lose it.</p>
-                    <button class="example" file="helloworld.fnk">Hello, World!</button>
-                    <button class="example" file="loops.fnk">Loops</button>
-                    <button class="example" file="strings.fnk">Strings</button>
-                    <button class="example" file="math.fnk">Math</button>
-                    <button class="example" file="deoperator.fnk">De-Operator</button>
-                    <button class="example" file="functions.fnk">Functions</button>
-                    <button class="example" file="lists.fnk">Lists</button>
+                    <div class="exampleCategory">
+                        <span class="title">Syntax</span>
+                        <button class="example" file="helloworld.fnk">Hello, World!</button>
+                        <button class="example" file="loops.fnk">Loops</button>
+                        <button class="example" file="functions.fnk">Functions</button>
+                        <button class="example" file="deoperator.fnk">De-Operator</button>
+                    </div>
+                    <div class="exampleCategory">
+                        <span class="title">Libraries</span>
+                        <button class="example" file="strings.fnk">Strings</button>
+                        <button class="example" file="math.fnk">Math</button>
+                        <button class="example" file="lists.fnk">Lists</button>
+                        <button class="example" file="draw.fnk">Draw</button>
+                    </div>
                 </div>
             </div>
         </div>
