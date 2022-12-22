@@ -16,7 +16,7 @@ inline static int ISUNDEFINED(Var* var){
     return var == NULL || var->type == VAR_NULL && var->value == 0;
 }
 
-Var* VarNew(char type, long long value, Var* metatable){
+Var* VarNew(char type, void* value, Var* metatable){
     Var* var = tgc_calloc(&gc, 1, sizeof(Var));
     var->type = type;
     var->value = value;
@@ -25,7 +25,7 @@ Var* VarNew(char type, long long value, Var* metatable){
 }
 
 Var* VarNewNumber(double value){
-    long long j;
+    void* j;
     memcpy(&j, &value, sizeof(double));
     return VarNew(VAR_NUMBER, j, &MetatableNumber);
 }
@@ -33,11 +33,11 @@ Var* VarNewNumber(double value){
 Var* VarNewString(char* value){
     char* copiedString = tgc_calloc(&gc, strlen(value) + 1, sizeof(char));
     strcpy(copiedString, value);
-    return VarNew(VAR_STRING, (long long)copiedString, &MetatableString);
+    return VarNew(VAR_STRING, (void*)copiedString, &MetatableString);
 }
 
 Var* VarNewList(){
-    return VarNew(VAR_LIST, (long long)HashMapNew(16), &MetatableList);
+    return VarNew(VAR_LIST, (void*)HashMapNew(16), &MetatableList);
 }
 
 Var* VarNewFunction(Var* (value)(Var*, Var*)){
@@ -45,12 +45,12 @@ Var* VarNewFunction(Var* (value)(Var*, Var*)){
     func->method = value;
     func->scope = &NIL;
     func->name = "<C Function>";
-    return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
+    return VarNew(VAR_FUNCTION, (void*)func, &MetatableFunction);
 }
 
 Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     VarFunction* func = tgc_calloc(&gc, 1, sizeof(VarFunction));
-    Var* vFunc = VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
+    Var* vFunc = VarNew(VAR_FUNCTION, (void*)func, &MetatableFunction);
     func->method = value;
     func->scope = VarSubScope(scope);
     func->name = name;

@@ -7,7 +7,7 @@ Values have the following structure
 ```C
 struct Var{
     char type; // The builtin type. One of "Nil", "Number", "String", "Function", "Object"
-    long long value; // The value stored. May be a pointer.
+    void* value; // The value stored. May be a pointer.
     Var* metatable; // The metatable, defines behaviours of values.
 }
 ```

@@ -3,7 +3,7 @@
 
 typedef struct _VAR {
     char type;
-    long long value;
+    void* value;
     struct _VAR* metatable;
 } Var;
 
