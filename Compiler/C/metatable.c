@@ -16,37 +16,37 @@
 
 void SetupMetaTables(){
     // Initialize metatables with new HashMaps.
-    MetatableBase.value = (void*)HashMapNew(59);
+    MetatableBase.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableBase.value, TGC_ROOT);
     MetatableBase.metatable = &MetatableList;
     PopulateBaseMeta(&MetatableBase);
 
-    MetatableNull.value = (void*)HashMapNew(59);
+    MetatableNull.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableNull.value, TGC_ROOT);
     MetatableNull.metatable = &MetatableList;
     PopulateNullMeta(&MetatableNull);
 
-    MetatableNumber.value = (void*)HashMapNew(59);
+    MetatableNumber.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableNumber.value, TGC_ROOT);
     MetatableNumber.metatable = &MetatableList;
     PopulateNumberMeta(&MetatableNumber);
 
-    MetatableString.value = (void*)HashMapNew(59);
+    MetatableString.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableString.value, TGC_ROOT);
     MetatableString.metatable = &MetatableList;
     PopulateStringMeta(&MetatableString);
 
-    MetatableFunction.value = (void*)HashMapNew(59);
+    MetatableFunction.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableFunction.value, TGC_ROOT);
     MetatableFunction.metatable = &MetatableList;
     PopulateFunctionMeta(&MetatableFunction);
 
-    MetatableList.value = (void*)HashMapNew(59);
+    MetatableList.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableList.value, TGC_ROOT);
     MetatableList.metatable = &MetatableList;
     PopulateListMeta(&MetatableList);
 
-    MetatableWith.value = (void*)HashMapNew(59);
+    MetatableWith.value = (long long)HashMapNew(59);
     tgc_set_flags(&gc, MetatableWith.value, TGC_ROOT);
     MetatableWith.metatable = &MetatableList;
     PopulateListMeta(&MetatableWith);
