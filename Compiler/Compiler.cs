@@ -66,7 +66,7 @@ public static class Compiler
             // If Windows
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=128MB -sEXPORTED_FUNCTIONS='[\"_main\",\"_DrawHook\"]' -o output/funky3.js");
+                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -Wno-everything -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=128MB -sEXPORTED_FUNCTIONS='[\"_main\",\"_DrawHook\"]' -o output/funky3.js");
                 compilerStart = new("cmd", "/c build.bat");
             }
             else
