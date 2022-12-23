@@ -25,14 +25,14 @@ Var* StringMatch(Var* scope, Var* args){
     if(offset < 0){
         offset = 0;
     }
-    int haystackLen = strlen(haystack -> value);
+    int haystackLen = strlen((char*) haystack -> value);
     if(offset >= haystackLen){
         return &NIL;
     }
 
     match_group_t* groups;
     size_t groupc;
-    int result = regex_match(needle -> value, (haystack -> value) + offset, &groupc, &groups);
+    int result = regex_match((char*) needle -> value, (haystack -> value) + offset, &groupc, &groups);
     if(result < 0){
         free(groups);
         return &NIL;
@@ -40,7 +40,7 @@ Var* StringMatch(Var* scope, Var* args){
     if(groupc == 1){ // No groups, return just a string.
         size_t out_len = groups[0].end - groups[0].start;
         char* out = malloc(out_len + 1);
-        memcpy(out, haystack -> value + result + offset, out_len);
+        memcpy(out, (char*) haystack -> value + result + offset, out_len);
         out[out_len] = '\0';
         Var* out_var = VarNewString(out);
         free(out);
@@ -49,7 +49,7 @@ Var* StringMatch(Var* scope, Var* args){
     Var* out = VarNewList();
     for(int i=0; i<groupc; i++){
         char* str = calloc(groups[i].end - groups[i].start + 1, sizeof(char));
-        strncpy(str, (haystack -> value) + groups[i].start + offset, groups[i].end - groups[i].start);
+        strncpy(str, ((char*) haystack -> value) + groups[i].start + offset, groups[i].end - groups[i].start);
         str[groups[i].end - groups[i].start] = '\0';
         VarRawSet(out, VarNewNumber(i), VarNewString(str));
         free(str);
@@ -74,14 +74,14 @@ Var* _stringMatches(Var* scope, Var* args){
     if(offset < 0){
         offset = 0;
     }
-    int haystackLen = strlen(haystack -> value);
+    int haystackLen = strlen((char*) haystack -> value);
     if(offset >= haystackLen){
         return &UNDEFINED;
     }
 
     match_group_t* groups;
     size_t groupc;
-    int result = regex_match(needle -> value, (haystack -> value) + offset, &groupc, &groups);
+    int result = regex_match((char*) needle -> value, ((char*) haystack -> value) + offset, &groupc, &groups);
     if(result < 0){
         free(groups);
         VarRawSet(scope, VarNewString("offset"), VarNewNumber(haystackLen + 1)); // Set offset to end of string.
@@ -91,7 +91,7 @@ Var* _stringMatches(Var* scope, Var* args){
     if(groupc == 1){ // No groups, return just a string.
         size_t out_len = groups[0].end - groups[0].start;
         char* out = malloc(out_len + 1);
-        memcpy(out, haystack -> value + result + offset, out_len);
+        memcpy(out, (char*) haystack -> value + result + offset, out_len);
         out[out_len] = '\0';
         Var* out_var = VarNewString(out);
         free(out);
@@ -100,7 +100,7 @@ Var* _stringMatches(Var* scope, Var* args){
     Var* out = VarNewList();
     for(int i=0; i<groupc; i++){
         char* str = calloc(groups[i].end - groups[i].start + 1, sizeof(char));
-        strncpy(str, (haystack -> value) + groups[i].start, groups[i].end - groups[i].start);
+        strncpy(str, ((char*) haystack -> value) + groups[i].start, groups[i].end - groups[i].start);
         str[groups[i].end - groups[i].start] = '\0';
         VarRawSet(out, VarNewNumber(i), VarNewString(str));
         free(str);
@@ -126,7 +126,7 @@ Var* StringMatches(Var* scope, Var* args){
     }
 
     Var* matchFunc = VarNewFunction(_stringMatches);
-    VarFunction* matchFunc_ = matchFunc -> value;
+    VarFunction* matchFunc_ = (VarFunction*) matchFunc -> value;
     matchFunc_ -> scope = VarNewList();
     VarRawSet(matchFunc_ -> scope, VarNewString("haystack"), haystack);
     VarRawSet(matchFunc_ -> scope, VarNewString("needle"), needle);
@@ -149,14 +149,14 @@ Var* StringFind(Var* scope, Var* args){
     if(offset < 0){
         offset = 0;
     }
-    int haystackLen = strlen(haystack -> value);
+    int haystackLen = strlen((char*) haystack -> value);
     if(offset >= haystackLen){
         return VarNewNumber(-1);
     }
 
     size_t out_len;
     match_group_t* groups;
-    int result = regex_match(needle -> value, (haystack -> value) + offset, &out_len, &groups);
+    int result = regex_match((char*) needle -> value, ((char*) haystack -> value) + offset, &out_len, &groups);
     free(groups);
     if(result < 0){
         return VarNewNumber(-1);
@@ -200,7 +200,7 @@ char* _singleReplacement(char* replacement, size_t groupc, char** groups){
     int index = newStringLength-1;
     string[newStringLength] = '\0';
     for(Linklett* current = combined->first; current != NULL; current = current->next){
-        char* curString = current->var->value;
+        char* curString = (char*) current->var->value;
         int curStringLength = strlen(curString);
         index -= curStringLength;
         strncpy(string + index, curString, curStringLength);
@@ -231,11 +231,11 @@ Var* StringReplace(Var* scope, Var* args){
     if(offset < 0){
         offset = 0;
     }
-    int haystackLen = strlen(haystack -> value);
+    int haystackLen = strlen((char*) haystack -> value);
     if(offset >= haystackLen){
         return &NIL;
     }
-    struct small_regex * reg = regex_compile(needle -> value);
+    struct small_regex * reg = regex_compile((char*) needle -> value);
     LinkedVarList* combined = LinkedListNew();
     int lastMatch = 0;
     
@@ -243,7 +243,7 @@ Var* StringReplace(Var* scope, Var* args){
     while(1){
         size_t groupc;
         match_group_t* groups;
-        int result = regex_match(needle -> value, (haystack -> value) + offset, &groupc, &groups);
+        int result = regex_match((char*) needle -> value, ((char*) haystack -> value) + offset, &groupc, &groups);
         if(result < 0){
             break;
         }
@@ -255,7 +255,7 @@ Var* StringReplace(Var* scope, Var* args){
         // Add the string before the match.
         newStringLength += result - lastMatch;
         char* str = calloc((result - lastMatch) + 1, sizeof(char));
-        strncpy(str, (haystack -> value) + lastMatch, result - lastMatch);
+        strncpy(str, ((char*) haystack -> value) + lastMatch, result - lastMatch);
         str[result - lastMatch] = '\0';
         LinkedListPush(combined, VarNewString(str));
         free(str);
@@ -266,7 +266,7 @@ Var* StringReplace(Var* scope, Var* args){
             for(int i=0; i < groupc; i++){
                 size_t match_len = groups[i].end - groups[i].start;
                 char* match_str = malloc(match_len + 1);
-                memcpy(match_str, haystack -> value + groups[i].start + result, match_len);
+                memcpy(match_str, (char*) haystack -> value + groups[i].start + result, match_len);
                 match_str[match_len] = '\0';
                 VarRawSet(args, VarNewNumber(i), VarNewString(match_str));
                 free(match_str);
@@ -275,7 +275,7 @@ Var* StringReplace(Var* scope, Var* args){
             if(ISUNDEFINED(out) || ISUNDEFINED(out=VarAsString(out))){
                 break;
             }
-            newStringLength += strlen(out -> value);
+            newStringLength += strlen((char*) out -> value);
             LinkedListPush(combined, out);
         }
         // Otherwise, Use the replacement string.
@@ -285,17 +285,17 @@ Var* StringReplace(Var* scope, Var* args){
             for(int i=0; i < groupc; i++){
                 size_t match_len = groups[i].end - groups[i].start;
                 char* match_str = malloc(match_len + 1);
-                memcpy(match_str, haystack -> value + groups[i].start + result, match_len);
+                memcpy(match_str, (char*) haystack -> value + groups[i].start + result, match_len);
                 match_str[match_len] = '\0';
                 groupStrings[i] = match_str;
             }
             size_t match_len = groups[0].end - groups[0].start;
             char* match_str = malloc(match_len + 1);
-            memcpy(match_str, haystack -> value + groups[0].start + result, match_len);
+            memcpy(match_str, (char*) haystack -> value + groups[0].start + result, match_len);
             match_str[match_len] = '\0';
             Var* match_var = VarNewString(match_str);
             free(match_str);
-            char* repl = _singleReplacement(replacement -> value, groupc, groupStrings);
+            char* repl = _singleReplacement((char*) replacement -> value, groupc, groupStrings);
             for(int i=0; i < groupc; i++){
                 free(groupStrings[i]);
             }
@@ -313,7 +313,7 @@ Var* StringReplace(Var* scope, Var* args){
     }
     newStringLength += haystackLen - lastMatch;
     char* str = calloc((haystackLen - lastMatch) + 1, sizeof(char));
-    strncpy(str, (haystack -> value) + lastMatch, haystackLen - lastMatch);
+    strncpy(str, ((char*) haystack -> value) + lastMatch, haystackLen - lastMatch);
     str[haystackLen - lastMatch] = '\0';
     LinkedListPush(combined, VarNewString(str));
     free(str);
@@ -325,7 +325,7 @@ Var* StringReplace(Var* scope, Var* args){
     int index = newStringLength-1;
     string[newStringLength] = '\0';
     for(Linklett* current = combined->first; current != NULL; current = current->next){
-        char* curString = current->var->value;
+        char* curString = (char*) current->var->value;
         int curStringLength = strlen(curString);
         index -= curStringLength;
         strncpy(string + index, curString, curStringLength);
@@ -346,7 +346,7 @@ Var* StringSub(Var* scope, Var* args){
     if(start -> type != VAR_NUMBER){
         return &NIL;
     }
-    int leng = strlen(string -> value);
+    int leng = strlen((char*) string -> value);
     if(ISUNDEFINED(length)){
         double j;
         // Copy start-value to j
@@ -394,7 +394,7 @@ Var* StringReverse(Var* scope, Var* args){
     if(string -> type != VAR_STRING){
         return &NIL;
     }
-    int length = strlen(string -> value);
+    int length = strlen((char*) string -> value);
     char* newString = malloc(length + 1);
     for(int i = 0; i < length; i++){
         newString[i] = ((char*)string -> value)[length - i - 1];
@@ -410,7 +410,7 @@ Var* StringUpper(Var* scope, Var* args){
     if(string -> type != VAR_STRING){
         return &NIL;
     }
-    int length = strlen(string -> value);
+    int length = strlen((char*) string -> value);
     char* newString = malloc(length + 1);
     for(int i = 0; i < length; i++){
         newString[i] = toupper(((char*)string -> value)[i]);
@@ -426,7 +426,7 @@ Var* StringLower(Var* scope, Var* args){
     if(string -> type != VAR_STRING){
         return &NIL;
     }
-    int length = strlen(string -> value);
+    int length = strlen((char*) string -> value);
     char* newString = malloc(length + 1);
     for(int i = 0; i < length; i++){
         newString[i] = tolower(((char*)string -> value)[i]);

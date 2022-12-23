@@ -94,7 +94,7 @@ Var* DrawStrokeStyle(Var* scope, Var* args){
     if(style -> type != VAR_STRING){
         return &NIL;
     }
-    canvasStrokeStyle(style -> value);
+    canvasStrokeStyle((char*) style -> value);
 }
 
 Var* DrawFillStyle(Var* scope, Var* args){
@@ -102,7 +102,7 @@ Var* DrawFillStyle(Var* scope, Var* args){
     if(style -> type != VAR_STRING){
         return &NIL;
     }
-    canvasFillStyle(style -> value);
+    canvasFillStyle((char*) style -> value);
 }
 
 Var* drawTable;

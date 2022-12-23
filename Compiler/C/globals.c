@@ -47,12 +47,12 @@ Var* GlobalPrint(Var* scope, Var* args){
     }
     while(!ISUNDEFINED(arg)){
         DebugPrint("%i, %i\n", index, arg -> type);
-        printf("%s", VarAsString(arg)->value);
+        printf("%s", (char*) VarAsString(arg)->value);
         arg = ArgVarGet(args, ++index, NULL);
         if(!ISUNDEFINED(arg))
-            printf(sep -> value);
+            printf("%s", (char*) sep -> value);
     }
-    printf(end -> value);
+    printf((char*) end -> value);
     return &NIL;
 }
 
@@ -85,12 +85,12 @@ Var* GlobalWrite(Var* scope, Var* args){
     }
     while(!ISUNDEFINED(arg)){
         DebugPrint("%i, %i\n", index, arg -> type);
-        printf("%s", VarAsString(arg)->value);
+        printf("%s", (char*) VarAsString(arg)->value);
         arg = ArgVarGet(args, ++index, NULL);
         if(!ISUNDEFINED(arg))
-            printf(sep -> value);
+            printf("%s", (char*) sep -> value);
     }
-    printf(end -> value);
+    printf((char*) end -> value);
     return &NIL;
 }
 

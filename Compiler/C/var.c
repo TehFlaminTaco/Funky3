@@ -122,7 +122,7 @@ Var* VarRawGet(Var* table, Var* key){
     HashMap* map = (HashMap*)table->value;
     // WithMeta hack
     if(table->metatable == &MetatableWith){
-        if(key->type == VAR_STRING && strcmp(key->value, "this") == 0){
+        if(key->type == VAR_STRING && strcmp((char*) key->value, "this") == 0){
             return map -> withValue;
         }
         return VarRawGet(map -> withValue, key);
@@ -326,12 +326,12 @@ Var* VarAsFunction(Var* var){
         return &UNDEFINED;
     }
     // Curry the Call function so that it passes itself as an argument.
-    VarFunction* fMethod = method -> value;
+    VarFunction* fMethod = (VarFunction*) method -> value;
     Var* tempScope = VarNewList();
     VarRawSet(tempScope, VarNewString("this"), var);
     VarRawSet(tempScope, VarNewString("method"), method);
     Var* fnc = VarNewFunction(CallCurried);
-    VarFunction* f = fnc -> value;
+    VarFunction* f = (VarFunction*)fnc -> value;
     f -> scope = tempScope;
     f -> name = fMethod -> name;
     return fnc;
@@ -370,8 +370,8 @@ Var* VarListCopy(Var* list){
     }
     Var* newList = VarNewList();
     newList -> metatable = list -> metatable;
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     newMap -> parent = map -> parent;
 
     // Copy all values over
@@ -394,8 +394,8 @@ Var* VarListCopyLShifted(Var* list, int shift){
     }
     Var* newList = VarNewList();
     newList -> metatable = list -> metatable;
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     newMap -> parent = map -> parent;
 
     // Copy all values over
@@ -444,8 +444,8 @@ Var* VarCopyListIntoOffset(Var* source, Var* destination, int* offset){
         highestValue++;
     }
     DebugPrint("VarCopyListIntoOffset: highest value is %i\n", highestValue);
-    HashMap* map = source -> value;
-    HashMap* newMap = destination -> value;
+    HashMap* map = (HashMap*) source -> value;
+    HashMap* newMap = (HashMap*) destination -> value;
 
     // Copy all values over
     for(int i=0; i < map -> capacity; i++){
@@ -498,12 +498,12 @@ Var* VarCurryGet(Var* object, Var* index){
         DebugPrint("VarCurryGet: not a function\n");
         return &UNDEFINED;
     }
-    VarFunction* fMethod = method -> value;
+    VarFunction* fMethod = (VarFunction*) method -> value;
     Var* tempScope = VarNewList();
     VarRawSet(tempScope, VarNewString("this"), object);
     VarRawSet(tempScope, VarNewString("method"), method);
     Var* fnc = VarNewFunction(CallCurried);
-    VarFunction* f = fnc -> value;
+    VarFunction* f = (VarFunction*) fnc -> value;
     f -> scope = tempScope;
     f -> name = fMethod -> name;
     return fnc;
@@ -527,13 +527,13 @@ Var* VarCurrySet(Var* object, Var* index, Var* method){
         DebugPrint("VarCurrySet: not a function\n");
         return &UNDEFINED;
     }
-    VarFunction* fMethod = method -> value;
+    VarFunction* fMethod = (VarFunction*) method -> value;
     Var* tempScope = VarNewList();
     VarRawSet(tempScope, VarNewString("this"), object);
     VarRawSet(tempScope, VarNewString("method"), method);
     Var* fnc = VarNewFunction(MethodWithoutCurry);
     DebugPrint("VarCurrySet: created function\n");
-    VarFunction* f = fnc -> value;
+    VarFunction* f = (VarFunction*) fnc -> value;
     f -> scope = tempScope;
     f -> name = fMethod -> name;
     DebugPrint("VarCurrySet: set scope\n");
@@ -549,7 +549,7 @@ Var* VarSubScope(Var* scope){
         return &NIL;
     }
     Var* newScope = VarNewList();
-    HashMap* map = newScope -> value;
+    HashMap* map = (HashMap*) newScope -> value;
     map -> parent = scope;
     newScope -> metatable = &MetatableBase;
     return newScope;
@@ -564,7 +564,7 @@ Var* VarWithScope(Var* scope, Var* with){
     }
     Var* newScope = VarNewList();
     newScope -> metatable = &MetatableWith;
-    HashMap* map = newScope -> value;
+    HashMap* map = (HashMap*) newScope -> value;
     map -> parent = scope;
     map -> withValue = with;
 

@@ -12,7 +12,7 @@ Var* StringToCode(Var* scope, Var* args){
     }
     // Calculate the "escaped" string length
     int length = 3; // Minimum of ""\0
-    for(char* c = string -> value; *c != '\0'; c++){
+    for(char* c = (char*) string -> value; *c != '\0'; c++){
         switch(*c){
             // All double character escapes
             case '\a': case '\b': case '\e': case '\f': case '\n': case '\r': case '\t': case '\v': case '\\': case '\'': case '\"':
@@ -31,7 +31,7 @@ Var* StringToCode(Var* scope, Var* args){
     char* newString = tgc_calloc(&gc, length, sizeof(char));
     int index = 0;
     newString[index++] = '"';
-    for(char* c = string -> value; *c != '\0'; c++){
+    for(char* c = (char*) string -> value; *c != '\0'; c++){
         switch(*c){
             case '\a':
                 strcpy(newString + index, "\\a");
@@ -108,7 +108,7 @@ Var* _stringIter(Var* scope, Var* args){
         DebugPrint("_stringIter: index is not a number\n");
         return &UNDEFINED;
     }
-    char* s = str -> value;
+    char* s = (char*) str -> value;
     double j;
     memcpy(&j, &index -> value, sizeof(double));
     int i = (int)j;
@@ -146,7 +146,7 @@ Var* StringUnp(Var* scope, Var* args){
     if(string -> type != VAR_STRING){
         return &NIL;
     }
-    return VarNewNumber(atof(string -> value));
+    return VarNewNumber(atof((char*) string -> value));
 }
 
 Var* StringLt(Var* scope, Var* args){
@@ -168,7 +168,7 @@ Var* StringLt(Var* scope, Var* args){
         }
         return &NIL;
     }
-    return VarNewNumber(strcmp(left -> value, right -> value) < 0);
+    return VarNewNumber(strcmp((char*) left -> value, (char*) right -> value) < 0);
 }
 
 Var* StringGt(Var* scope, Var* args){
@@ -190,7 +190,7 @@ Var* StringGt(Var* scope, Var* args){
         }
         return &NIL;
     }
-    return VarNewNumber(strcmp(left -> value, right -> value) > 0);
+    return VarNewNumber(strcmp((char*) left -> value, (char*) right -> value) > 0);
 }
 
 Var* StringLen(Var* scope, Var* args){
@@ -198,7 +198,7 @@ Var* StringLen(Var* scope, Var* args){
     if(string -> type != VAR_STRING){
         return &NIL;
     }
-    return VarNewNumber(strlen(string -> value));
+    return VarNewNumber(strlen((char*) string -> value));
 }
 
 void PopulateStringMeta(Var* metatable){

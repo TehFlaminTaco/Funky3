@@ -70,7 +70,7 @@ Var* VarGetMeta(Var* var, char* key){
 
     // Search the var's metatable for the key
     // If the key is not found, return NIL.
-    if(var -> metatable -> value == NULL){
+    if((HashMap*)var -> metatable -> value == NULL){
         DebugPrint("VarGetMeta: Assertion failed: var -> metatable -> value == NULL\n");
         return VarRawGet(&MetatableBase, keyVar);
     }

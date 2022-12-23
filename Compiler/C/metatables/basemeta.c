@@ -35,7 +35,7 @@ Var* BaseTryRight(Var* scope, Var* args){
     ArgVarSet(nArgs, 0, "left", right);
     ArgVarSet(nArgs, 1, "right", left);
     ArgVarSet(nArgs, 2, "inverted", VarTrue());
-    return VarFunctionCall(VarGetMeta(right, metaMethod -> value), args);
+    return VarFunctionCall(VarGetMeta(right, (char*) metaMethod -> value), args);
 }
 
 void GenerateTryRight(Var* metatable, char* metamethod){
@@ -81,10 +81,10 @@ Var* BaseConcat(Var* scope, Var* args){
     }
 
     right = VarAsString(right);
-    int totalSize = strlen(left -> value) + strlen(right -> value) + 1;
+    int totalSize = strlen((char*) left -> value) + strlen((char*) right -> value) + 1;
     char* result = tgc_calloc(&gc, totalSize, sizeof(char));
-    strcpy(result, left -> value);
-    strcat(result, right -> value);
+    strcpy(result, (char*) left -> value);
+    strcat(result, (char*) right -> value);
     result[totalSize - 1] = '\0';   // Just in case.
     Var* resultVar = VarNewString(result);
     tgc_free(&gc, result);

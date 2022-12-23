@@ -30,7 +30,7 @@ Var* ListToString(Var* scope, Var* args){
         Var* curString = VarAsCode(current);
         DebugPrint("ListToString: %s\n", (char*)(intptr_t)(curString -> value));
         LinkedListPush(strings, curString);
-        totalStringLength += strlen(curString -> value);
+        totalStringLength += strlen((char*) curString -> value);
         current = HashMapGet(map, VarNewNumber(++highestInt));
         if(!ISUNDEFINED(current)){
             LinkedListPush(strings, VarNewString(", "));
@@ -47,7 +47,7 @@ Var* ListToString(Var* scope, Var* args){
     int index = totalStringLength;
     string[totalStringLength] = '\0';
     for(Linklett* current = strings->first; current != NULL; current = current->next){
-        char* curString = current->var->value;
+        char* curString = (char*) current->var->value;
         int curStringLength = strlen(curString);
         index -= curStringLength;
         strncpy(string + index, curString, curStringLength);

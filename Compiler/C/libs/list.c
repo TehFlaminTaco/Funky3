@@ -25,8 +25,8 @@ Var* ListWhere(Var* scope, Var* args){
     }
 
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -75,8 +75,8 @@ Var* ListMap(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -109,8 +109,8 @@ Var* ListFold(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -145,8 +145,8 @@ Var* ListCumulate(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -182,8 +182,8 @@ Var* ListReduce(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -218,8 +218,8 @@ Var* ListReverse(Var* scope, Var* args){
     }
 
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -388,8 +388,8 @@ Var* ListClone(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -478,8 +478,8 @@ Var* ListSum(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
@@ -523,8 +523,8 @@ Var* ListProduct(Var* scope, Var* args){
         return &NIL;
     }
     Var* newList = VarNewList();
-    HashMap* map = list -> value;
-    HashMap* newMap = newList -> value;
+    HashMap* map = (HashMap*) list -> value;
+    HashMap* newMap = (HashMap*) newList -> value;
     // Copy the Metatable.
     newList -> metatable = list -> metatable;
 
