@@ -71,7 +71,7 @@ public static class Compiler
             }
             else
             {
-                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -W -Wno-everything -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=128MB -sEXPORTED_FUNCTIONS='[\"_main\",\"DrawHook\"]' -o output/funky3.js");
+                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -W -Wno-everything -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=128MB -sEXPORTED_FUNCTIONS='[\"_main\",\"_DrawHook\"]' -o output/funky3.js");
                 compilerStart = new("bash", "build.sh");
             }
             compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
