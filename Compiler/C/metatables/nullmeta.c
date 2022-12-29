@@ -26,9 +26,14 @@ Var* NullToString(Var* scope, Var* args){
     return &UNDEFINED;
 }
 
+Var* NullTruthy(Var* scope, Var* args){
+    return VarFalse();
+}
+
 void PopulateNullMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(NullToString));
     VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(NullToString));
+    VarRawSet(metatable, VarNewString("truthy"),   VarNewFunction(NullTruthy));
 }
 
 #endif

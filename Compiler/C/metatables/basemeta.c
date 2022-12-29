@@ -4,6 +4,10 @@
 #include "../funky3.h"
 #include "../hashmap.c"
 
+Var* BaseTruthy(Var* scope, Var* args){
+    return VarTrue();
+}
+
 Var* BaseEq(Var* scope, Var* args){
     return VarEquals(ArgVarGet(args, 0, "left"), ArgVarGet(args, 1, "right")) ? VarTrue() : VarFalse();
 }
@@ -118,6 +122,7 @@ Var* BaseOr(Var* scope, Var* args){
 }
 
 void PopulateBaseMeta(Var* metatable){
+    VarRawSet(metatable, VarNewString("truthy"), VarNewFunction(BaseTruthy));
     VarRawSet(metatable, VarNewString("eq"), VarNewFunction(BaseEq));
     VarRawSet(metatable, VarNewString("not"), VarNewFunction(BaseNot));
     VarRawSet(metatable, VarNewString("ge"), VarNewFunction(BaseGe));

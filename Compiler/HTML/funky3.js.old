@@ -15,6 +15,24 @@
 // can continue to use Module afterwards as well.
 var Module = typeof Module !== 'undefined' ? Module : {};
 
+var cDrawHook;
+
+Module.print = function(s){
+    postMessage(s);
+}
+
+function render(){
+    if(!runtimeInitialized)return requestAnimationFrame(render); // Sleep a bit longer
+    if(cDrawHook())requestAnimationFrame(render);
+}
+
+addEventListener("message", e=>{
+    Module.canvas = e.data.canvas;
+    Module.ctx = e.data.canvas.getContext("2d");
+    cDrawHook = cwrap("DrawHook", "number", []);
+    requestAnimationFrame(render);
+}, true);
+
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
 // {{PRE_JSES}}
@@ -1208,7 +1226,7 @@ function updateGlobalBufferAndViews(buf) {
 var TOTAL_STACK = 5242880;
 if (Module['TOTAL_STACK']) assert(TOTAL_STACK === Module['TOTAL_STACK'], 'the stack size can no longer be determined at runtime')
 
-var INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 134217728;
+var INITIAL_MEMORY = Module['INITIAL_MEMORY'] || 16777216;
 if (!Object.getOwnPropertyDescriptor(Module, 'INITIAL_MEMORY')) {
   Object.defineProperty(Module, 'INITIAL_MEMORY', {
     configurable: true,
@@ -1226,7 +1244,7 @@ assert(typeof Int32Array !== 'undefined' && typeof Float64Array !== 'undefined' 
 
 // If memory is defined in wasm, the user can't provide it.
 assert(!Module['wasmMemory'], 'Use of `wasmMemory` detected.  Use -s IMPORTED_MEMORY to define wasmMemory externally');
-assert(INITIAL_MEMORY == 134217728, 'Detected runtime INITIAL_MEMORY setting.  Use -s IMPORTED_MEMORY to define wasmMemory dynamically');
+assert(INITIAL_MEMORY == 16777216, 'Detected runtime INITIAL_MEMORY setting.  Use -s IMPORTED_MEMORY to define wasmMemory dynamically');
 
 // include: runtime_init_table.js
 // In regular non-RELOCATABLE mode the table is exported
@@ -1617,7 +1635,7 @@ function createWasm() {
     // This assertion doesn't hold when emscripten is run in --post-link
     // mode.
     // TODO(sbc): Read INITIAL_MEMORY out of the wasm file in post-link mode.
-    //assert(wasmMemory.buffer.byteLength === 134217728);
+    //assert(wasmMemory.buffer.byteLength === 16777216);
     updateGlobalBufferAndViews(wasmMemory.buffer);
 
     wasmTable = Module['asm']['__indirect_function_table'];
@@ -1712,53 +1730,14 @@ var tempI64;
 var ASM_CONSTS = {
   
 };
-function canvasArc(x,y,r,s,e,cw){ Module.ctx.arc(x, y, r, s, e, cw); }
-function canvasArcTo(x1,y1,x2,y2,r){ Module.ctx.arcTo(x1, y1, x2, y2, r); }
 function canvasBeginPath(){ Module.ctx.beginPath(); }
-function canvasBezierCurveTo(cp1x,cp1y,cp2x,cp2y,x,y){ Module.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y); }
 function canvasClear(){ Module.ctx.clearRect(0,0,512,512); }
-function canvasClip(){ Module.ctx.clip(); }
-function canvasClosePath(){ Module.ctx.closePath(); }
-function canvasCreateImageData(w,h){ Module.ctx.createImageData(w, h); }
-function canvasCreateImageData2(img){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.createImageData(image); }
-function canvasDrawImage(img,x,y){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.drawImage(image, x, y); }
-function canvasDrawImage2(img,x,y,w,h){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.drawImage(image, x, y, w, h); }
-function canvasDrawImage3(img,sx,sy,sw,sh,dx,dy,dw,dh){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh); }
 function canvasFill(){ Module.ctx.fill(); }
-function canvasFillRect(x,y,w,h){ Module.ctx.fillRect(x, y, w, h); }
 function canvasFillStyle(style){ Module.ctx.fillStyle = UTF8ToString(style); }
-function canvasFillText(text,x,y){ Module.ctx.fillText(UTF8ToString(text), x, y); }
-function canvasFont(font){ Module.ctx.font = UTF8ToString(font); }
-function canvasGetImageData(x,y,w,h){ Module.ctx.getImageData(x, y, w, h); }
-function canvasGetLineDash(){ Module.ctx.getLineDash(); }
-function canvasIsPointInPath(x,y){ return Module.ctx.isPointInPath(x, y) ? 1 : 0; }
-function canvasIsPointInStroke(x,y){ return Module.ctx.isPointInStroke(x, y) ? 1 : 0; }
 function canvasLineTo(x,y){ Module.ctx.lineTo(x, y); }
-function canvasLineWidth(width){ Module.ctx.lineWidth = width; }
-function canvasMeasureTextHeight(text){ return Module.ctx.measureText(UTF8ToString(text)).height; }
-function canvasMeasureTextWidth(text){ return Module.ctx.measureText(UTF8ToString(text)).width; }
 function canvasMoveTo(x,y){ Module.ctx.moveTo(x, y); }
-function canvasPutImageData(img,x,y){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.putImageData(image, x, y); }
-function canvasPutImageData2(img,x,y,dx,dy,dw,dh){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.putImageData(image, x, y, dx, dy, dw, dh); }
-function canvasQuadraticCurveTo(cpx,cpy,x,y){ Module.ctx.quadraticCurveTo(cpx, cpy, x, y); }
-function canvasRect(x,y,w,h){ Module.ctx.rect(x, y, w, h); }
-function canvasReset(){ Module.ctx.reset(); }
-function canvasResetTransform(){ Module.ctx.resetTransform(); }
-function canvasRestore(){ Module.ctx.restore(); }
-function canvasRotate(angle){ Module.ctx.rotate(angle); }
-function canvasRoundRect(x,y,w,h,r){ Module.ctx.roundRect(x, y, w, h, r); }
-function canvasSave(){ Module.ctx.save(); }
-function canvasScale(x,y){ Module.ctx.scale(x, y); }
-function canvasSetLineDash(dash){ Module.ctx.setLineDash(dash); }
-function canvasSetTransform(a,b,c,d,e,f){ Module.ctx.setTransform(a, b, c, d, e, f); }
 function canvasStroke(){ Module.ctx.stroke(); }
-function canvasStrokeRect(x,y,w,h){ Module.ctx.strokeRect(x, y, w, h); }
 function canvasStrokeStyle(style){ Module.ctx.strokeStyle = UTF8ToString(style); }
-function canvasStrokeText(text,x,y){ Module.ctx.strokeText(UTF8ToString(text), x, y); }
-function canvasTextAlign(align){ Module.ctx.textAlign = UTF8ToString(align); }
-function canvasTextBaseline(baseline){ Module.ctx.textBaseline = UTF8ToString(baseline); }
-function canvasTransform(a,b,c,d,e,f){ Module.ctx.transform(a, b, c, d, e, f); }
-function canvasTranslate(x,y){ Module.ctx.translate(x, y); }
 
 
 
@@ -1827,11 +1806,6 @@ function canvasTranslate(x,y){ Module.ctx.translate(x, y); }
     }
 
   function __emscripten_throw_longjmp() { throw 'longjmp'; }
-
-  function _clock() {
-      if (_clock.start === undefined) _clock.start = Date.now();
-      return ((Date.now() - _clock.start) * (1000000 / 1000))|0;
-    }
 
   function _emscripten_memcpy_big(dest, src, num) {
       HEAPU8.copyWithin(dest, src, src + num);
@@ -1938,54 +1912,14 @@ function intArrayToString(array) {
 var asmLibraryArg = {
   "__assert_fail": ___assert_fail,
   "_emscripten_throw_longjmp": __emscripten_throw_longjmp,
-  "canvasArc": canvasArc,
-  "canvasArcTo": canvasArcTo,
   "canvasBeginPath": canvasBeginPath,
-  "canvasBezierCurveTo": canvasBezierCurveTo,
   "canvasClear": canvasClear,
-  "canvasClip": canvasClip,
-  "canvasClosePath": canvasClosePath,
-  "canvasCreateImageData": canvasCreateImageData,
-  "canvasCreateImageData2": canvasCreateImageData2,
-  "canvasDrawImage": canvasDrawImage,
-  "canvasDrawImage2": canvasDrawImage2,
-  "canvasDrawImage3": canvasDrawImage3,
   "canvasFill": canvasFill,
-  "canvasFillRect": canvasFillRect,
   "canvasFillStyle": canvasFillStyle,
-  "canvasFillText": canvasFillText,
-  "canvasFont": canvasFont,
-  "canvasGetImageData": canvasGetImageData,
-  "canvasGetLineDash": canvasGetLineDash,
-  "canvasIsPointInPath": canvasIsPointInPath,
-  "canvasIsPointInStroke": canvasIsPointInStroke,
   "canvasLineTo": canvasLineTo,
-  "canvasLineWidth": canvasLineWidth,
-  "canvasMeasureTextHeight": canvasMeasureTextHeight,
-  "canvasMeasureTextWidth": canvasMeasureTextWidth,
   "canvasMoveTo": canvasMoveTo,
-  "canvasPutImageData": canvasPutImageData,
-  "canvasPutImageData2": canvasPutImageData2,
-  "canvasQuadraticCurveTo": canvasQuadraticCurveTo,
-  "canvasRect": canvasRect,
-  "canvasReset": canvasReset,
-  "canvasResetTransform": canvasResetTransform,
-  "canvasRestore": canvasRestore,
-  "canvasRotate": canvasRotate,
-  "canvasRoundRect": canvasRoundRect,
-  "canvasSave": canvasSave,
-  "canvasScale": canvasScale,
-  "canvasSetLineDash": canvasSetLineDash,
-  "canvasSetTransform": canvasSetTransform,
   "canvasStroke": canvasStroke,
-  "canvasStrokeRect": canvasStrokeRect,
   "canvasStrokeStyle": canvasStrokeStyle,
-  "canvasStrokeText": canvasStrokeText,
-  "canvasTextAlign": canvasTextAlign,
-  "canvasTextBaseline": canvasTextBaseline,
-  "canvasTransform": canvasTransform,
-  "canvasTranslate": canvasTranslate,
-  "clock": _clock,
   "emscripten_memcpy_big": _emscripten_memcpy_big,
   "emscripten_resize_heap": _emscripten_resize_heap,
   "fd_write": _fd_write,

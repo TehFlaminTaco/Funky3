@@ -21,6 +21,8 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
 var oop = require("ace/lib/oop");
 var TextHighlightRules = require("ace/mode/text_highlight_rules").TextHighlightRules;
 
+var c_cppHighlightRules = require("./c_cpp_highlight_rules").c_cppHighlightRules;
+
 var Funky3HighlightRules = function() {
 
     var keywords = (
@@ -40,10 +42,12 @@ var Funky3HighlightRules = function() {
         "abs|round|floor|ceil|min|max|clamp|sqrt|rad|deg|random|randomSeed|pi|e|huge|inf|nan|epsilon|sin|cos|tan|asin|acos|atan|"+
         "clock|"+
         "match|matches|replace|find|sub|reverse|upper|lower|"+
-        "beginPath|clear|moveTo|lineTo|stroke|fill|strokeStyle|fillStyle|frame"
+        "beginPath|clear|moveTo|lineTo|stroke|fill|strokeStyle|fillStyle|strokeText|fillText|font|textAlign|textBaseline|fillRect|strokeRect|arc|arcTo|bezierCurveTo|quadraticCurveTo|rect|closePath|clip|isPointInPath|isPointInStroke|scale|rotate|translate|transform|setTransform|resetTransform|drawImage|drawImage2|save|restore|reset|roundRect|measureText|lineWidth"
     );
 
     var stdLibaries = ("list|string|math|draw|os");
+    
+    var preprocs = "define|undef|ifdef|ifndef|elif|endif"
 
     var keywordMapper = this.createKeywordMapper({
         "keyword": keywords,
@@ -54,35 +58,32 @@ var Funky3HighlightRules = function() {
     }, "identifier");
 
     this.$rules = {
-        "start" : [{
-            stateName: "bracketedComment",
-            onMatch : function(value, currentState, stack){
-                stack.unshift(this.next, value.length - 2, currentState);
-                return "comment";
-            },
-            regex : /\-\-\[=*\[/,
-            next  : [
-                {
-                    onMatch : function(value, currentState, stack) {
-                        if (value.length == stack[1]) {
-                            stack.shift();
-                            stack.shift();
-                            this.next = stack.shift();
-                        } else {
-                            this.next = "";
-                        }
-                        return "comment";
-                    },
-                    regex : /\]=*\]/,
-                    next  : "start"
-                }, {
-                    defaultToken : "comment"
-                }
-            ]
-        },
-
+        "start" : [
         {
-            token : "comment",
+          token: "keyword.preproc",
+          regex: /\$cInlineStart|\$cHeaderStart/,
+          next: "c-start"
+        },
+        { 
+            token: "keyword.preproc",
+            regex: /\$define\//,
+            next: "regex"
+        },
+        {
+            token: "keyword.preproc",
+            regex: `\\\$${preprocs}`,
+        },
+        { 
+            token: "comment.multiline",
+            regex: /\$\*/,
+            next:"comment"
+        },
+        {
+            token: "comment",
+            regex: /\$\$.*$/
+        },
+        {
+            token : "invalid",
             regex : "\\$.*$"
         },
         {
@@ -109,9 +110,83 @@ var Funky3HighlightRules = function() {
         }, {
             token : "text",
             regex : "\\s+|\\w+"
-        } ]
+        } ],
+        "regex": [
+            {
+                // escapes
+                token: "regexp.keyword.operator",
+                regex: "\\\\(?:u[\\da-fA-F]{4}|x[\\da-fA-F]{2}|.)"
+            }, {
+                // flag
+                token: "string.regexp",
+                regex: "/[sxngimy]*",
+                next: "regex_end"
+            }, {
+                // invalid operators
+                token : "invalid",
+                regex: /\{\d+\b,?\d*\}[+*]|[+*$^?][+*]|[$^][?]|\?{3,}/
+            }, {
+                // operators
+                token : "constant.language.escape",
+                regex: /\(\?[:=!]|\)|\{\d+\b,?\d*\}|[+*]\?|[()$^+*?.]/
+            }, {
+                token : "constant.language.delimiter",
+                regex: /\|/
+            }, {
+                token: "constant.language.escape",
+                regex: /\[\^?/,
+                next: "regex_character_class"
+            }, {
+                token: "empty",
+                regex: "$",
+                next: "regex_end"
+            }, {
+                defaultToken: "string.regexp"
+            }
+        ],
+        "regex_character_class": [
+            {
+                token: "regexp.charclass.keyword.operator",
+                regex: "\\\\(?:u[\\da-fA-F]{4}|x[\\da-fA-F]{2}|.)"
+            }, {
+                token: "constant.language.escape",
+                regex: "]",
+                next: "regex"
+            }, {
+                token: "constant.language.escape",
+                regex: "-"
+            }, {
+                token: "empty",
+                regex: "$",
+                next: "regex_end"
+            }, {
+                defaultToken: "string.regexp.charachterclass"
+            }
+        ],
+        "regex_end": [
+            {
+                token: "text",
+                regex: /$/,
+                next: "start"
+            }
+        ],
+        "comment": [
+            {
+                token: "comment.multiline",
+                regex: /\*\$/,
+                next: "start"
+            },
+            {
+                defaultToken: "comment.multiline"
+            }
+        ]
     };
-    
+    this.embedRules(c_cppHighlightRules, "c-",
+        [{
+            token: "keyword.preproc",
+            regex: /\$cInlineEnd|\$cHeaderEnd/,
+            next: "start"
+        }]);
     this.normalizeRules();
 };
 

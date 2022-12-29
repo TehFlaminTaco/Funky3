@@ -186,10 +186,13 @@ public class Function : Expression
         // Write the method to the header.
         StringBuilder headerSB = new();
         var storeVariableTextAppend = "";
-        if(StoreVariable is not null && StoreVariableName is not null){
+        if (StoreVariable is not null && StoreVariableName is not null)
+        {
             headerSB.AppendLine($"// Function Definition: {StoreVariableName}");
             storeVariableTextAppend = $"_{StoreVariableName}";
-        }else {
+        }
+        else
+        {
             headerSB.AppendLine("// Function Definition");
 
         }
@@ -197,14 +200,18 @@ public class Function : Expression
         headerSB.AppendLine($"Var* {methodName}(Var* scope, Var* args){{");
         Block.PushBadScope();
         Block.PushCurrentScope();
-        headerSB.AppendLine($"\ttgc_run(&gc);");
+        //headerSB.AppendLine($"\ttgc_run(&gc);");
         headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
         // Try loading "this" into the scope... Just if it exists.
         headerSB.AppendLine("\tVarRawSet(scope, VarNewString(\"this\"), VarRawGet(args, VarNewString(\"this\")));");
         if (Arguments.Count > 0)
         {
             string argIndex = UniqueValueName($"argIndex");
-            headerSB.AppendLine($"\tint {argIndex} = 0;");
+            int? knownIndex = null;
+            if (Arguments.Any(c => c.Splat))
+                headerSB.AppendLine($"\tint {argIndex} = 0;");
+            else
+                knownIndex = 0;
             // Add the args to the scope.
             // VarRawSet(scope, VarNewString( argument name ), args[i]);
             for (int i = 0; i < Arguments.Count; i++)
@@ -223,7 +230,8 @@ public class Function : Expression
                 }
                 else
                 {
-                    headerSB.AppendLine($"\t\tVar* {argName} = ArgVarGet(args, {argIndex}++, \"{Arguments[i].Name}\");");
+                    var argIndexString = knownIndex.HasValue ? knownIndex++.ToString() : $"{argIndex}++";
+                    headerSB.AppendLine($"\t\tVar* {argName} = ArgVarGet(args, {argIndexString}, \"{Arguments[i].Name}\");");
                     headerSB.AppendLine($"\t\tif(ISUNDEFINED({argName})) {{");
                     if (Arguments[i].DefaultValue != null)
                     {
@@ -298,13 +306,9 @@ public class Function : Expression
         string constFunctionBody = sb.ToString();
 
         if (StoreVariable != null)
-        {
-            StoreVariable!.GenerateSetterInline(header, out stackName, $"VarNewFunctionWithScope({methodName}, scope, {constFunctionBody})");
-        }
-        else
-        {
-            stackName = $"VarNewFunctionWithScope({methodName}, scope,  {constFunctionBody})";
-        }
+            return StoreVariable!.GenerateSetterInline(header, out stackName, $"VarNewFunctionWithScope({methodName}, scope, {constFunctionBody})");
+
+        stackName = $"VarNewFunctionWithScope({methodName}, scope,  {constFunctionBody})";
         return "";
     }
 

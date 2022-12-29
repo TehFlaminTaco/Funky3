@@ -13,7 +13,7 @@
 #include "linkedlist.h"
 
 inline static int ISUNDEFINED(Var* var){
-    return var == NULL || var->type == VAR_NULL && var->value == 0;
+    return var == NULL || (var->type == VAR_NULL && var->value == 0);
 }
 
 Var* VarNew(char type, long long value, Var* metatable){
@@ -32,12 +32,14 @@ Var* VarNewNumber(double value){
 
 Var* VarNewString(char* value){
     char* copiedString = tgc_calloc(&gc, strlen(value) + 1, sizeof(char));
+    tgc_set_flags(&gc, copiedString, TGC_LEAF);
     strcpy(copiedString, value);
     return VarNew(VAR_STRING, (long long)copiedString, &MetatableString);
 }
 
 Var* VarNewList(){
-    return VarNew(VAR_LIST, (long long)HashMapNew(16), &MetatableList);
+    Var* o = VarNew(VAR_LIST, (long long)HashMapNew(16), &MetatableList);
+    return o;
 }
 
 Var* VarNewFunction(Var* (value)(Var*, Var*)){
@@ -50,11 +52,10 @@ Var* VarNewFunction(Var* (value)(Var*, Var*)){
 
 Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     VarFunction* func = tgc_calloc(&gc, 1, sizeof(VarFunction));
-    Var* vFunc = VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
     func->method = value;
     func->scope = VarSubScope(scope);
     func->name = name;
-    return vFunc;
+    return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
 }
 
 inline static Var* VarTrue(){
@@ -181,7 +182,7 @@ Var* VarGet(Var* table, Var* key){
         value = VarFunctionCall(getter, args);
         if(!ISUNDEFINED(value)){
             return value;
-        }   
+        } 
     }else if(getter->type == VAR_LIST){
         // Try indexing from the getter instead
         // We use the RAW getter, instead of the getter, to avoid Infinite Loop
@@ -537,7 +538,7 @@ Var* VarCurrySet(Var* object, Var* index, Var* method){
     f -> scope = tempScope;
     f -> name = fMethod -> name;
     DebugPrint("VarCurrySet: set scope\n");
-    return VarRawSet(object, index, fnc);
+    return VarSet(object, index, fnc);
 }
 
 

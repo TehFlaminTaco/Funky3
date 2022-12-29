@@ -78,7 +78,7 @@ public class Variable : Expression
         // The setter never needs to make the default check, because it always sets a value.
         if (IsLocal)
         {
-            if(Block.GetFromScope(Name!, out var s))
+            if (Block.GetFromScope(Name!, out var s))
             {
                 stackName = $"/* Set local:{Name} */ {s} = VarRawSet(scope, VarNewString(\"{Name}\"), {value})";
                 return "";
@@ -268,7 +268,7 @@ public class IndexVariable : Variable, ILeftProvider
                 }
                 else
                 {
-                    sb.AppendLine($"Var* {resultHolder} = VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                    sb.AppendLine($"Var* {resultHolder} = VarSet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
                 }
                 return sb.ToString();
             }
@@ -281,7 +281,7 @@ public class IndexVariable : Variable, ILeftProvider
                 }
                 else
                 {
-                    stackName = $"/* Set index: {Identifier} */ VarRawSet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                    stackName = $"/* Set index: {Identifier} */ VarSet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
                 }
                 return "";
             }
@@ -292,7 +292,7 @@ public class IndexVariable : Variable, ILeftProvider
             string valueBody = Value.GenerateInline(header, out string valueStackName);
             if (!String.IsNullOrEmpty(indexBody) && !String.IsNullOrEmpty(valueBody))
             {
-                stackName = $"/* Set index: {indexStackName} */ VarRawSet({valueStackName}, {indexStackName}, {value})";
+                stackName = $"/* Set index: {indexStackName} */ VarSet({valueStackName}, {indexStackName}, {value})";
                 StringBuilder sb = new();
                 if (!String.IsNullOrEmpty(indexBody))
                 {
@@ -318,7 +318,7 @@ public class IndexVariable : Variable, ILeftProvider
                 {
                     sb.Append(indexBody);
                 }
-                sb.AppendLine($"Var* {resultHolder} = VarRawSet({valueStackName}, {indexStackName}, {value});");
+                sb.AppendLine($"Var* {resultHolder} = VarSet({valueStackName}, {indexStackName}, {value});");
                 return sb.ToString();
             }
         }

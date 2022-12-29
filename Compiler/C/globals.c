@@ -213,7 +213,7 @@ Var* GlobalSetMeta(Var* scope, Var* args){
     Var* v = ArgVarGet(args, 0, "obj");
     Var* m = ArgVarGet(args, 1, "metatable");
     v -> metatable = m;
-    return v -> metatable;
+    return v;
 }
 
 Var* GlobalRawGet(Var* scope, Var* args){

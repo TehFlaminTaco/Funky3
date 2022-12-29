@@ -1,7 +1,7 @@
 #ifndef FUNKY3_H
 #define FUNKY3_H
 
-//#define DEBUG
+//#define FNK_DEBUG
 
 
 #include "var.h"
@@ -13,7 +13,7 @@
 #define VAR_FUNCTION 0x03
 #define VAR_LIST 0x04
 
-#ifdef DEBUG
+#ifdef FNK_DEBUG
 #define DebugPrint(...) printf(__VA_ARGS__)
 #else
 #define DebugPrint(...)

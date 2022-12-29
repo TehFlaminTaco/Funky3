@@ -65,6 +65,7 @@ int main(int argc, char** argv){
     VarRawSet(scope, "undefined", &UNDEFINED);
     DebugPrint("B\n");
     tgc_run(&gc);
+    tgc_resume(&gc);
     Funky3Code(scope);
     
     //tgc_stop(&gc);

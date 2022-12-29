@@ -130,6 +130,14 @@ iframe {
     cursor:pointer;
 }
 
+#afterSave{
+    display: none;;
+}
+
+#afterSave.visible{
+    display:block;
+}
+
 /* RUN */
 button#run {
     margin-right:8px;
@@ -159,6 +167,7 @@ button#run:active{
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.0/ace.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/theme-solarized_dark.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.1/keybinding-vscode.min.js" defer></script>
+        <script src="./mode-c_cpp.min.js"></script>
         <script src="./mode-funky3.js"></script>
         <script>
             window.addEventListener("load", ev => {
@@ -179,14 +188,13 @@ button#run:active{
                         // MAYBE change the save url.
                         var code = editor.getValue();
                         var params = new URLSearchParams(window.location.search);
-                        if(code.length < 512){
-                            // If we've loaded a file, don't change the URL.
-                            if(!params.has('file')){
-                                params.set('code', code);
-                                window.history.replaceState(null, null, '?' + params.toString());
-                            }
-                        }else if(params.has('file')){ // Pop the query, so they know they need to save.
+                        if(params.has('file')){
+                            document.getElementById("afterSave").classList.add('visible');
+                            document.getElementById("saveInvalid").value = window.location;
                             window.history.replaceState(null, null, '?');
+                        }else if(code.length < 512){
+                            params.set('code', code);
+                            window.history.replaceState(null, null, '?' + params.toString());
                         }
                     });
                     editor.commands.addCommand({
@@ -336,6 +344,7 @@ button#run:active{
                 </div>
                 <div id="tabSaveLoad" class="tabBody">
                     <p>Saving will store a copy of your code for sharing with others. There is no garuntee regarding the privacy of code saved.</p>
+                    <span id="afterSave">This code can be found by visiting: <input readonly="true" type="text" id="saveInvalid"></span>
                     <button id="save">Save</button>
                     <hr>
                     <h2>Examples</h2>

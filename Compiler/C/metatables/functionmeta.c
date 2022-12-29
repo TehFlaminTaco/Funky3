@@ -12,7 +12,6 @@ Var* FunctionAsString(Var* scope, Var* args){
     return VarNewString(func -> name);
 }
 
-
 void PopulateFunctionMeta(Var* metatable){
     VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(FunctionAsString));
 }
