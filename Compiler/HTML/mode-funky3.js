@@ -71,7 +71,7 @@ var Funky3HighlightRules = function() {
         },
         {
             token: "keyword.preproc",
-            regex: `\\\$${preprocs}`,
+            regex: `\\\$(${preprocs})`,
         },
         { 
             token: "comment.multiline",
@@ -85,6 +85,11 @@ var Funky3HighlightRules = function() {
         {
             token : "invalid",
             regex : "\\$.*$"
+        },
+        {
+            token: "string.interpolated",
+            regex: /`/,
+            next: "interpolated"
         },
         {
             token : "string",           // " string
@@ -101,12 +106,38 @@ var Funky3HighlightRules = function() {
         }, {
             token : "keyword.operator",
             regex : "\\+|\\-|\\*|\\/|%|\\#|\\^|~|<|>|<=|=>|==|~=|=|\\:|\\.\\.\\.|\\.\\.|\\!|@"
-        }, {
+        },
+        {
+            token: "paren.lparen",
+            regex: /\[/,
+            onMatch: function(value, currentState, stack){
+               if(stack[0]){
+                   stack[0]++;
+               }
+               return "paren.lparen";
+           }
+        },
+        {
+            token: "paren.rparen",
+            regex: /\]/,
+            onMatch: function(value, currentState, stack){
+                if(stack[0] !== undefined){
+                    if(stack[0] <= 0){
+                        this.next = "interpolated";
+                        stack.shift();
+                        return "string.interpolated";
+                    }
+                    stack[0]--;
+                }
+                return "paren.rparen";
+           }
+        },
+        {
             token : "paren.lparen",
-            regex : "[\\[\\(\\{]"
+            regex : "[\\(\\{]"
         }, {
             token : "paren.rparen",
-            regex : "[\\]\\)\\}]"
+            regex : "[\\)\\}]"
         }, {
             token : "text",
             regex : "\\s+|\\w+"
@@ -119,7 +150,7 @@ var Funky3HighlightRules = function() {
             }, {
                 // flag
                 token: "string.regexp",
-                regex: "/[sxngimy]*",
+                regex: "/",
                 next: "regex_end"
             }, {
                 // invalid operators
@@ -160,15 +191,16 @@ var Funky3HighlightRules = function() {
                 regex: "$",
                 next: "regex_end"
             }, {
-                defaultToken: "string.regexp.charachterclass"
+                defaultToken: "string.regexp.characterclass"
             }
         ],
         "regex_end": [
             {
-                token: "text",
+                token: "string.substitute",
                 regex: /$/,
                 next: "start"
-            }
+            },
+            {defaultToken: "string.substitute"}
         ],
         "comment": [
             {
@@ -179,7 +211,29 @@ var Funky3HighlightRules = function() {
             {
                 defaultToken: "comment.multiline"
             }
-        ]
+        ],
+        "interpolated": [
+            {
+                token: "string.interpolated",
+                regex: /`/,
+                next: "start"
+            },
+            {
+               token: "string.interpolated",
+               regex: /\\./
+            },
+            {
+               token: "string.interpolated",
+               regex: /\[/,
+               next: "start",
+               onMatch: function(value, currentState, stack){
+                   stack.unshift(0);
+                   return "string.interpolated";
+               }
+            },
+            {
+                defaultToken: "string.interpolated"
+            }]
     };
     this.embedRules(c_cppHighlightRules, "c-",
         [{
