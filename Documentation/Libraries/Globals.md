@@ -38,51 +38,6 @@ By default, the seperator is a tab, and the end of line text is a newline.
 print("Hello,", "World!")
 ```
 
-## rawGet
-**Description:**\
-Returns the value of a key in a list. Ignores parents and metamethods.
-
-**Arguments:**
-* list **list**: The list to get the value from.
-* any **key**: The key to get the value of.
-
-**Return Value:**\
-any **value**: The value of the key.
-
-```coffeescript
-print(rawGet(list, "key"))
-```
-
-## rawSet
-**Description:**\
-Sets the value of a key in a list. Ignores parents and metamethods.
-
-**Arguments:**
-* list **list**: The list to set the value in.
-* any **key**: The key to set the value of.
-* any **value**: The value to set.
-
-**Return Value:**\
-any **value**: The value that was set.
-
-```coffeescript
-rawSet(list, "key", "value")
-```
-
-## toList
-**Description:**\
-Converts a value to a list via the Iterator Function. if this was already a list, returns as is.
-
-**Arguments:**
-* any **value**: The value to convert to a list.
-
-**Return Value:**\
-list **list**: The list that was created.
-
-```coffeescript
-print(toList(1))
-```
-
 ## values
 **Description:**\
 Returns an iterator of all the values in a list.

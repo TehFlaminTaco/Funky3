@@ -19,6 +19,8 @@
 #include "libs/draw.c"
 #define LIBNAME os
 #include "libs/os.c"
+#define LIBNAME meta
+#include "libs/meta.c"
 
 Var* GlobalPrint(Var* scope, Var* args){
     DebugPrint("PRINT\n");
@@ -204,63 +206,6 @@ Var* GlobalPairs(Var* scope, Var* args){
     return func;
 }
 
-Var* GlobalGetMeta(Var* scope, Var* args){
-    Var* v = ArgVarGet(args, 0, "obj");
-    return v -> metatable;
-}
-
-Var* GlobalSetMeta(Var* scope, Var* args){
-    Var* v = ArgVarGet(args, 0, "obj");
-    Var* m = ArgVarGet(args, 1, "metatable");
-    v -> metatable = m;
-    return v;
-}
-
-Var* GlobalRawGet(Var* scope, Var* args){
-    Var* v = ArgVarGet(args, 0, "obj");
-    Var* k = ArgVarGet(args, 1, "key");
-    return VarRawGet(v, k);
-}
-
-Var* GlobalRawSet(Var* scope, Var* args){
-    Var* v = ArgVarGet(args, 0, "obj");
-    Var* k = ArgVarGet(args, 1, "key");
-    Var* v2 = ArgVarGet(args, 2, "value");
-    VarRawSet(v, k, v2);
-    return v2;
-}
-
-Var* GlobalToList(Var* scope, Var* args){
-    // Get the iterator of the object and make a list out of it.
-    Var* v = ArgVarGet(args, 0, "obj");
-    if(v -> type == VAR_LIST){
-        return v;
-    }
-    Var* func;
-    Var* nArgs = VarNewList();
-    ArgVarSet(nArgs, 0, "obj", v);
-    if(v->type == VAR_FUNCTION){
-        func = v;
-    }else{
-        func = VarAsFunction(VarGetMeta(v, "iter"));
-        if(func -> type != VAR_FUNCTION){ // Not iteratable.. :(
-            return &NIL;
-        }
-        func = VarFunctionCall(func, nArgs);
-    }
-    if(func -> type != VAR_FUNCTION){ // Not iteratable.. :(
-        return &NIL;
-    }
-    Var* outList = VarNewList();
-    Var* res;
-    int index = 0;
-    while(!ISUNDEFINED(res = VarFunctionCall(func, nArgs))){
-        VarRawSet(outList, VarNewNumber(index++), res);
-        ArgVarSet(nArgs, 1, "last", res);
-    }
-    return outList;
-}
-
 void PopulateGlobals(Var* globals){
     // Populate the globals with some basic functions.
 #define LIBNAME globals
@@ -268,15 +213,6 @@ void PopulateGlobals(Var* globals){
     CONSTANT(values, VarNewFunction(GlobalValues));
     CONSTANT(print, VarNewFunction(GlobalPrint));
     CONSTANT(write, VarNewFunction(GlobalWrite));
-
-    CONSTANT(getMeta, VarNewFunction(GlobalGetMeta));
-    CONSTANT(setMeta, VarNewFunction(GlobalSetMeta));
-
-    CONSTANT(rawGet, VarNewFunction(GlobalRawGet));
-    CONSTANT(rawSet, VarNewFunction(GlobalRawSet));
-
-    CONSTANT(toList, VarNewFunction(GlobalToList));
-    ALIAS(toList, tL);
 
     // Libs
 
@@ -304,6 +240,11 @@ void PopulateGlobals(Var* globals){
     Var* os = VarNewList();
     CONSTANT(os, os);
     PopulateOSLib(os);
+
+    // Meta
+    Var* meta = VarNewList();
+    CONSTANT(meta, meta);
+    PopulateMetaLib(meta);
 }
 
 #undef CONSTANT

@@ -2,7 +2,6 @@
 Each library contains shortened versions of the same functions. These are called aliases. Not every function has an alias, but the ones that do are listed below.
 
 ## Globals
-`tolist` -> `tL`
 
 ## List
 `where` -> `w`\
@@ -20,6 +19,9 @@ Each library contains shortened versions of the same functions. These are called
 `product` -> `M`\
 `min` -> `x`\
 `max` -> `X`
+`rawGet` -> `g`\
+`rawSet` -> `s`\
+`tolist` -> `tL`
 
 ## Math
 `abs` -> `a`\
@@ -52,3 +54,13 @@ Each library contains shortened versions of the same functions. These are called
 `reverse` -> `R`\
 `upper` -> `u`\
 `lower` -> `l`
+
+## Meta
+`get` -> `g`\
+`set` -> `s`\
+`base` -> `b`\
+`function` -> `f`\
+`number` -> `n`\
+`string` -> `s`\
+`list` -> `l`\
+`null` -> `n`

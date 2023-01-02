@@ -24,6 +24,11 @@ The following metamethods are associated with the math operators:
 * `==`: `eq`
 * `!=`: `ne`
 * `..`: `concat`
+* `+`: `unp`
+* `-`: `unm`
+* `!`: `not`
+* `~`: `bnot`
+* `#`: `len`
 
 ### Iter
 The `iter` metamethod is called when a list is iterated over. It should return an iterator function. See "For In" for how these should be structured.
@@ -39,3 +44,7 @@ The `iter` metamethod is called when a list is iterated over. It should return a
 
 ### Set
 `set` is used to add custom indexing behavior to a variable. It takes the arguments: `table`, `key`, `value`.
+
+## Call
+`call` is a metamethod that is called when a variable is called as a function. It takes the arguments: `table`, `args...`.
+

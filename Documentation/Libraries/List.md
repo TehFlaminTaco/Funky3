@@ -98,6 +98,38 @@ list.min(l)
 list.min(l, v => v.length)
 ```
 
+
+## rawGet
+**Description:**\
+Returns the value of a key in a list. Ignores parents and metamethods.
+
+**Arguments:**
+* list **list**: The list to get the value from.
+* any **key**: The key to get the value of.
+
+**Return Value:**\
+any **value**: The value of the key.
+
+```coffeescript
+list.print(rawGet(l, "key"))
+```
+
+## rawSet
+**Description:**\
+Sets the value of a key in a list. Ignores parents and metamethods.
+
+**Arguments:**
+* list **list**: The list to set the value in.
+* any **key**: The key to set the value of.
+* any **value**: The value to set.
+
+**Return Value:**\
+any **value**: The value that was set.
+
+```coffeescript
+list.rawSet(l, "key", "value")
+```
+
 ## reduce*
 **Description:**\
 Reduces a list to a single value.
@@ -175,6 +207,20 @@ If a function is provided, the sum of the results of applying the function to ea
 ```coffeescript
 list.sum(l)
 list.sum(l, v => v.length)
+```
+
+## toList
+**Description:**\
+Converts a value to a list via the Iterator Function. if this was already a list, returns as is.
+
+**Arguments:**
+* any **value**: The value to convert to a list.
+
+**Return Value:**\
+list **list**: The list that was created.
+
+```coffeescript
+print(list.toList(1))
 ```
 
 ## where

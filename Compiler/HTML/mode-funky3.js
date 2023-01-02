@@ -42,7 +42,9 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
             "abs|round|floor|ceil|min|max|clamp|sqrt|rad|deg|random|randomSeed|pi|e|huge|inf|nan|epsilon|sin|cos|tan|asin|acos|atan|"+
             "clock|"+
             "match|matches|replace|find|sub|reverse|upper|lower|"+
-            "beginPath|clear|moveTo|lineTo|stroke|fill|strokeStyle|fillStyle|strokeText|fillText|font|textAlign|textBaseline|fillRect|strokeRect|arc|arcTo|bezierCurveTo|quadraticCurveTo|rect|closePath|clip|isPointInPath|isPointInStroke|scale|rotate|translate|transform|setTransform|resetTransform|drawImage|drawImage2|save|restore|reset|roundRect|measureText|lineWidth"
+            "beginPath|clear|moveTo|lineTo|stroke|fill|strokeStyle|fillStyle|strokeText|fillText|font|textAlign|textBaseline|fillRect|strokeRect|arc|arcTo|bezierCurveTo|quadraticCurveTo|rect|closePath|clip|isPointInPath|isPointInStroke|scale|rotate|translate|transform|setTransform|resetTransform|drawImage|drawImage2|save|restore|reset|roundRect|measureText|lineWidth|" +
+          // metamethods
+            "add|sub|mul|div|intdiv|mod|pow|band|bor|bnot|bshl|bshr|lt|gt|le|ge|eq|ne|concat|unp|unm|not|bnot|len|iter|tostring|truthy|get|set|call|len"
         );
     
         var stdLibaries = ("list|string|math|draw|os");

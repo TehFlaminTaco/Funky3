@@ -627,6 +627,52 @@ Var* ListMin(Var* scope, Var* args){
     return curr;
 }
 
+
+Var* ListRawGet(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "obj");
+    Var* k = ArgVarGet(args, 1, "key");
+    return VarRawGet(v, k);
+}
+
+Var* ListRawSet(Var* scope, Var* args){
+    Var* v = ArgVarGet(args, 0, "obj");
+    Var* k = ArgVarGet(args, 1, "key");
+    Var* v2 = ArgVarGet(args, 2, "value");
+    VarRawSet(v, k, v2);
+    return v2;
+}
+
+Var* ListToList(Var* scope, Var* args){
+    // Get the iterator of the object and make a list out of it.
+    Var* v = ArgVarGet(args, 0, "obj");
+    if(v -> type == VAR_LIST){
+        return v;
+    }
+    Var* func;
+    Var* nArgs = VarNewList();
+    ArgVarSet(nArgs, 0, "obj", v);
+    if(v->type == VAR_FUNCTION){
+        func = v;
+    }else{
+        func = VarAsFunction(VarGetMeta(v, "iter"));
+        if(func -> type != VAR_FUNCTION){ // Not iteratable.. :(
+            return &NIL;
+        }
+        func = VarFunctionCall(func, nArgs);
+    }
+    if(func -> type != VAR_FUNCTION){ // Not iteratable.. :(
+        return &NIL;
+    }
+    Var* outList = VarNewList();
+    Var* res;
+    int index = 0;
+    while(!ISUNDEFINED(res = VarFunctionCall(func, nArgs))){
+        VarRawSet(outList, VarNewNumber(index++), res);
+        ArgVarSet(nArgs, 1, "last", res);
+    }
+    return outList;
+}
+
 void PopulateListLib(Var* list){
     // Set the default getter for List's to point to this library.
     VarRawSet(&MetatableList, VarNewString("get"), list);
@@ -651,6 +697,11 @@ void PopulateListLib(Var* list){
     CONSTANT(max, VarNewFunction(ListMax));
     CONSTANT(min, VarNewFunction(ListMin));
 
+    CONSTANT(rawGet, VarNewFunction(ListRawGet));
+    CONSTANT(rawSet, VarNewFunction(ListRawSet));
+
+    CONSTANT(toList, VarNewFunction(ListToList));
+
     ALIAS(where, w);
     ALIAS(map, m);
     ALIAS(fold, f);
@@ -667,6 +718,10 @@ void PopulateListLib(Var* list){
     ALIAS(product, M);
     ALIAS(min, x);
     ALIAS(max, X);
+
+    ALIAS(rawGet, rG);
+    ALIAS(rawSet, rS);
+    ALIAS(toList, tL);
 }
 
 #endif
