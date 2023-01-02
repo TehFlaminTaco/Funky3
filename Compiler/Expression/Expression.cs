@@ -44,6 +44,7 @@ public abstract class Expression {
         switch (tokens[index].Type) {
             case TokenType.Number:      return RightParse(NumberLiteral.TryParse(tokens, index), tokens);
             case TokenType.String:      return RightParse(StringLiteral.TryParse(tokens, index), tokens);
+            case TokenType.InterpolatedStringSTART: case TokenType.InterpolatedStringTEXT: return RightParse(InterpolatedStringLiteral.TryParse(tokens, index), tokens);
             case TokenType.Identifier:
                 // Check if this is a function first.
                 if(tokens.Count > index+3 && tokens[index+1].Type==TokenType.Punctuation && tokens[index+1].Value=="=" && tokens[index+2].Type==TokenType.Punctuation && tokens[index+2].Value==">") {
@@ -247,6 +248,13 @@ public abstract class Expression {
                 return result;
             case TokenType.String:
                 // String call
+                if(IsBlocked<Call>() || IsBlocked<StringLiteral>())
+                    return result;
+                return RightParse(Call.TryParse(result.expression, tokens, result.index), tokens, result);
+            case TokenType.InterpolatedStringSTART: case TokenType.InterpolatedStringTEXT:
+                // String call
+                if(tokens[result.index].Type == TokenType.InterpolatedStringTEXT && tokens[result.index].Value.StartsWith("]"))
+                    return result;
                 if(IsBlocked<Call>() || IsBlocked<StringLiteral>())
                     return result;
                 return RightParse(Call.TryParse(result.expression, tokens, result.index), tokens, result);

@@ -156,6 +156,7 @@ public class DeOperator : Expression, IRightProvider
             Block.PushBadScope();
             Block.PushCurrentScope();
             headerSB.AppendLine($"\tVar* _ = &NIL;");
+            headerSB.AppendLine($"\tscope = VarSubScope(scope);");
             headerSB.AppendLine($"\tVar* left = ArgVarGet(args, 0, \"left\");");
             headerSB.AppendLine($"\tVar* right = ArgVarGet(args, 1, \"right\");");
             headerSB.AppendLine($"\tif(ISUNDEFINED(left)){{");

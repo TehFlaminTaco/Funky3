@@ -21,6 +21,11 @@ public class Call : Expression, ILeftProvider
             {
                 return (new Call(left, new List<ListEntry>() { new EntryExpression(result.Item1) }), result.Item2);
             }
+            (InterpolatedStringLiteral? interpolated, int) result3 = InterpolatedStringLiteral.TryParse(tokens, i);
+            if (result3.interpolated != null)
+            {
+                return (new Call(left, new List<ListEntry>() { new EntryExpression(result3.interpolated) }), result3.Item2);
+            }
             (DeOperator?, int) result2 = DeOperator.TryParse(tokens, i);
             if (result2.Item1 != null)
             {

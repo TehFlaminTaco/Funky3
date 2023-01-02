@@ -16,7 +16,7 @@ public static class Tokenizer {
     public static List<Token> Tokenize(string code) {
         var tokens = new List<Token>();
         int k = 0;
-
+        Stack<int> interpolationDepth = new();
         while(k < code.Length) {
             char firstChar = code[k];
             
@@ -120,23 +120,83 @@ public static class Tokenizer {
             // Interpolated strings are currently in the Naughty Corner for crimes against my brain.
             // I'm not sure if I'll ever get around to implementing them.
             // Interpolated String
-            } else if (firstChar == '`') {
+            } else if (firstChar == '`')
+            {
                 // Find the next instance of the same quote, not after an unescaped \
-                int end = k+1;
-                while (end < code.Length && code[end] != '`') {
-                    if (code[end] == '\\' && code[end + 1] == '`') {
+                int end = k + 1;
+                while (end < code.Length && code[end] != '`' && code[end] != '[')
+                {
+                    if (code[end] == '\\')
+                    {
                         end += 2;
-                    } else {
+                    }
+                    else
+                    {
                         end++;
                     }
                 }
                 // Generate the token
                 int line = code[..k].Split('\n').Length;
                 int column = k - code[..k].LastIndexOf('\n');
-                tokens.Add(new Token(TokenType.InterpolatedStringSTART, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
+                if (code[end] == '`')
+                    tokens.Add(new Token(TokenType.InterpolatedStringTEXT, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
+                else
+                {
+                    tokens.Add(new Token(TokenType.InterpolatedStringSTART, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
+                    interpolationDepth.Push(1);
+                }
                 // Move the index to the end of the string
                 k = end + 1;
-                throw new NotImplementedException("Interpolated Strings are not yet implemented.");
+
+                // Square brackets (For interpolation)
+            }else if (firstChar == '[')
+            {
+                int line = code[..k].Split('\n').Length;
+                int column = k - code[..k].LastIndexOf('\n');
+                if (interpolationDepth.Any())
+                {
+                    interpolationDepth.Push(interpolationDepth.Pop() + 1);
+                }
+                tokens.Add(new Token(TokenType.Punctuation, firstChar.ToString(), line, column, k, 1));
+                k++;
+            }else if (firstChar == ']'){
+                int line = code[..k].Split('\n').Length;
+                int column = k - code[..k].LastIndexOf('\n');
+                if (interpolationDepth.Any())
+                {
+                    interpolationDepth.Push(interpolationDepth.Pop() - 1);
+                    if (interpolationDepth.Peek() == 0)
+                    {
+                        interpolationDepth.Pop();
+                        int end = k + 1;
+                        while (end < code.Length && code[end] != '`' && code[end] != '[')
+                        {
+                            if (code[end] == '\\')
+                            {
+                                end += 2;
+                            }
+                            else
+                            {
+                                end++;
+                            }
+                        }
+                        if (code[end] == '`')
+                            tokens.Add(new Token(TokenType.InterpolatedStringEND, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
+                        else
+                        {
+                            tokens.Add(new Token(TokenType.InterpolatedStringTEXT, code.Substring(k, end - k + 1), line, column, k, end + 1 - k));
+                            interpolationDepth.Push(1);
+                        }
+                        // Move the index to the end of the string
+                        k = end;
+                    }else{
+                        tokens.Add(new Token(TokenType.Punctuation, firstChar.ToString(), line, column, k, 1));
+                    }
+                    k++;
+                }else{
+                    tokens.Add(new Token(TokenType.Punctuation, firstChar.ToString(), line, column, k, 1));
+                    k++;
+                }
             // Punctuation
             } else {
                 // Generate the token

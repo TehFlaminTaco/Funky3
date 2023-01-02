@@ -8,7 +8,7 @@ public class Preprocessor
     public static readonly Regex SuperTokenizer = new(@"
 (?<newline>          [\n\r]                             )| (?#Newlines...)
 (?<multilineComment> \$\*(.|\s)*?\*\$                   )| (?#Multiline Comment)
-(?<string>           (?<qoute>[\""'`])(\\.|.)*?\<qoute> )| (?#Strings)
+(?<string>           (?<qoute>[\""'])(\\.|.|\s)*?\<qoute> )| (?#Strings)
 (?<singleineComment> \$\$.*                             )| (?#Singleline Comment)
 (?<preprocessor>     \s*\$(?<directive>\w+)(?<body>.*)  )| (?#Preprocessor)
 (?<code>             [^$\""'\r\n]+                      )| (?#Regular, Boring code)

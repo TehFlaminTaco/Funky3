@@ -1841,7 +1841,11 @@ function canvasTranslate(x,y){ Module.ctx.translate(x, y); }
 
   function ___assert_fail(condition, filename, line, func) {
       abort('Assertion failed: ' + UTF8ToString(condition) + ', at: ' + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
-    }
+}
+    
+function __emscripten_date_now() {
+  return Date.now();
+}
 
   function __emscripten_throw_longjmp() { throw 'longjmp'; }
 
@@ -1954,6 +1958,7 @@ function intArrayToString(array) {
 
 var asmLibraryArg = {
   "__assert_fail": ___assert_fail,
+  "_emscripten_date_now": __emscripten_date_now,
   "_emscripten_throw_longjmp": __emscripten_throw_longjmp,
   "canvasArc": canvasArc,
   "canvasArcTo": canvasArcTo,

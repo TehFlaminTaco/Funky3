@@ -202,6 +202,7 @@ public class Function : Expression
         Block.PushCurrentScope();
         //headerSB.AppendLine($"\ttgc_run(&gc);");
         headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
+        headerSB.AppendLine("\tscope = VarSubScope(scope);");
         // Try loading "this" into the scope... Just if it exists.
         headerSB.AppendLine("\tVarRawSet(scope, VarNewString(\"this\"), VarRawGet(args, VarNewString(\"this\")));");
         if (Arguments.Count > 0)
