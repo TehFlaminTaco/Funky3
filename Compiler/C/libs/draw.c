@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 #ifndef DRAW_C
 #define DRAW_C
@@ -9,598 +10,27 @@
 #include "../metatable.h"
 #include "../hashmap.h"
 
-EM_JS(void, canvasClear, (), {
-    Module.ctx.clearRect(0,0,512,512);
-});
-
-EM_JS(void, canvasBeginPath, (), {
-    Module.ctx.beginPath();
-});
-
-EM_JS(void, canvasMoveTo, (double x, double y), {
-   Module.ctx.moveTo(x, y);
-});
-
-EM_JS(void, canvasLineTo, (double x, double y), {
-    Module.ctx.lineTo(x, y);
-});
-
-EM_JS(void, canvasStroke, (), {
-    Module.ctx.stroke();
-});
-
-EM_JS(void, canvasFill, (), {
-    Module.ctx.fill();
-});
-
-EM_JS(void, canvasStrokeStyle, (char* style), {
-    Module.ctx.strokeStyle = UTF8ToString(style);
-});
-
-EM_JS(void, canvasFillStyle, (char* style), {
-    Module.ctx.fillStyle = UTF8ToString(style);
-});
-
-EM_JS(void, canvasStrokeText, (char* text, double x, double y), {
-    Module.ctx.strokeText(UTF8ToString(text), x, y);
-});
-
-EM_JS(void, canvasFillText, (char* text, double x, double y), {
-    Module.ctx.fillText(UTF8ToString(text), x, y);
-});
-
-EM_JS(void, canvasFont, (char* font), {
-    Module.ctx.font = UTF8ToString(font);
-});
-
-EM_JS(void, canvasTextAlign, (char* align), {
-    Module.ctx.textAlign = UTF8ToString(align);
-});
-
-EM_JS(void, canvasTextBaseline, (char* baseline), {
-    Module.ctx.textBaseline = UTF8ToString(baseline);
-});
-
-EM_JS(void, canvasFillRect, (double x, double y, double w, double h), {
-    Module.ctx.fillRect(x, y, w, h);
-});
-
-EM_JS(void, canvasStrokeRect, (double x, double y, double w, double h), {
-    Module.ctx.strokeRect(x, y, w, h);
-});
-
-EM_JS(void, canvasArc, (double x, double y, double r, double s, double e, int cw), {
-    Module.ctx.arc(x, y, r, s, e, cw);
-});
-
-EM_JS(void, canvasArcTo, (double x1, double y1, double x2, double y2, double r), {
-    Module.ctx.arcTo(x1, y1, x2, y2, r);
-});
-
-EM_JS(void, canvasBezierCurveTo, (double cp1x, double cp1y, double cp2x, double cp2y, double x, double y), {
-    Module.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-});
-
-EM_JS(void, canvasQuadraticCurveTo, (double cpx, double cpy, double x, double y), {
-    Module.ctx.quadraticCurveTo(cpx, cpy, x, y);
-});
-
-EM_JS(void, canvasRect, (double x, double y, double w, double h), {
-    Module.ctx.rect(x, y, w, h);
-});
-
-EM_JS(void, canvasClosePath, (), {
-    Module.ctx.closePath();
-});
-
-EM_JS(void, canvasClip, (), {
-    Module.ctx.clip();
-});
-
-EM_JS(int, canvasIsPointInPath, (double x, double y), {
-    return Module.ctx.isPointInPath(x, y) ? 1 : 0;
-});
-
-EM_JS(int, canvasIsPointInStroke, (double x, double y), {
-    return Module.ctx.isPointInStroke(x, y) ? 1 : 0;
-});
-
-EM_JS(void, canvasScale, (double x, double y), {
-    Module.ctx.scale(x, y);
-});
-
-EM_JS(void, canvasRotate, (double angle), {
-    Module.ctx.rotate(angle);
-});
-
-EM_JS(void, canvasTranslate, (double x, double y), {
-    Module.ctx.translate(x, y);
-});
-
-EM_JS(void, canvasTransform, (double a, double b, double c, double d, double e, double f), {
-    Module.ctx.transform(a, b, c, d, e, f);
-});
-
-EM_JS(void, canvasSetTransform, (double a, double b, double c, double d, double e, double f), {
-    Module.ctx.setTransform(a, b, c, d, e, f);
-});
-
-EM_JS(void, canvasResetTransform, (), {
-    Module.ctx.resetTransform();
-});
-
-EM_JS(void, canvasDrawImage, (char* img, double x, double y), {
-    var image = new Image();
-    image.src = UTF8ToString(img);
-    Module.ctx.drawImage(image, x, y);
-});
-
-EM_JS(void, canvasDrawImage2, (char* img, double x, double y, double w, double h), {
-    var image = new Image();
-    image.src = UTF8ToString(img);
-    Module.ctx.drawImage(image, x, y, w, h);
-});
-
-EM_JS(void, canvasDrawImage3, (char* img, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh), {
-    var image = new Image();
-    image.src = UTF8ToString(img);
-    Module.ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
-});
-
-EM_JS(void, canvasCreateImageData, (double w, double h), {
-    Module.ctx.createImageData(w, h);
-});
-
-EM_JS(void, canvasCreateImageData2, (char* img), {
-    var image = new Image();
-    image.src = UTF8ToString(img);
-    Module.ctx.createImageData(image);
-});
-
-EM_JS(void, canvasPutImageData, (char* img, double x, double y), {
-    var image = new Image();
-    image.src = UTF8ToString(img);
-    Module.ctx.putImageData(image, x, y);
-});
-
-EM_JS(void, canvasPutImageData2, (char* img, double x, double y, double dx, double dy, double dw, double dh), {
-    var image = new Image();
-    image.src = UTF8ToString(img);
-    Module.ctx.putImageData(image, x, y, dx, dy, dw, dh);
-});
-
-EM_JS(void, canvasGetImageData, (double x, double y, double w, double h), {
-    Module.ctx.getImageData(x, y, w, h);
-});
-
-EM_JS(void, canvasSave, (), {
-    Module.ctx.save();
-});
-
-EM_JS(void, canvasRestore, (), {
-    Module.ctx.restore();
-});
-
-EM_JS(void, canvasReset, (), {
-    Module.ctx.reset();
-});
-
-EM_JS(void, canvasRoundRect, (double x, double y, double w, double h, double r), {
-    Module.ctx.roundRect(x, y, w, h, r);
-});
-
-EM_JS(void, canvasSetLineDash, (char* dash), {
-    Module.ctx.setLineDash(dash);
-});
-
-EM_JS(void, canvasGetLineDash, (), {
-    Module.ctx.getLineDash();
-});
-
-EM_JS(double, canvasMeasureTextWidth, (char* text), {
-    return Module.ctx.measureText(UTF8ToString(text)).width;
-});
-
-EM_JS(double, canvasMeasureTextHeight, (char* text), {
-    return Module.ctx.measureText(UTF8ToString(text)).height;
-});
-
-EM_JS(void, canvasLineWidth, (double width), {
-    Module.ctx.lineWidth = width;
-});
-
+#ifdef EMSCRIPTEN
+#define LIBNAME canvas
+#include "canvas.c"
 
 Var* DrawClear(Var* scope, Var* args){
     canvasClear();
+    return &NIL;
 }
 
-Var* DrawBeginPath(Var* scope, Var* args){
-    canvasBeginPath();
+Var* DrawPop(Var* scope, Var* args){
+    canvasRestore();
+    return &NIL;
 }
 
-Var* DrawMoveTo(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    canvasMoveTo(dx, dy);
+Var* DrawPush(Var* scope, Var* args){
+    canvasSave();
+    Var* oVar = VarNewList();
+    VarRawSet(oVar, VarNewString("dispose"), VarNewFunction(DrawPop));
+    return oVar;
 }
 
-Var* DrawLineTo(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    canvasLineTo(dx, dy);
-}
-
-Var* DrawStroke(Var* scope, Var* args){
-    canvasStroke();
-};
-
-Var* DrawFill(Var* scope, Var* args){
-    canvasFill();
-}
-
-Var* DrawStrokeStyle(Var* scope, Var* args){
-    Var* style = VarAsString(ArgVarGet(args, 0, "style"));
-    if(style -> type != VAR_STRING){
-        return &NIL;
-    }
-    canvasStrokeStyle((char*) style -> value);
-}
-
-Var* DrawFillStyle(Var* scope, Var* args){
-    Var* style = VarAsString(ArgVarGet(args, 0, "style"));
-    if(style -> type != VAR_STRING){
-        return &NIL;
-    }
-    canvasFillStyle((char*) style -> value);
-}
-
-Var* DrawStrokeText(Var* scope, Var* args){
-    Var* text = VarAsString(ArgVarGet(args, 0, "text"));
-    if(text -> type != VAR_STRING){
-        return &NIL;
-    }
-    Var* x = ArgVarGet(args, 1, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 2, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    canvasStrokeText((char*) text -> value, dx, dy);
-}
-
-Var* DrawFillText(Var* scope, Var* args){
-    Var* text = VarAsString(ArgVarGet(args, 0, "text"));
-    if(text -> type != VAR_STRING){
-        return &NIL;
-    }
-    Var* x = ArgVarGet(args, 1, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 2, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    canvasFillText((char*) text -> value, dx, dy);
-}
-
-Var* DrawFont(Var* scope, Var* args){
-    Var* font = VarAsString(ArgVarGet(args, 0, "font"));
-    if(font -> type != VAR_STRING){
-        return &NIL;
-    }
-    canvasFont((char*) font -> value);
-}
-
-Var* DrawTextAlign(Var* scope, Var* args){
-    Var* align = VarAsString(ArgVarGet(args, 0, "align"));
-    if(align -> type != VAR_STRING){
-        return &NIL;
-    }
-    canvasTextAlign((char*) align -> value);
-}
-
-Var* DrawTextBaseline(Var* scope, Var* args){
-    Var* baseline = VarAsString(ArgVarGet(args, 0, "baseline"));
-    if(baseline -> type != VAR_STRING){
-        return &NIL;
-    }
-    canvasTextBaseline((char*) baseline -> value);
-}
-
-Var* DrawFillRect(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* width = ArgVarGet(args, 2, "width");
-    if(width->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* height = ArgVarGet(args, 3, "height");
-    if(height->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    double dw;
-    memcpy(&dw, &width->value, sizeof(double));
-    double dh;
-    memcpy(&dh, &height->value, sizeof(double));
-    canvasFillRect(dx, dy, dw, dh);
-}
-
-Var* DrawStrokeRect(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* width = ArgVarGet(args, 2, "width");
-    if(width->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* height = ArgVarGet(args, 3, "height");
-    if(height->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    double dw;
-    memcpy(&dw, &width->value, sizeof(double));
-    double dh;
-    memcpy(&dh, &height->value, sizeof(double));
-    canvasStrokeRect(dx, dy, dw, dh);
-}
-
-Var* DrawArc(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* radius = ArgVarGet(args, 2, "radius");
-    if(radius->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* startAngle = ArgVarGet(args, 3, "startAngle");
-    if(startAngle->type != VAR_NUMBER){
-        startAngle = VarNewNumber(0);
-    }
-    Var* endAngle = ArgVarGet(args, 4, "endAngle");
-    if(endAngle->type != VAR_NUMBER){
-        endAngle = VarNewNumber(2 * M_PI);
-    }
-    Var* anticlockwise = ArgVarGet(args, 5, "anticlockwise");
-    if(anticlockwise->type != VAR_NUMBER){
-        anticlockwise = VarNewNumber(0);
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    double dr;
-    memcpy(&dr, &radius->value, sizeof(double));
-    double ds;
-    memcpy(&ds, &startAngle->value, sizeof(double));
-    double de;
-    memcpy(&de, &endAngle->value, sizeof(double));
-    canvasArc(dx, dy, dr, ds, de, VarTruthy(anticlockwise));
-}
-
-Var* DrawArcTo(Var* scope, Var* args){
-    Var* x1 = ArgVarGet(args, 0, "x1");
-    if(x1->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y1 = ArgVarGet(args, 1, "y1");
-    if(y1->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* x2 = ArgVarGet(args, 2, "x2");
-    if(x2->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y2 = ArgVarGet(args, 3, "y2");
-    if(y2->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* radius = ArgVarGet(args, 4, "radius");
-    if(radius->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx1;
-    memcpy(&dx1, &x1->value, sizeof(double));
-    double dy1;
-    memcpy(&dy1, &y1->value, sizeof(double));
-    double dx2;
-    memcpy(&dx2, &x2->value, sizeof(double));
-    double dy2;
-    memcpy(&dy2, &y2->value, sizeof(double));
-    double dr;
-    memcpy(&dr, &radius->value, sizeof(double));
-    canvasArcTo(dx1, dy1, dx2, dy2, dr);
-}
-
-Var* DrawBezierCurveTo(Var* scope, Var* args){
-    Var* cp1x = ArgVarGet(args, 0, "cp1x");
-    if(cp1x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* cp1y = ArgVarGet(args, 1, "cp1y");
-    if(cp1y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* cp2x = ArgVarGet(args, 2, "cp2x");
-    if(cp2x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* cp2y = ArgVarGet(args, 3, "cp2y");
-    if(cp2y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* x = ArgVarGet(args, 4, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 5, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dcp1x;
-    memcpy(&dcp1x, &cp1x->value, sizeof(double));
-    double dcp1y;
-    memcpy(&dcp1y, &cp1y->value, sizeof(double));
-    double dcp2x;
-    memcpy(&dcp2x, &cp2x->value, sizeof(double));
-    double dcp2y;
-    memcpy(&dcp2y, &cp2y->value, sizeof(double));
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    canvasBezierCurveTo(dcp1x, dcp1y, dcp2x, dcp2y, dx, dy);
-}
-
-Var* DrawQuadraticCurveTo(Var* scope, Var* args){
-    Var* cpx = ArgVarGet(args, 0, "cpx");
-    if(cpx->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* cpy = ArgVarGet(args, 1, "cpy");
-    if(cpy->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* x = ArgVarGet(args, 2, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 3, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dcpx;
-    memcpy(&dcpx, &cpx->value, sizeof(double));
-    double dcpy;
-    memcpy(&dcpy, &cpy->value, sizeof(double));
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    canvasQuadraticCurveTo(dcpx, dcpy, dx, dy);
-}
-
-Var* DrawRect(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* width = ArgVarGet(args, 2, "width");
-    if(width->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* height = ArgVarGet(args, 3, "height");
-    if(height->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    double dw;
-    memcpy(&dw, &width->value, sizeof(double));
-    double dh;
-    memcpy(&dh, &height->value, sizeof(double));
-    canvasRect(dx, dy, dw, dh);
-}
-
-Var* DrawClosePath(Var* scope, Var* args){
-    canvasClosePath();
-}
-
-Var* DrawClip(Var* scope, Var* args){
-    canvasClip();
-}
-
-Var* DrawIsPointInPath(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    return VarNewNumber(canvasIsPointInPath(dx, dy));
-}
-
-Var* DrawIsPointInStroke(Var* scope, Var* args){
-    Var* x = ArgVarGet(args, 0, "x");
-    if(x->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* y = ArgVarGet(args, 1, "y");
-    if(y->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dx;
-    memcpy(&dx, &x->value, sizeof(double));
-    double dy;
-    memcpy(&dy, &y->value, sizeof(double));
-    return VarNewNumber(canvasIsPointInStroke(dx, dy));
-}
 
 Var* DrawScale(Var* scope, Var* args){
     Var* x = ArgVarGet(args, 0, "x");
@@ -609,13 +39,14 @@ Var* DrawScale(Var* scope, Var* args){
     }
     Var* y = ArgVarGet(args, 1, "y");
     if(y->type != VAR_NUMBER){
-        return &NIL;
+        y = x;
     }
     double dx;
     memcpy(&dx, &x->value, sizeof(double));
     double dy;
     memcpy(&dy, &y->value, sizeof(double));
     canvasScale(dx, dy);
+    return &NIL;
 }
 
 Var* DrawRotate(Var* scope, Var* args){
@@ -626,6 +57,7 @@ Var* DrawRotate(Var* scope, Var* args){
     double dangle;
     memcpy(&dangle, &angle->value, sizeof(double));
     canvasRotate(dangle);
+    return &NIL;
 }
 
 Var* DrawTranslate(Var* scope, Var* args){
@@ -642,192 +74,326 @@ Var* DrawTranslate(Var* scope, Var* args){
     double dy;
     memcpy(&dy, &y->value, sizeof(double));
     canvasTranslate(dx, dy);
+    return &NIL;
 }
 
-Var* DrawTransform(Var* scope, Var* args){
-    Var* a = ArgVarGet(args, 0, "a");
-    if(a->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* b = ArgVarGet(args, 1, "b");
-    if(b->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* c = ArgVarGet(args, 2, "c");
-    if(c->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* d = ArgVarGet(args, 3, "d");
-    if(d->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* e = ArgVarGet(args, 4, "e");
-    if(e->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* f = ArgVarGet(args, 5, "f");
-    if(f->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double da;
-    memcpy(&da, &a->value, sizeof(double));
-    double db;
-    memcpy(&db, &b->value, sizeof(double));
-    double dc;
-    memcpy(&dc, &c->value, sizeof(double));
-    double dd;
-    memcpy(&dd, &d->value, sizeof(double));
-    double de;
-    memcpy(&de, &e->value, sizeof(double));
-    double df;
-    memcpy(&df, &f->value, sizeof(double));
-    canvasTransform(da, db, dc, dd, de, df);
-}
-
-Var* DrawSetTransform(Var* scope, Var* args){
-    Var* a = ArgVarGet(args, 0, "a");
-    if(a->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* b = ArgVarGet(args, 1, "b");
-    if(b->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* c = ArgVarGet(args, 2, "c");
-    if(c->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* d = ArgVarGet(args, 3, "d");
-    if(d->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* e = ArgVarGet(args, 4, "e");
-    if(e->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* f = ArgVarGet(args, 5, "f");
-    if(f->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double da;
-    memcpy(&da, &a->value, sizeof(double));
-    double db;
-    memcpy(&db, &b->value, sizeof(double));
-    double dc;
-    memcpy(&dc, &c->value, sizeof(double));
-    double dd;
-    memcpy(&dd, &d->value, sizeof(double));
-    double de;
-    memcpy(&de, &e->value, sizeof(double));
-    double df;
-    memcpy(&df, &f->value, sizeof(double));
-    canvasSetTransform(da, db, dc, dd, de, df);
-}
-
-Var* DrawResetTransform(Var* scope, Var* args){
-    canvasResetTransform();
-}
-
-Var* DrawDrawImage(Var* scope, Var* args){
-    Var* image = ArgVarGet(args, 0, "image");
-    if(image->type != VAR_STRING){
-        return &NIL;
-    }
-    Var* dx = ArgVarGet(args, 1, "dx");
-    if(dx->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* dy = ArgVarGet(args, 2, "dy");
-    if(dy->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* dw = ArgVarGet(args, 3, "dw");
-    Var* dh = ArgVarGet(args, 4, "dh");
-
-    if(dw -> type != VAR_NUMBER || dh -> type != VAR_NUMBER){
-        canvasDrawImage(image->value, dx->value, dy->value);
-        return &NIL;
-    }
-    double ddx;
-    memcpy(&ddx, &dx->value, sizeof(double));
-    double ddy;
-    memcpy(&ddy, &dy->value, sizeof(double));
-    double ddw;
-    memcpy(&ddw, &dw->value, sizeof(double));
-    double ddh;
-    memcpy(&ddh, &dh->value, sizeof(double));
-    canvasDrawImage2(image->value, ddx, ddy, ddw, ddh);
-}
-
-Var* DrawDrawImage2(Var* scope, Var* args){
-    Var* image = ArgVarGet(args, 0, "image");
-    if(image->type != VAR_STRING){
-        return &NIL;
-    }
-    Var* sx = ArgVarGet(args, 1, "sx");
-    if(sx->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* sy = ArgVarGet(args, 2, "sy");
-    if(sy->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* sw = ArgVarGet(args, 3, "sw");
-    if(sw->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* sh = ArgVarGet(args, 4, "sh");
-    if(sh->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* dx = ArgVarGet(args, 5, "dx");
-    if(dx->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* dy = ArgVarGet(args, 6, "dy");
-    if(dy->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* dw = ArgVarGet(args, 7, "dw");
-    if(dw->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* dh = ArgVarGet(args, 8, "dh");
-    if(dh->type != VAR_NUMBER){
-        return &NIL;
-    }
-    double dsx;
-    memcpy(&dsx, &sx->value, sizeof(double));
-    double dsy;
-    memcpy(&dsy, &sy->value, sizeof(double));
-    double dsw;
-    memcpy(&dsw, &sw->value, sizeof(double));
-    double dsh;
-    memcpy(&dsh, &sh->value, sizeof(double));
-    double ddx;
-    memcpy(&ddx, &dx->value, sizeof(double));
-    double ddy;
-    memcpy(&ddy, &dy->value, sizeof(double));
-    double ddw;
-    memcpy(&ddw, &dw->value, sizeof(double));
-    double ddh;
-    memcpy(&ddh, &dh->value, sizeof(double));
-    canvasDrawImage3(image->value, dsx, dsy, dsw, dsh, ddx, ddy, ddw, ddh);
-}
-
-Var* DrawSave(Var* scope, Var* args){
+Var* DrawPushViewport(Var* scope, Var* args){
+    double dx;
+    double dy;
+    double dw;
+    double dh;
+    Var* x = ArgVarGet(args, 0, "left");
+    if(x -> type != VAR_NUMBER) return &NIL;
+    Var* y = ArgVarGet(args, 1, "top");
+    if(y -> type != VAR_NUMBER) return &NIL;
+    Var* w = ArgVarGet(args, 2, "right");
+    if(w -> type != VAR_NUMBER) return &NIL;
+    Var* h = ArgVarGet(args, 3, "bottom");
+    if(h -> type != VAR_NUMBER) return &NIL;
+    memcpy(&dx, &x->value, sizeof(double));
+    memcpy(&dy, &y->value, sizeof(double));
+    memcpy(&dw, &w->value, sizeof(double));
+    memcpy(&dh, &h->value, sizeof(double));
     canvasSave();
+    canvasScale(512.0/(dw-dx), 512.0/(dh-dy));
+    canvasTranslate(-dx, -dy);
+    
+    Var* oVar = VarNewList();
+    VarRawSet(oVar, VarNewString("dispose"), VarNewFunction(DrawPop));
+    ArgVarSet(oVar, 0, "left", x);
+    ArgVarSet(oVar, 1, "top", y);
+    ArgVarSet(oVar, 2, "right", w);
+    ArgVarSet(oVar, 3, "bottom", h);
+    return oVar;
 }
 
-Var* DrawRestore(Var* scope, Var* args){
-    canvasRestore();
+Var* DrawViewportToScreen(Var* scope, Var* args){
+    double dx;
+    double dy;
+    double dl;
+    double dt;
+    double dr;
+    double db;
+    Var* x = ArgVarGet(args, 0, "x");
+    if(x -> type != VAR_NUMBER) return &NIL;
+    Var* y = ArgVarGet(args, 1, "y");
+    if(y -> type != VAR_NUMBER) return &NIL;
+    Var* l = ArgVarGet(args, 2, "left");
+    if(l -> type != VAR_NUMBER) return &NIL;
+    Var* t = ArgVarGet(args, 3, "top");
+    if(t -> type != VAR_NUMBER) return &NIL;
+    Var* r = ArgVarGet(args, 4, "right");
+    if(r -> type != VAR_NUMBER) return &NIL;
+    Var* b = ArgVarGet(args, 5, "bottom");
+    if(b -> type != VAR_NUMBER) return &NIL;
+    memcpy(&dx, &x->value, sizeof(double));
+    memcpy(&dy, &y->value, sizeof(double));
+    memcpy(&dl, &l->value, sizeof(double));
+    memcpy(&dt, &t->value, sizeof(double));
+    memcpy(&dr, &r->value, sizeof(double));
+    memcpy(&db, &b->value, sizeof(double));
+
+    double ox = dx - dl;
+    double oy = dy - dt;
+    ox *= 512.0/(dr-dl);
+    oy *= 512.0/(db-dt);
+    Var* vox = VarNewNumber(ox);
+    Var* voy = VarNewNumber(oy);
+
+    Var* ov = VarNewList();
+    ArgVarSet(ov, 0, "x", vox);
+    ArgVarSet(ov, 1, "y", voy);
+    return ov;
 }
 
-Var* DrawReset(Var* scope, Var* args){
-    canvasReset();
+Var* DrawScreenToViewport(Var* scope, Var* args){
+    double dx;
+    double dy;
+    double dl;
+    double dt;
+    double dr;
+    double db;
+    Var* x = ArgVarGet(args, 0, "x");
+    if(x -> type != VAR_NUMBER) return &NIL;
+    Var* y = ArgVarGet(args, 1, "y");
+    if(y -> type != VAR_NUMBER) return &NIL;
+    Var* l = ArgVarGet(args, 2, "left");
+    if(l -> type != VAR_NUMBER) return &NIL;
+    Var* t = ArgVarGet(args, 3, "top");
+    if(t -> type != VAR_NUMBER) return &NIL;
+    Var* r = ArgVarGet(args, 4, "right");
+    if(r -> type != VAR_NUMBER) return &NIL;
+    Var* b = ArgVarGet(args, 5, "bottom");
+    if(b -> type != VAR_NUMBER) return &NIL;
+    memcpy(&dx, &x->value, sizeof(double));
+    memcpy(&dy, &y->value, sizeof(double));
+    memcpy(&dl, &l->value, sizeof(double));
+    memcpy(&dt, &t->value, sizeof(double));
+    memcpy(&dr, &r->value, sizeof(double));
+    memcpy(&db, &b->value, sizeof(double));
+
+    Var* vox = VarNewNumber(dx / (512.0/(dr-dl)) + dl);
+    Var* voy = VarNewNumber(dy / (512.0/(db-dt)) + dt);
+
+    Var* ov = VarNewList();
+    ArgVarSet(ov, 0, "x", vox);
+    ArgVarSet(ov, 1, "y", voy);
+    return ov;
 }
 
-Var* DrawRoundRect(Var* scope, Var* args){
+int _ParseCamera(Var* cam, int argOffset, double* dX, double* dY, double* dWidth, double* dHeight, double* dAngle){
+    Var* vPosition = ArgVarGet(cam, argOffset, "position");
+    if(vPosition -> type != VAR_LIST){
+        return 0;
+    }
+    Var* vX = ArgVarGet(vPosition, 0, "x");
+    if(vX -> type != VAR_NUMBER){
+        return 0;
+    }
+    memcpy(dX, &vX->value, sizeof(double));
+    Var* vY = ArgVarGet(vPosition, 0, "y");
+    if(vY -> type != VAR_NUMBER){
+        return 0;
+    }
+    memcpy(dY, &vY->value, sizeof(double));
+    *dWidth = 512;
+    *dHeight = 512;
+    Var* vSize = ArgVarGet(cam, argOffset+1, "size");
+    if(vSize -> type == VAR_NUMBER){
+        memcpy(dWidth, &vSize -> value, sizeof(double));
+        *dHeight = *dWidth;
+    }else if(vSize -> type == VAR_LIST){
+        Var* vWidth = ArgVarGet(vSize, 0, "w");
+        Var* vHeight = ArgVarGet(vSize, 1, "h");
+        Var* vAspectRatio = VarRawGet(vSize, VarNewString("aspectRatio"));
+        double dAspectRatio = 1.0;
+        if(vAspectRatio -> type == VAR_NUMBER){
+            memcpy(&dAspectRatio, &vAspectRatio->value, sizeof(double));
+        }
+        if(vWidth -> type == VAR_NUMBER){
+            memcpy(dWidth, &vWidth->value, sizeof(double));
+        }
+        if(vHeight -> type == VAR_NUMBER){
+            memcpy(dHeight, &vHeight->value, sizeof(double));
+        }
+        if(vWidth -> type != VAR_NUMBER){
+            *dWidth = *dHeight * dAspectRatio;
+        }
+        if(vHeight -> type == VAR_NUMBER){
+            *dHeight = *dWidth / dAspectRatio;
+        }
+    }
+    Var* vAngle = ArgVarGet(cam, argOffset+2, "angle");
+    if(vAngle -> type == VAR_NUMBER){
+        memcpy(dAngle, &vAngle -> value, sizeof(double));
+    }
+    return 1;
+}
+
+Var* DrawPushCamera(Var* scope, Var* args){
+    double dX;
+    double dY;
+    double dWidth;
+    double dHeight;
+    double dAngle;
+    if(!_ParseCamera(args, 0, &dX, &dY, &dWidth, &dHeight, &dAngle)){
+        return &NIL;
+    }
+
+    canvasSave();
+    canvasTranslate(256.0, 256.0);
+    canvasRotate(-dAngle);
+    canvasScale(512.0/dWidth, 512.0/dHeight);
+    canvasTranslate(-dX, -dY);
+
+    Var* oVar = VarNewList();
+    VarRawSet(oVar, VarNewString("dispose"), VarNewFunction(DrawPop));
+    ArgVarSet(oVar, 0, "position", ArgVarGet(args, 0, "position"));
+    ArgVarSet(oVar, 1, "size", ArgVarGet(args, 1, "size"));
+    ArgVarSet(oVar, 2, "angle", ArgVarGet(args, 2, "angle"));
+    return oVar;
+}
+
+Var* DrawCameraToScreen(Var* scope, Var* args){
+    double dTx;
+    double dTy;
+
+    Var* vTx = ArgVarGet(args, 0, "x");
+    if(vTx -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* vTy = ArgVarGet(args, 1, "y");
+    if(vTy -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    
+    double dX;
+    double dY;
+    double dWidth;
+    double dHeight;
+    double dAngle;
+    if(!_ParseCamera(args, 2, &dX, &dY, &dWidth, &dHeight, &dAngle)){
+        return &NIL;
+    }
+
+    memcpy(&dTx, &vTx->value, sizeof(double));
+    memcpy(&dTy, &vTy->value, sizeof(double));
+
+    dTx -= dX;
+    dTy -= dY;
+    double dTx2 = dTx*cos(-dAngle) - dTy*sin(-dAngle);
+    double dTy2 = dTy*cos(-dAngle) + dTx*sin(-dAngle);
+    dTx2 *= 512.0 / dWidth;
+    dTy2 *= 512.0 / dHeight;
+    dTx2 += 256.0;
+    dTy2 += 256.0;
+    Var* oVar = VarNewList();
+    ArgVarSet(oVar, 0, "x", VarNewNumber(dTx2));
+    ArgVarSet(oVar, 1, "y", VarNewNumber(dTy2));
+    return oVar;
+}
+Var* DrawScreenToCamera(Var* scope, Var* args){
+    double dTx;
+    double dTy;
+
+    Var* vTx = ArgVarGet(args, 0, "x");
+    if(vTx -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* vTy = ArgVarGet(args, 1, "y");
+    if(vTy -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    
+    double dX;
+    double dY;
+    double dWidth;
+    double dHeight;
+    double dAngle;
+    if(!_ParseCamera(args, 2, &dX, &dY, &dWidth, &dHeight, &dAngle)){
+        return &NIL;
+    }
+
+    memcpy(&dTx, &vTx->value, sizeof(double));
+    memcpy(&dTy, &vTy->value, sizeof(double));
+
+    dTx -= 256.0;
+    dTy -= 256.0;
+    dTx /= 512.0 / dWidth;
+    dTy /= 512.0 / dHeight;
+    double dTx2 = dTx*cos(dAngle) - dTy*sin(dAngle);
+    double dTy2 = dTy*cos(dAngle) + dTx*sin(dAngle);
+    dTx2 += dX;
+    dTy2 += dY;
+    Var* oVar = VarNewList();
+    ArgVarSet(oVar, 0, "x", VarNewNumber(dTx2));
+    ArgVarSet(oVar, 1, "y", VarNewNumber(dTy2));
+    return oVar;
+}
+
+double lastRed = 0;
+double lastGreen = 0;
+double lastBlue = 0;
+double lastAlpha = 0;
+
+Var* DrawSetColor(Var* scope, Var* args){
+    Var* vRed = ArgVarGet(args, 0, "r");
+    if(vRed -> type == VAR_LIST){
+        args = vRed;
+        vRed = ArgVarGet(args, 0, "r");
+    }
+    if(vRed -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double dr;
+    memcpy(&dr, &vRed->value, sizeof(double));
+    Var* vGreen = ArgVarGet(args, 1, "g");
+    if(vGreen -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double dg;
+    memcpy(&dg, &vGreen->value, sizeof(double));
+    Var* vBlue = ArgVarGet(args, 2, "b");
+    if(vBlue -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double db;
+    memcpy(&db, &vBlue->value, sizeof(double));
+    Var* vAlpha = ArgVarGet(args, 3, "a");
+    if(vAlpha -> type != VAR_NUMBER){
+        vAlpha = VarNewNumber(255.0);
+    }
+    double da;
+    memcpy(&da, &vAlpha->value, sizeof(double));
+
+    lastRed = dr;
+    lastGreen = dg;
+    lastBlue = db;
+    lastAlpha = da;
+    char* styleString;
+    if(0 >= asprintf(&styleString, "rgba(%.2f,%.2f,%.2f,%.3f)", dr, dg, db, da/255))
+        return &NIL;
+    canvasStrokeStyle(styleString);
+    canvasFillStyle(styleString);
+    free(styleString);
+    Var* oVar = VarNewList();
+    ArgVarSet(oVar, 0, "r", vRed);
+    ArgVarSet(oVar, 1, "g", vGreen);
+    ArgVarSet(oVar, 2, "b", vBlue);
+    ArgVarSet(oVar, 3, "a", vAlpha);
+    return oVar;
+}
+
+Var* DrawGetColor(Var* scope, Var* args){
+    Var* oVar = VarNewList();
+    ArgVarSet(oVar, 0, "r", VarNewNumber(lastRed));
+    ArgVarSet(oVar, 1, "g", VarNewNumber(lastGreen));
+    ArgVarSet(oVar, 2, "b", VarNewNumber(lastBlue));
+    ArgVarSet(oVar, 3, "a", VarNewNumber(lastAlpha));
+    return oVar;
+}
+
+Var* DrawBox(Var* scope, Var* args){
     Var* x = ArgVarGet(args, 0, "x");
     if(x->type != VAR_NUMBER){
         return &NIL;
@@ -842,11 +408,7 @@ Var* DrawRoundRect(Var* scope, Var* args){
     }
     Var* h = ArgVarGet(args, 3, "h");
     if(h->type != VAR_NUMBER){
-        return &NIL;
-    }
-    Var* r = ArgVarGet(args, 4, "r");
-    if(r->type != VAR_NUMBER){
-        return &NIL;
+        h = w;
     }
     double dx;
     memcpy(&dx, &x->value, sizeof(double));
@@ -856,88 +418,101 @@ Var* DrawRoundRect(Var* scope, Var* args){
     memcpy(&dw, &w->value, sizeof(double));
     double dh;
     memcpy(&dh, &h->value, sizeof(double));
-    double dr;
-    memcpy(&dr, &r->value, sizeof(double));
-    canvasRoundRect(dx, dy, dw, dh, dr);
+
+    canvasFillRect(dx, dy, dw, dh);
+    return &NIL;
 }
 
-Var* DrawMeasureText(Var* scope, Var* args){
-    Var* text = ArgVarGet(args, 0, "text");
-    if(text->type != VAR_STRING){
+Var* DrawBoxOutline(Var* scope, Var* args){
+    Var* x = ArgVarGet(args, 0, "x");
+    if(x->type != VAR_NUMBER){
         return &NIL;
     }
-    double width = canvasMeasureTextWidth(text->value);
-    Var* w = VarNewNumber(width);
-    double height = canvasMeasureTextHeight(text->value);
-    Var* h = VarNewNumber(height);
-    Var* ret = VarNewList();
-    ArgVarSet(ret, 0, "w", w);
-    ArgVarSet(ret, 1, "h", h);
-    return ret;
-}
-
-Var* DrawLineWidth(Var* scope, Var* args){
-    Var* width = ArgVarGet(args, 0, "width");
-    if(width->type != VAR_NUMBER){
+    Var* y = ArgVarGet(args, 1, "y");
+    if(y->type != VAR_NUMBER){
         return &NIL;
     }
-    double dwidth;
-    memcpy(&dwidth, &width->value, sizeof(double));
-    canvasLineWidth(dwidth);
+    Var* w = ArgVarGet(args, 2, "w");
+    if(w->type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* h = ArgVarGet(args, 3, "h");
+    if(h->type != VAR_NUMBER){
+        h = w;
+    }
+    double dx;
+    memcpy(&dx, &x->value, sizeof(double));
+    double dy;
+    memcpy(&dy, &y->value, sizeof(double));
+    double dw;
+    memcpy(&dw, &w->value, sizeof(double));
+    double dh;
+    memcpy(&dh, &h->value, sizeof(double));
+
+    canvasStrokeRect(dx, dy, dw, dh);
+    return &NIL;
 }
 
-Var* drawTable;
-
-EMSCRIPTEN_KEEPALIVE
-int DrawHook(){
-    Var* frameMethod = VarGet(drawTable, VarNewString("frame"));
-    if(ISUNDEFINED(frameMethod))
-        return 1;
-    Var* args = VarNewList();
-    // Later: Delta Time?
-    return VarTruthy(VarFunctionCall(frameMethod, args));
+Var* DrawScreenWidth(Var* scope, Var* args){
+    return VarNewNumber(512.0);
 }
+Var* DrawScreenHeight(Var* scope, Var* args){
+    return VarNewNumber(512.0);
+}
+Var* DrawScreenSize(Var* scope, Var* args){
+    Var* vec = VarNewList();
+    ArgVarSet(vec, 0, "x", VarNewNumber(512.0));
+    ArgVarSet(vec, 1, "y", VarNewNumber(512.0));
+    return vec;
+}
+
+double lastLineWidth = 1.0;
+Var* DrawSetLineWidth(Var* scope, Var* args){
+    Var* w = ArgVarGet(args, 0, "width");
+    if(w -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    memcpy(&lastLineWidth, &w->value, sizeof(double));
+    canvasLineWidth(lastLineWidth);
+    return &NIL;
+}
+
+Var* DrawGetLineWidth(Var* scope, Var* args){
+    return VarNewNumber(lastLineWidth);
+}
+
+#endif
 
 void PopulateDrawLib(Var* draw){
     drawTable = draw;
-    CONSTANT(beginPath, VarNewFunction(DrawBeginPath));
+    #define LIBNAME draw
+    CONSTANT(box, VarNewFunction(DrawBox));
+    CONSTANT(boxOutline, VarNewFunction(DrawBoxOutline));
+    CONSTANT(cameraToScreen, VarNewFunction(DrawCameraToScreen));
     CONSTANT(clear, VarNewFunction(DrawClear));
-    CONSTANT(moveTo, VarNewFunction(DrawMoveTo));
-    CONSTANT(lineTo, VarNewFunction(DrawLineTo));
-    CONSTANT(stroke, VarNewFunction(DrawStroke));
-    CONSTANT(fill, VarNewFunction(DrawFill));
-    CONSTANT(strokeStyle, VarNewFunction(DrawStrokeStyle));
-    CONSTANT(fillStyle, VarNewFunction(DrawFillStyle));
-    CONSTANT(strokeText, VarNewFunction(DrawStrokeText));
-    CONSTANT(fillText, VarNewFunction(DrawFillText));
-    CONSTANT(font, VarNewFunction(DrawFont));
-    CONSTANT(textAlign, VarNewFunction(DrawTextAlign));
-    CONSTANT(textBaseline, VarNewFunction(DrawTextBaseline));
-    CONSTANT(fillRect, VarNewFunction(DrawFillRect));
-    CONSTANT(strokeRect, VarNewFunction(DrawStrokeRect));
-    CONSTANT(arc, VarNewFunction(DrawArc));
-    CONSTANT(arcTo, VarNewFunction(DrawArcTo));
-    CONSTANT(bezierCurveTo, VarNewFunction(DrawBezierCurveTo));
-    CONSTANT(quadraticCurveTo, VarNewFunction(DrawQuadraticCurveTo));
-    CONSTANT(rect, VarNewFunction(DrawRect));
-    CONSTANT(closePath, VarNewFunction(DrawClosePath));
-    CONSTANT(clip, VarNewFunction(DrawClip));
-    CONSTANT(isPointInPath, VarNewFunction(DrawIsPointInPath));
-    CONSTANT(isPointInStroke, VarNewFunction(DrawIsPointInStroke));
-    CONSTANT(scale, VarNewFunction(DrawScale));
+    CONSTANT(getColor, VarNewFunction(DrawGetColor));
+    CONSTANT(getLineWidth, VarNewFunction(DrawGetLineWidth));
+    CONSTANT(pop, VarNewFunction(DrawPop));
+    CONSTANT(push, VarNewFunction(DrawPush));
+    CONSTANT(pushCamera, VarNewFunction(DrawPushCamera));
+    CONSTANT(pushViewport, VarNewFunction(DrawPushViewport));
     CONSTANT(rotate, VarNewFunction(DrawRotate));
+    CONSTANT(scale, VarNewFunction(DrawScale));
+    CONSTANT(screenHeight, VarNewFunction(DrawScreenHeight));
+    CONSTANT(screenSize, VarNewFunction(DrawScreenSize));
+    CONSTANT(screenToCamera, VarNewFunction(DrawScreenToCamera));
+    CONSTANT(screenToViewport, VarNewFunction(DrawScreenToViewport));
+    CONSTANT(screenWidth, VarNewFunction(DrawScreenWidth));
+    CONSTANT(setColor, VarNewFunction(DrawSetColor));
+    CONSTANT(setLineWidth, VarNewFunction(DrawSetLineWidth));
     CONSTANT(translate, VarNewFunction(DrawTranslate));
-    CONSTANT(transform, VarNewFunction(DrawTransform));
-    CONSTANT(setTransform, VarNewFunction(DrawSetTransform));
-    CONSTANT(resetTransform, VarNewFunction(DrawResetTransform));
-    CONSTANT(drawImage, VarNewFunction(DrawDrawImage));
-    CONSTANT(drawImage2, VarNewFunction(DrawDrawImage2));
-    CONSTANT(save, VarNewFunction(DrawSave));
-    CONSTANT(restore, VarNewFunction(DrawRestore));
-    CONSTANT(reset, VarNewFunction(DrawReset));
-    CONSTANT(roundRect, VarNewFunction(DrawRoundRect));
-    CONSTANT(measureText, VarNewFunction(DrawMeasureText));
-    CONSTANT(lineWidth, VarNewFunction(DrawLineWidth));
+    CONSTANT(viewportToScreen, VarNewFunction(DrawViewportToScreen));
+
+    #ifdef EMSCRIPTEN
+    Var* canvas = VarNewList();
+    CONSTANT(canvas, canvas);
+    PopulateCanvasLib(canvas);
+    #endif
 
 }
 

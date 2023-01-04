@@ -48,3 +48,5 @@ The `iter` metamethod is called when a list is iterated over. It should return a
 ## Call
 `call` is a metamethod that is called when a variable is called as a function. It takes the arguments: `table`, `args...`.
 
+## Dispose
+`dispose` is called after the body of a `using` statement is fully evaulated. This is useful for ensuring cleanup occurs.

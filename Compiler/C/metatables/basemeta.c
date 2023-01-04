@@ -39,7 +39,7 @@ Var* BaseTryRight(Var* scope, Var* args){
     ArgVarSet(nArgs, 0, "left", right);
     ArgVarSet(nArgs, 1, "right", left);
     ArgVarSet(nArgs, 2, "inverted", VarTrue());
-    return VarFunctionCall(VarGetMeta(right, (char*) metaMethod -> value), args);
+    return VarFunctionCall(VarGetMeta(right, (char*) metaMethod -> value), nArgs);
 }
 
 void GenerateTryRight(Var* metatable, char* metamethod){
@@ -121,7 +121,13 @@ Var* BaseOr(Var* scope, Var* args){
     return right;
 }
 
+Var* BaseDispose(Var* scope, Var* args){
+    Var* obj = ArgVarGet(args, 0, "obj");
+    return VarFunctionCall(VarRawGet(obj, VarNewString("dispose")), args);
+}
+
 void PopulateBaseMeta(Var* metatable){
+    VarRawSet(metatable, VarNewString("dispose"), VarNewFunction(BaseDispose));
     VarRawSet(metatable, VarNewString("truthy"), VarNewFunction(BaseTruthy));
     VarRawSet(metatable, VarNewString("eq"), VarNewFunction(BaseEq));
     VarRawSet(metatable, VarNewString("not"), VarNewFunction(BaseNot));

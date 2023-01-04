@@ -1,453 +1,306 @@
 # Draw
+The `draw` library provides methods for rendering in 2D space.
 
-The `draw` library provides functions for drawing to the specialized canvas. It is based on the [HTML5 Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API).
-
-## arc
+## box
 **Description:**\
-Draws an arc.
+Draws a rectangle
 
-**Arguments:**
-* number **x**: The x position of the arc.
-* number **y**: The y position of the arc.
-* number **radius**: The radius of the arc.
-* number? **startAngle**: The angle to start the arc at.
-* number? **endAngle**: The angle to end the arc at.
-* boolean? **anticlockwise**: Whether to draw the arc in an anticlockwise direction.
+**Arguments:**\
+* number **x**: The left x position of the box
+* number **y**: The top y position of the box
+* number **w**: The width of the box
+* number **h**: The height of the box
 
 ```coffeescript
-draw.arc(100, 100, 50)
+draw.setColor(255,0,0,255);
+draw.box(10, 10, 10, 10);
 ```
 
-## arcTo
+## boxOutline
 **Description:**\
-Draws an arc between two points.
+Draws the outline of a rectangle
 
-**Arguments:**
-* number **x1**: The x position of the first point.
-* number **y1**: The y position of the first point.
-* number **x2**: The x position of the second point.
-* number **y2**: The y position of the second point.
-* number **radius**: The radius of the arc.
+**Arguments:**\
+* number **x**: The left x position of the box
+* number **y**: The top y position of the box
+* number **w**: The width of the box
+* number **h**: The height of the box
 
 ```coffeescript
-draw.arcTo(100, 100, 200, 200, 50)
+draw.setColor(255,0,0,255);
+draw.boxOutline(10, 10, 10, 10);
 ```
 
-## beginPath
+## cameraToScreen
 **Description:**\
-Starts a new path.
+Converts worldspace coordinates to screen coordinates via a specified camera.
+
+**Arguments:**\
+* number **x**: The x position in the world
+* number **y**: The y position in the world
+* list **position**: The position of the camera. As a list containing an `x` and `y` value.
+* list?|number? **size**: The size of the camera view. As a number, specifies the larger of the width/height. As a list, contains one or both of `w` and `h`, and optionally an `aspectRatio` named value.
+* number? **angle**: The rotation of the view.
+
+**Return Value:**\
+list **position**: Returns a list containing an `x` and `y` value.
 
 ```coffeescript
-draw.beginPath()
-```
-
-## bezierCurveTo
-**Description:**\
-Draws a bezier curve.
-
-**Arguments:**
-* number **cp1x**: The x position of the first control point.
-* number **cp1y**: The y position of the first control point.
-* number **cp2x**: The x position of the second control point.
-* number **cp2y**: The y position of the second control point.
-* number **x**: The x position of the end point.
-* number **y**: The y position of the end point.
-
-```coffeescript
-draw.bezierCurveTo(100, 100, 200, 200, 300, 300)
+draw.cameraToScreen(15, 15, [15, 15], [10, 10]); $$ [x=256, y=256]
+using var cam = draw.pushCamera([15, 15], [10, 10]) {
+    draw.cameraToScreen(15, 15, cam...); $$ [x=256, y=256]
+}
 ```
 
 ## clear
 **Description:**\
-Clears the canvas.
+Clears the screen
 
 ```coffeescript
-draw.clear()
+draw.clear();
 ```
 
-## clip
+## getColor
 **Description:**\
-Clips the canvas to the current path.
+Returns the last set color.
+
+**Return Value:**\
+list **rgba**: The color stored as a list. Keyed by both name and number in the order of r, g, b, a.
 
 ```coffeescript
-draw.clip()
+draw.getColor();
 ```
 
-## closePath
+## getLineWidth
 **Description:**\
-Closes the current path.
+Gets the current line width.
 
 ```coffeescript
-draw.closePath()
+draw.getLineWidth();
 ```
 
-## drawImage
+## pop
 **Description:**\
-Draws an image.
-
-**Arguments:**
-* string **image**: The image to draw.
-* number **x**: The x position to draw the image at.
-* number **y**: The y position to draw the image at.
-* number? **width**: The width to draw the image at.
-* number? **height**: The height to draw the image at.
+Pops the transform stack.
 
 ```coffeescript
-draw.drawImage("image", 100, 100)
+draw.pop();
 ```
 
-## drawImage2
+## push
 **Description:**\
-Draws a portion of an image.
+Pushs to the transform stack, allows you to `translate`, `rotate`, or `scale`, then return to the current transform.
 
-**Arguments:**
-* string **image**: The image to draw.
-* number **sx**: The x position of the portion of the image to draw.
-* number **sy**: The y position of the portion of the image to draw.
-* number **swidth**: The width of the portion of the image to draw.
-* number **sheight**: The height of the portion of the image to draw.
-* number **x**: The x position to draw the image at.
-* number **y**: The y position to draw the image at.
-* number **width**: The width to draw the image at.
-* number **height**: The height to draw the image at.
+**Return Value:**\
+list **disposable**: A Disposable. When disposed, executes `pop`.
 
 ```coffeescript
-draw.drawImage2("image", 0, 0, 100, 100, 100, 100, 100, 100)
+using (draw.push()){
+
+}
 ```
 
-## fill
-**Description:**\
-Fills the current path.
+## pushCamera
+**Description:**
+Pushs to the transform stack and transforms it so that elements are drawn within the view of a specified camera.
+
+**Arguments:**\
+* list **position**: The position of the camera. As a list containing an `x` and `y` value.
+* list?|number? **size**: The size of the camera view. As a number, specifies the larger of the width/height. As a list, contains one or both of `w` and `h`, and optionally an `aspectRatio` named value.
+* number? **angle**: The rotation of the view.
+
+**Return Value:**\
+list **camera**: The camera. Contains both the inputs, and is disposable. When disposed, executes `pop`.
 
 ```coffeescript
-draw.fill()
+using (var cam = draw.pushCamera(position = [75, 75], size = [50, 50])){
+
+}
 ```
 
-## fillRect
-**Description:**\
-Fills a rectangle.
+## pushViewport
+**Description:**
+Pushs to the transform stack and transforms it so that elements drawn within the viewport are positioned on screen.
 
-**Arguments:**
-* number **x**: The x position of the rectangle.
-* number **y**: The y position of the rectangle.
-* number **width**: The width of the rectangle.
-* number **height**: The height of the rectangle.
+**Arguments:**\
+* number **left**: The left limit of the viewport
+* number **top**: The top limit of the viewport
+* number **right**: The right limit of the viewport
+* number **bottom**: The bottom limit of the viewport
 
-```coffeescript
-draw.fillRect(100, 100, 100, 100)
-```
-
-## fillStyle
-**Description:**\
-Sets the fill style.
-
-**Arguments:**
-* string **style**: The style to set.
+**Return Value:**\
+list **viewport**: The viewport. Contains both the limits, and is disposable. When disposed, executes `pop`.
 
 ```coffeescript
-draw.fillStyle("red")
-```
+using (var vp = draw.pushViewport(50, 50, 100, 100)){
 
-## fillText
-**Description:**\
-Fills text.
-
-**Arguments:**
-* string **text**: The text to fill.
-* number **x**: The x position of the text.
-* number **y**: The y position of the text.
-
-```coffeescript
-draw.fillText("hello", 100, 100)
-```
-
-## font
-**Description:**\
-Sets the font.
-
-**Arguments:**
-* string **font**: The font to set.
-
-```coffeescript
-draw.font("30px Arial")
-```
-
-## isPointInPath
-**Description:**\
-Checks if a point is in the current path.
-
-**Arguments:**
-* number **x**: The x position of the point.
-* number **y**: The y position of the point.
-
-```coffeescript
-draw.isPointInPath(100, 100)
-```
-
-## isPointInStroke
-**Description:**\
-Checks if a point is in the current stroke.
-
-**Arguments:**
-* number **x**: The x position of the point.
-* number **y**: The y position of the point.
-
-```coffeescript
-draw.isPointInStroke(100, 100)
-```
-
-## lineTo
-**Description:**\
-Draws a line to a point.
-
-**Arguments:**
-* number **x**: The x position of the point.
-* number **y**: The y position of the point.
-
-```coffeescript
-draw.lineTo(100, 100)
-```
-
-## lineWidth
-**Description:**\
-Sets the line width.
-
-**Arguments:**
-* number **width**: The width to set.
-
-```coffeescript
-draw.lineWidth(5)
-```
-
-## measureText
-**Description:**\
-Measures the size of text.
-
-**Arguments:**
-* string **text**: The text to measure.
-
-```coffeescript
-draw.measureText("hello")
-```
-
-## moveTo
-**Description:**\
-Moves the current path to a point.
-
-**Arguments:**
-* number **x**: The x position of the point.
-* number **y**: The y position of the point.
-
-```coffeescript
-draw.moveTo(100, 100)
-```
-
-## quadraticCurveTo
-**Description:**\
-Draws a quadratic curve.
-
-**Arguments:**
-* number **cpx**: The x position of the control point.
-* number **cpy**: The y position of the control point.
-* number **x**: The x position of the end point.
-* number **y**: The y position of the end point.
-
-```coffeescript
-draw.quadraticCurveTo(100, 100, 100, 100)
-```
-
-## rect
-**Description:**\
-Draws a rectangle.
-
-**Arguments:**
-* number **x**: The x position of the rectangle.
-* number **y**: The y position of the rectangle.
-* number **width**: The width of the rectangle.
-* number **height**: The height of the rectangle.
-
-```coffeescript
-draw.rect(100, 100, 100, 100)
-```
-
-## reset
-**Description:**\
-Resets the canvas.
-
-```coffeescript
-draw.reset()
-```
-
-## resetTransform
-**Description:**\
-Resets the transform.
-
-```coffeescript
-draw.resetTransform()
-```
-
-## restore
-**Description:**\
-Restores the previous canvas state.
-
-```coffeescript
-draw.restore()
+}
 ```
 
 ## rotate
 **Description:**\
-Rotates the canvas.
+Rotates the current transform
 
-**Arguments:**
-* number **angle**: The angle to rotate by.
-
-```coffeescript
-draw.rotate(5)
-```
-
-## roundRect
-**Description:**\
-Draws a rounded rectangle.
-
-**Arguments:**
-* number **x**: The x position of the rectangle.
-* number **y**: The y position of the rectangle.
-* number **width**: The width of the rectangle.
-* number **height**: The height of the rectangle.
-* number **radius**: The radius of the corners.
+**Arguments:**\
+* number **angle**: The angle in radians to rotate by.
 
 ```coffeescript
-draw.roundRect(100, 100, 100, 100, 10)
-```
-
-## save
-**Description:**\
-Saves the current canvas state.
-
-```coffeescript
-draw.save()
+using draw.push() {
+    draw.rotate(math.pi / 4);
+}
 ```
 
 ## scale
 **Description:**\
-Scales the canvas.
+Scales the current transform
 
-**Arguments:**
-* number **x**: The x scale.
-* number **y**: The y scale.
+**Arguments:**\
+* number **x**: The amount to scale the x axis by
+* number? **y**: The amount to scale the y axis by. Otherwise, the x value.
 
 ```coffeescript
-draw.scale(2, 2)
+using draw.push() {
+    draw.scale(2, 2);
+}
 ```
 
-## setTransform
+## screenHeight
 **Description:**\
-Sets the transform.
+Provides the height of the current screen.
 
-**Arguments:**
-* number **a**: The a value.
-* number **b**: The b value.
-* number **c**: The c value.
-* number **d**: The d value.
-* number **e**: The e value.
-* number **f**: The f value.
+**Return Value:**\
+number **height**: The height of the current screen
 
-```coffeescript
-draw.setTransform(1, 0, 0, 1, 0, 0)
+```
+draw.screenHeight()
 ```
 
-## stroke
+## screenSize
 **Description:**\
-Strokes the current path.
+Provides the size of the current screen as a list.
 
-```coffeescript
-draw.stroke()
+**Return Value:**\
+list **size**: A list containing an `x` and `y` value as the width and height.
+
+```
+draw.screenSize()
 ```
 
-## strokeRect
+## screenToCamera
 **Description:**\
-Strokes a rectangle.
+Converts screen coordinates to worldspace coordinates via a specified camera.
 
-**Arguments:**
-* number **x**: The x position of the rectangle.
-* number **y**: The y position of the rectangle.
-* number **width**: The width of the rectangle.
-* number **height**: The height of the rectangle.
+**Arguments:**\
+* number **x**: The x position on screen
+* number **y**: The y position on screen
+* list **position**: The position of the camera. As a list containing an `x` and `y` value.
+* list?|number? **size**: The size of the camera view. As a number, specifies the larger of the width/height. As a list, contains one or both of `w` and `h`, and optionally an `aspectRatio` named value.
+* number? **angle**: The rotation of the view.
+
+**Return Value:**\
+list **position**: A list containing an `x` and `y` value.
 
 ```coffeescript
-draw.strokeRect(100, 100, 100, 100)
+draw.screenToCamera(256, 256, [15, 15], [10, 10]); $$ [x=15, y=15]
+using var vp = draw.pushCamera([15, 15], [10, 10]) {
+    draw.screenToCamera(256, 256, vp...); $$ [x=15, y=15]
+}
 ```
 
-## strokeStyle
+## screenToViewport
 **Description:**\
-Sets the stroke style.
+Converts screen coordinates to worldspace coordinates via a specified viewport.
 
-**Arguments:**
-* string **style**: The style to set.
+**Arguments:**\
+* number **x**: The x position on screen
+* number **y**: The y position on screen
+* number **left**: The left limit of the viewport
+* number **top**: The top limit of the viewport
+* number **right**: The right limit of the viewport
+* number **bottom**: The bottom limit of the viewport
+
+**Return Value:**\
+list **position**: A list containing an `x` and `y` value.
 
 ```coffeescript
-draw.strokeStyle("red")
+draw.screenToViewport(256, 256, 10, 10, 20, 20); $$ [x=15, y=15]
+using var vp = draw.pushViewport(10, 10, 20, 20) {
+    draw.screenToViewport(256, 256, vp...); $$ [x=15, y=15]
+}
 ```
 
-## strokeText
+## screenWidth
 **Description:**\
-Strokes text.
+Provides the width of the current screen.
 
-**Arguments:**
-* string **text**: The text to stroke.
-* number **x**: The x position of the text.
-* number **y**: The y position of the text.
+**Return Value:**\
+number **width**: The width of the current screen
 
-```coffeescript
-draw.strokeText("hello", 100, 100)
+```
+draw.screenWidth()
 ```
 
-## textAlign
+## setColor
 **Description:**\
-Sets the text align.
+Sets the colour for future draw operations.
+All values are between 0 and 255.
 
-**Arguments:**
-* string **align**: The align to set.
+**Arguments:**\
+* number **r**: The Red value
+* number **b**: The Blue value
+* number **g**: The Green value
+* number? **a**: The Alpha value. Otherwise, 255.
+
+**Return Value:**\
+* list **color**: The input color. As per `getColor`.
 
 ```coffeescript
-draw.textAlign("center")
+draw.setColor(255,0,0,255);
 ```
 
-## textBaseline
+## setLineWidth
 **Description:**\
-Sets the text baseline.
+Sets the line width of all line based draw operations, in world-space.
 
-**Arguments:**
-* string **baseline**: The baseline to set.
-
+**Arguments:**\
+* number **width**: The width
+* 
 ```coffeescript
-draw.textBaseline("center")
-```
-
-## transform
-**Description:**\
-Transforms the canvas.
-
-**Arguments:**
-* number **a**: The a value.
-* number **b**: The b value.
-* number **c**: The c value.
-* number **d**: The d value.
-* number **e**: The e value.
-* number **f**: The f value.
-
-```coffeescript
-draw.transform(1, 0, 0, 1, 0, 0)
+draw.setLineWidth(1);
 ```
 
 ## translate
 **Description:**\
-Translates the canvas.
+Translates the current transform
 
-**Arguments:**
-* number **x**: The x position to translate to.
-* number **y**: The y position to translate to.
+**Arguments:**\
+* number **x**: The amount to translate the x axis by
+* number? **y**: The amount to translate the y axis by. Otherwise, the x value.
 
 ```coffeescript
-draw.translate(100, 100)
+using draw.push() {
+    draw.translate(-256, -256);
+}
+```
+
+## viewportToScreen
+**Description:**\
+Converts worldspace coordinates to screen coordinates via a specified viewport.
+
+**Arguments:**\
+* number **x**: The x position in the world
+* number **y**: The y position in the world
+* number **left**: The left limit of the viewport
+* number **top**: The top limit of the viewport
+* number **right**: The right limit of the viewport
+* number **bottom**: The bottom limit of the viewport
+
+**Return Value:**\
+list **position**: Returns a list containing an `x` and `y` value.
+
+```coffeescript
+draw.viewportToScreen(15, 15, 10, 10, 20, 20); $$ [x=256, y=256]
+using var vp = draw.pushViewport(10, 10, 20, 20) {
+    draw.viewportToScreen(15, 15, vp...); $$ [x=256, y=256]
+}
 ```

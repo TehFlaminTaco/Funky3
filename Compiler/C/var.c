@@ -46,7 +46,8 @@ Var* VarNewFunction(Var* (value)(Var*, Var*)){
     VarFunction* func = tgc_calloc(&gc, 1, sizeof(VarFunction));
     func->method = value;
     func->scope = &NIL;
-    func->name = "<C Function>";
+    func->name = "(C Function)";
+    tgc_set_flags(&gc, func->name, TGC_LEAF);
     return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
 }
 
@@ -55,6 +56,7 @@ Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     func->method = value;
     func->scope = VarSubScope(scope);
     func->name = name;
+    tgc_set_flags(&gc, func->name, TGC_LEAF);
     return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
 }
 

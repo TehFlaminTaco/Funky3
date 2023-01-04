@@ -26,7 +26,7 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
     var Funky3HighlightRules = function() {
     
         var keywords = (
-            "for|if|else|function|with|while|for|in|"+
+            "for|if|else|function|with|using|while|for|in|"+
             "var|local|"+
             "return|break|"+
             "and|or|not|"
@@ -45,7 +45,7 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
             "beginPath|clear|moveTo|lineTo|stroke|fill|strokeStyle|fillStyle|strokeText|fillText|font|textAlign|textBaseline|fillRect|strokeRect|arc|arcTo|bezierCurveTo|quadraticCurveTo|rect|closePath|clip|isPointInPath|isPointInStroke|scale|rotate|translate|transform|setTransform|resetTransform|drawImage|drawImage2|save|restore|reset|roundRect|measureText|lineWidth|"+
             "base|function|number|string|list|null|methods|"+
           // metamethods
-            "add|sub|mul|div|intdiv|mod|pow|band|bor|bnot|bshl|bshr|lt|gt|le|ge|eq|ne|concat|unp|unm|not|bnot|len|iter|tostring|truthy|get|set|call|len"
+            "add|sub|mul|div|intdiv|mod|pow|band|bor|bnot|bshl|bshr|lt|gt|le|ge|eq|ne|concat|unp|unm|not|bnot|len|iter|tostring|truthy|get|set|call|len|dispose"
         );
     
         var stdLibaries = ("list|string|math|draw|os");
