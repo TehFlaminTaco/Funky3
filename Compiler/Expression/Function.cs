@@ -218,6 +218,7 @@ public class Function : Expression
             for (int i = 0; i < Arguments.Count; i++)
             {
                 string argName = UniqueValueName($"arg_{Arguments[i].Name}");
+                Block.SetFromScope(Arguments[i].Name, argName);
                 headerSB.AppendLine($"\t// Argument: {Arguments[i].Name} ");
                 // If it's splatted, Dump the rest of the arguments into this in particular.
                 if (Arguments[i].Splat)
