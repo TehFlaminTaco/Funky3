@@ -53,9 +53,9 @@ public class Variable : Expression
             StringBuilder sb = new StringBuilder();
             string varHolder = UniqueValueName($"var_{Name}");
             sb.AppendLine($"// Get local:{Name}");
-            sb.AppendLine($"Var* {varHolder} = VarRawGet(scope, VarNewString(\"{Name}\"));");
+            sb.AppendLine($"Var* {varHolder} = VarRawGet(scope, VarNewConstString(\"{Name}\"));");
             sb.AppendLine($"if(ISUNDEFINED({varHolder})) {{");
-            sb.AppendLine($"\t{varHolder} = VarRawSet(scope, VarNewString(\"{Name}\"), &NIL);");
+            sb.AppendLine($"\t{varHolder} = VarRawSet(scope, VarNewConstString(\"{Name}\"), &NIL);");
             sb.AppendLine($"}}");
             Block.SetFromScope(Name!, varHolder);
             stackName = varHolder;
@@ -67,7 +67,7 @@ public class Variable : Expression
             if (Block.GetFromScope(Name!, out var s))
                 stackName = $"/* Get {Name} */ {s}";
             else
-                stackName = $"/* Get {Name} */ VarGet(scope, VarNewString(\"{Name}\"))";
+                stackName = $"/* Get {Name} */ VarGet(scope, VarNewConstString(\"{Name}\"))";
             return "";
         }
     }
@@ -80,13 +80,13 @@ public class Variable : Expression
         {
             if (Block.GetFromScope(Name!, out var s))
             {
-                stackName = $"/* Set local:{Name} */ {s} = VarRawSet(scope, VarNewString(\"{Name}\"), {value})";
+                stackName = $"/* Set local:{Name} */ {s} = VarRawSet(scope, VarNewConstString(\"{Name}\"), {value})";
                 return "";
             }
             StringBuilder sb = new StringBuilder();
             string varHolder = UniqueValueName($"var_{Name}");
             sb.AppendLine($"// Set local:{Name}");
-            sb.AppendLine($"Var* {varHolder} = VarRawSet(scope, VarNewString(\"{Name}\"), {value});");
+            sb.AppendLine($"Var* {varHolder} = VarRawSet(scope, VarNewConstString(\"{Name}\"), {value});");
             stackName = varHolder;
             Block.SetFromScope(Name!, varHolder);
             return sb.ToString();
@@ -95,11 +95,11 @@ public class Variable : Expression
         {
             if (Block.GetFromScope(Name!, out var s))
             {
-                stackName = $"/* Set {Name} */ {s} = VarSet(scope, VarNewString(\"{Name}\"), {value})";
+                stackName = $"/* Set {Name} */ {s} = VarSet(scope, VarNewConstString(\"{Name}\"), {value})";
             }
             else
             {
-                stackName = $"/* Set {Name} */ VarSet(scope, VarNewString(\"{Name}\"), {value})";
+                stackName = $"/* Set {Name} */ VarSet(scope, VarNewConstString(\"{Name}\"), {value})";
             }
         }
         return "";
@@ -203,11 +203,11 @@ public class IndexVariable : Variable, ILeftProvider
                 // Use VarCurryGet if curried
                 if (IsCurry)
                 {
-                    sb.AppendLine($"Var* {resultHolder} = VarCurryGet({valueStackName}, VarNewString(\"{Identifier}\"));");
+                    sb.AppendLine($"Var* {resultHolder} = VarCurryGet({valueStackName}, VarNewConstString(\"{Identifier}\"));");
                 }
                 else
                 {
-                    sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, VarNewString(\"{Identifier}\"));");
+                    sb.AppendLine($"Var* {resultHolder} = VarGet({valueStackName}, VarNewConstString(\"{Identifier}\"));");
                 }
                 return sb.ToString();
             }
@@ -216,11 +216,11 @@ public class IndexVariable : Variable, ILeftProvider
                 // Use VarCurryGet if curried
                 if (IsCurry)
                 {
-                    stackName = $"/* Get index: {Identifier} */ VarCurryGet({valueStackName}, VarNewString(\"{Identifier}\"))";
+                    stackName = $"/* Get index: {Identifier} */ VarCurryGet({valueStackName}, VarNewConstString(\"{Identifier}\"))";
                 }
                 else
                 {
-                    stackName = $"/* Get index: {Identifier} */ VarGet({valueStackName}, VarNewString(\"{Identifier}\"))";
+                    stackName = $"/* Get index: {Identifier} */ VarGet({valueStackName}, VarNewConstString(\"{Identifier}\"))";
                 }
                 return "";
             }
@@ -264,11 +264,11 @@ public class IndexVariable : Variable, ILeftProvider
                 // Use VarCurrySet if curried
                 if (IsCurry)
                 {
-                    sb.AppendLine($"Var* {resultHolder} = VarCurrySet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                    sb.AppendLine($"Var* {resultHolder} = VarCurrySet({valueStackName}, VarNewConstString(\"{Identifier}\"), {value});");
                 }
                 else
                 {
-                    sb.AppendLine($"Var* {resultHolder} = VarSet({valueStackName}, VarNewString(\"{Identifier}\"), {value});");
+                    sb.AppendLine($"Var* {resultHolder} = VarSet({valueStackName}, VarNewConstString(\"{Identifier}\"), {value});");
                 }
                 return sb.ToString();
             }
@@ -277,11 +277,11 @@ public class IndexVariable : Variable, ILeftProvider
                 // Use VarCurrySet if curried
                 if (IsCurry)
                 {
-                    stackName = $"/* Set index: {Identifier} */ VarCurrySet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                    stackName = $"/* Set index: {Identifier} */ VarCurrySet({valueStackName}, VarNewConstString(\"{Identifier}\"), {value})";
                 }
                 else
                 {
-                    stackName = $"/* Set index: {Identifier} */ VarSet({valueStackName}, VarNewString(\"{Identifier}\"), {value})";
+                    stackName = $"/* Set index: {Identifier} */ VarSet({valueStackName}, VarNewConstString(\"{Identifier}\"), {value})";
                 }
                 return "";
             }
@@ -430,7 +430,7 @@ public class UnpackVariable : Variable
                 {
                     if (Variables[j].var.Name is not null)
                     {
-                        sb.AppendLine($"\t\t\tVarRawSet({argName}, VarNewString(\"{Variables[j].var.Name}\"), &UNDEFINED);");
+                        sb.AppendLine($"\t\t\tVarRawSet({argName}, VarNewConstString(\"{Variables[j].var.Name}\"), &UNDEFINED);");
                     }
                 }
             }
@@ -438,7 +438,7 @@ public class UnpackVariable : Variable
             {
                 if (Variables[i].var.Name is not null)
                 {
-                    sb.AppendLine($"\t\t\tVar* {argName} = VarRawGet({valueHolder}, VarNewString(\"{Variables[i].var.Name}\"));");
+                    sb.AppendLine($"\t\t\tVar* {argName} = VarRawGet({valueHolder}, VarNewConstString(\"{Variables[i].var.Name}\"));");
                     sb.AppendLine($"\t\t\tif(ISUNDEFINED({argName})) {{");
                     sb.AppendLine($"\t\t\t\t{argName} = VarRawGet({valueHolder}, VarNewNumber({argIndex}++));");
                     sb.AppendLine($"\t\t\t}}");

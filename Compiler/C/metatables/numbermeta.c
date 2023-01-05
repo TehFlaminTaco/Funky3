@@ -12,7 +12,7 @@ Var* NumberToString(Var* scope, Var* args){
     Var* i = ArgVarGet(args, 0, "obj");
     if(i->type != VAR_NUMBER){
         DebugPrint("NumberToString: not a number\n");
-        return VarNewString("");
+        return VarNewConstString("");
     }
     memcpy(&j, &i->value, sizeof(double));
     char* buffer = tgc_calloc(&gc, 1, sizeof(char) * 32);
@@ -52,12 +52,12 @@ Var* NumberAdd(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "add");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -89,12 +89,12 @@ Var* NumberSub(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "sub");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -126,12 +126,12 @@ Var* NumberMul(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "mul");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -163,12 +163,12 @@ Var* NumberDiv(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "div");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -200,12 +200,12 @@ Var* NumberIntDiv(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "intdiv");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -237,12 +237,12 @@ Var* NumberMod(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "mod");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -274,12 +274,12 @@ Var* NumberPow(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "power");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -311,12 +311,12 @@ Var* NumberBAnd(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "band");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -348,12 +348,12 @@ Var* NumberBOr(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "bor");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -385,12 +385,12 @@ Var* NumberBXor(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "bxor");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -422,12 +422,12 @@ Var* NumberBShL(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "bshl");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -459,12 +459,12 @@ Var* NumberBShR(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "bshr");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -496,12 +496,12 @@ Var* NumberGt(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "lt");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -532,12 +532,12 @@ Var* NumberLt(Var* scope, Var* args){
         Var* rMetaMethod = VarGetMeta(right, "lt");
         if(!ISUNDEFINED(rMetaMethod)){
             Var* nArgs = VarNewList();
-            VarRawSet(nArgs, VarNewString("left"), right);
-            VarRawSet(nArgs, VarNewString("right"), left);
+            VarRawSet(nArgs, VarNewConstString("left"), right);
+            VarRawSet(nArgs, VarNewConstString("right"), left);
             VarRawSet(nArgs, VarNewNumber(0), right);
             VarRawSet(nArgs, VarNewNumber(1), left);
-            VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-            VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+            VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+            VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
             return VarFunctionCall(rMetaMethod, nArgs);
         }
         return &NIL;
@@ -566,8 +566,8 @@ Var* NumberUnm(Var* scope, Var* args){
 
 Var* _numberIter(Var* scope, Var* args){
     DebugPrint("_numberIter\n");
-    Var* target = VarRawGet(scope, VarNewString("target"));
-    Var* index = VarRawGet(scope, VarNewString("index"));
+    Var* target = VarRawGet(scope, VarNewConstString("target"));
+    Var* index = VarRawGet(scope, VarNewConstString("index"));
     if(target -> type != VAR_NUMBER){
         DebugPrint("_stringIter: number is not a number\n");
         return &UNDEFINED;
@@ -584,7 +584,7 @@ Var* _numberIter(Var* scope, Var* args){
     if(k >= j){
         return &UNDEFINED;
     }
-    VarRawSet(scope, VarNewString("index"), VarNewNumber(k + 1));
+    VarRawSet(scope, VarNewConstString("index"), VarNewNumber(k + 1));
     return VarNewNumber(k);
 }
 
@@ -598,34 +598,34 @@ Var* NumberIterator(Var* scope, Var* args){
     Var* func = VarNewFunction(_numberIter);
     VarFunction* funcObj = (VarFunction*)func -> value;
     funcObj -> scope = VarNewList();
-    VarRawSet(funcObj -> scope, VarNewString("target"), target);
-    VarRawSet(funcObj -> scope, VarNewString("index"), VarNewNumber(0));
+    VarRawSet(funcObj -> scope, VarNewConstString("target"), target);
+    VarRawSet(funcObj -> scope, VarNewConstString("index"), VarNewNumber(0));
     return func;
 }
 
 void PopulateNumberMeta(Var* metatable){
     DebugPrint("!");
-    VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(NumberToString));
-    VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(NumberToString));
-    VarRawSet(metatable, VarNewString("add"), VarNewFunction(NumberAdd));
-    VarRawSet(metatable, VarNewString("sub"), VarNewFunction(NumberSub));
-    VarRawSet(metatable, VarNewString("mul"), VarNewFunction(NumberMul));
-    VarRawSet(metatable, VarNewString("div"), VarNewFunction(NumberDiv));
-    VarRawSet(metatable, VarNewString("intdiv"), VarNewFunction(NumberIntDiv));
-    VarRawSet(metatable, VarNewString("mod"), VarNewFunction(NumberMod));
-    VarRawSet(metatable, VarNewString("pow"), VarNewFunction(NumberPow));
-    VarRawSet(metatable, VarNewString("band"), VarNewFunction(NumberBAnd));
-    VarRawSet(metatable, VarNewString("bor"), VarNewFunction(NumberBOr));
-    VarRawSet(metatable, VarNewString("bxor"), VarNewFunction(NumberBXor));
-    VarRawSet(metatable, VarNewString("bshr"), VarNewFunction(NumberBShR));
-    VarRawSet(metatable, VarNewString("bshl"), VarNewFunction(NumberBShL));
+    VarRawSet(metatable, VarNewConstString("tostring"), VarNewFunction(NumberToString));
+    VarRawSet(metatable, VarNewConstString("tocode"),   VarNewFunction(NumberToString));
+    VarRawSet(metatable, VarNewConstString("add"), VarNewFunction(NumberAdd));
+    VarRawSet(metatable, VarNewConstString("sub"), VarNewFunction(NumberSub));
+    VarRawSet(metatable, VarNewConstString("mul"), VarNewFunction(NumberMul));
+    VarRawSet(metatable, VarNewConstString("div"), VarNewFunction(NumberDiv));
+    VarRawSet(metatable, VarNewConstString("intdiv"), VarNewFunction(NumberIntDiv));
+    VarRawSet(metatable, VarNewConstString("mod"), VarNewFunction(NumberMod));
+    VarRawSet(metatable, VarNewConstString("pow"), VarNewFunction(NumberPow));
+    VarRawSet(metatable, VarNewConstString("band"), VarNewFunction(NumberBAnd));
+    VarRawSet(metatable, VarNewConstString("bor"), VarNewFunction(NumberBOr));
+    VarRawSet(metatable, VarNewConstString("bxor"), VarNewFunction(NumberBXor));
+    VarRawSet(metatable, VarNewConstString("bshr"), VarNewFunction(NumberBShR));
+    VarRawSet(metatable, VarNewConstString("bshl"), VarNewFunction(NumberBShL));
 
-    VarRawSet(metatable, VarNewString("unm"), VarNewFunction(NumberUnm));
+    VarRawSet(metatable, VarNewConstString("unm"), VarNewFunction(NumberUnm));
 
-    VarRawSet(metatable, VarNewString("gt"), VarNewFunction(NumberGt));
-    VarRawSet(metatable, VarNewString("lt"), VarNewFunction(NumberLt));
+    VarRawSet(metatable, VarNewConstString("gt"), VarNewFunction(NumberGt));
+    VarRawSet(metatable, VarNewConstString("lt"), VarNewFunction(NumberLt));
 
-    VarRawSet(metatable, VarNewString("iter"), VarNewFunction(NumberIterator));
+    VarRawSet(metatable, VarNewConstString("iter"), VarNewFunction(NumberIterator));
     DebugPrint("@");
 }
 

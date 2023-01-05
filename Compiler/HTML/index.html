@@ -225,8 +225,10 @@ button#run:active{
                 window.worker = null;
                 window.worker = new Worker("/funky3.js");
                 var htmlCanvas = document.getElementById("canvas");
-                var offscreen = htmlCanvas.transferControlToOffscreen();
-                window.worker.postMessage({canvas: offscreen}, [offscreen])
+                if (htmlCanvas.transferControlToOffscreen){
+                    var offscreen = htmlCanvas.transferControlToOffscreen();
+                    window.worker.postMessage({canvas: offscreen}, [offscreen])
+                }
                 
                 worker.addEventListener("message", ev => {
                     document.getElementById("output").innerHTML += ev.data + "\n";
@@ -251,8 +253,10 @@ button#run:active{
                         htmlCanvas.replaceWith(htmlCanvas = document.createElement("canvas"));
                         htmlCanvas.width = 512;
                         htmlCanvas.height = 512;
-                        offscreen = htmlCanvas.transferControlToOffscreen();
-                        window.worker.postMessage({canvas: offscreen}, [offscreen])
+                        if(htmlCanvas.transferControlToOffscreen){
+                            offscreen = htmlCanvas.transferControlToOffscreen();
+                            window.worker.postMessage({canvas: offscreen}, [offscreen])
+                        }
 
                         worker.addEventListener("message", ev => {
                             document.getElementById("output").innerHTML += ev.data + "\n";

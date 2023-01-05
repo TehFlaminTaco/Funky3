@@ -31,10 +31,13 @@ Var* VarNewNumber(double value){
 }
 
 Var* VarNewString(char* value){
-    char* copiedString = tgc_calloc(&gc, strlen(value) + 1, sizeof(char));
-    tgc_set_flags(&gc, copiedString, TGC_LEAF);
+    char* copiedString = tgc_calloc_opt(&gc, strlen(value) + 1, sizeof(char), TGC_LEAF, NULL);
     strcpy(copiedString, value);
     return VarNew(VAR_STRING, (long long)copiedString, &MetatableString);
+}
+
+Var* VarNewConstString(const char* value){
+    return VarNew(VAR_STRING, (long long)value, &MetatableString);
 }
 
 Var* VarNewList(){
@@ -47,7 +50,6 @@ Var* VarNewFunction(Var* (value)(Var*, Var*)){
     func->method = value;
     func->scope = &NIL;
     func->name = "(C Function)";
-    tgc_set_flags(&gc, func->name, TGC_LEAF);
     return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
 }
 
@@ -56,7 +58,6 @@ Var* VarNewFunctionWithScope(Var* (value)(Var*, Var*), Var* scope, char* name){
     func->method = value;
     func->scope = VarSubScope(scope);
     func->name = name;
-    tgc_set_flags(&gc, func->name, TGC_LEAF);
     return VarNew(VAR_FUNCTION, (long long)func, &MetatableFunction);
 }
 
@@ -177,8 +178,8 @@ Var* VarGet(Var* table, Var* key){
     if(getter->type == VAR_FUNCTION){
         // Call the getter
         Var* args = VarNewList();
-        VarRawSet(args, VarNewString("table"), table);
-        VarRawSet(args, VarNewString("key"), key);
+        VarRawSet(args, VarNewConstString("table"), table);
+        VarRawSet(args, VarNewConstString("key"), key);
         VarRawSet(args, VarNewNumber(0), table);
         VarRawSet(args, VarNewNumber(1), key);
         value = VarFunctionCall(getter, args);
@@ -223,9 +224,9 @@ Var* VarSet(Var* table, Var* key, Var* value){
         Var* setter = VarGetMeta(table, "set");
         if(setter->type == VAR_FUNCTION){
             Var* args = VarNewList();
-            VarRawSet(args, VarNewString("table"), table);
-            VarRawSet(args, VarNewString("key"), key);
-            VarRawSet(args, VarNewString("value"), value);
+            VarRawSet(args, VarNewConstString("table"), table);
+            VarRawSet(args, VarNewConstString("key"), key);
+            VarRawSet(args, VarNewConstString("value"), value);
             VarRawSet(args, VarNewNumber(0), table);
             VarRawSet(args, VarNewNumber(1), key);
             VarRawSet(args, VarNewNumber(2), value);
@@ -252,7 +253,7 @@ Var* VarSet(Var* table, Var* key, Var* value){
     return VarRawSet(table, key, value);
 }
 
-Var* ArgVarGet(Var* args, int index, char* key){
+Var* ArgVarGet(Var* args, int index, const char* key){
     DebugPrint("ArgVarGet\n");
     if(args->type != VAR_LIST){
         DebugPrint("ArgVarGet: args is not a list\n");
@@ -262,7 +263,7 @@ Var* ArgVarGet(Var* args, int index, char* key){
     DebugPrint("ArgVarGet: args is a list\n");
     Var* v = &UNDEFINED;
     if(key != NULL)
-        v = VarRawGet(args, VarNewString(key));
+        v = VarRawGet(args, VarNewConstString(key));
     DebugPrint("ArgVarGet: v is %p\n", v);
     if(ISUNDEFINED(v)){
         DebugPrint("ArgVarGet: v is undefined\n");
@@ -271,8 +272,8 @@ Var* ArgVarGet(Var* args, int index, char* key){
     return v;
 }
 
-inline static Var* ArgVarSet(Var* args, int index, char* key, Var* value){
-    return VarRawSet(args, VarNewString(key), VarRawSet(args, VarNewNumber(index), value));
+inline static Var* ArgVarSet(Var* args, int index, const char* key, Var* value){
+    return VarRawSet(args, VarNewConstString(key), VarRawSet(args, VarNewNumber(index), value));
 }
 
 // Attempts to ensure the output type is a string
@@ -285,13 +286,13 @@ Var* VarAsString(Var* var){
 
     DebugPrint("VarAsString: converting to string\n");
     Var* argList = VarNewList();
-    VarRawSet(argList, VarNewString("obj"), var);
+    VarRawSet(argList, VarNewConstString("obj"), var);
     VarRawSet(argList, VarNewNumber(0), var);
     DebugPrint("VarAsString: calling tostring\n");
     Var* result = VarFunctionCall(VarGetMeta(var, "tostring"), argList);
     if(result->type != VAR_STRING){
         DebugPrint("VarAsString: tostring did not return a string\n");
-        return VarNewString("");
+        return VarNewConstString("");
     }
     DebugPrint("VarAsString: done\n");
     return result;
@@ -300,13 +301,13 @@ Var* VarAsString(Var* var){
 Var* VarAsCode(Var* var){
     DebugPrint("VarAsCode\n");
     Var* argList = VarNewList();
-    VarRawSet(argList, VarNewString("obj"), var);
+    VarRawSet(argList, VarNewConstString("obj"), var);
     VarRawSet(argList, VarNewNumber(0), var);
     DebugPrint("VarAsCode: calling tocode\n");
     Var* result = VarFunctionCall(VarGetMeta(var, "tocode"), argList);
     if(result->type != VAR_STRING){
         DebugPrint("VarAsCode: tocode did not return string\n");
-        return VarNewString("");
+        return VarNewConstString("");
     }
     DebugPrint("VarAsCode: done\n");
     return result;
@@ -331,8 +332,8 @@ Var* VarAsFunction(Var* var){
     // Curry the Call function so that it passes itself as an argument.
     VarFunction* fMethod = (VarFunction*) method -> value;
     Var* tempScope = VarNewList();
-    VarRawSet(tempScope, VarNewString("this"), var);
-    VarRawSet(tempScope, VarNewString("method"), method);
+    VarRawSet(tempScope, VarNewConstString("this"), var);
+    VarRawSet(tempScope, VarNewConstString("method"), method);
     Var* fnc = VarNewFunction(CallCurried);
     VarFunction* f = (VarFunction*)fnc -> value;
     f -> scope = tempScope;
@@ -350,7 +351,7 @@ int VarTruthy(Var* var){
 
     // Otherwise, check the metatable.
     Var* argList = VarNewList();
-    VarRawSet(argList, VarNewString("obj"), var);
+    VarRawSet(argList, VarNewConstString("obj"), var);
     VarRawSet(argList, VarNewNumber(0), var);
     Var* truthy = VarGetMeta(var, "truthy");
     if(truthy->type != VAR_FUNCTION){
@@ -487,8 +488,8 @@ function curry(method, a){
 */
 
 Var* CallCurried(Var* scope, Var* args){
-    Var* method = VarRawGet(scope, VarNewString("method"));
-    Var* this = VarRawGet(scope, VarNewString("this"));
+    Var* method = VarRawGet(scope, VarNewConstString("method"));
+    Var* this = VarRawGet(scope, VarNewConstString("this"));
     Var* callArgs = VarListCopyLShifted(args, -1);
     VarRawSet(callArgs, VarNewNumber(0), this);
     return VarFunctionCall(method, callArgs);
@@ -503,8 +504,8 @@ Var* VarCurryGet(Var* object, Var* index){
     }
     VarFunction* fMethod = (VarFunction*) method -> value;
     Var* tempScope = VarNewList();
-    VarRawSet(tempScope, VarNewString("this"), object);
-    VarRawSet(tempScope, VarNewString("method"), method);
+    VarRawSet(tempScope, VarNewConstString("this"), object);
+    VarRawSet(tempScope, VarNewConstString("method"), method);
     Var* fnc = VarNewFunction(CallCurried);
     VarFunction* f = (VarFunction*) fnc -> value;
     f -> scope = tempScope;
@@ -514,11 +515,11 @@ Var* VarCurryGet(Var* object, Var* index){
 
 Var* MethodWithoutCurry(Var* scope, Var* args){
     DebugPrint("MethodWithoutCurry\n");
-    Var* method = VarRawGet(scope, VarNewString("method"));
+    Var* method = VarRawGet(scope, VarNewConstString("method"));
     Var* this = ArgVarGet(args, 0, "this");
     DebugPrint("MethodWithoutCurry: Copying Args!\n");
     Var* callArgs = VarListCopyLShifted(args, 1);
-    VarRawSet(callArgs, VarNewString("this"), this);
+    VarRawSet(callArgs, VarNewConstString("this"), this);
     DebugPrint("MethodWithoutCurry: Calling Method\n");
     return VarFunctionCall(method, callArgs);
 }
@@ -532,8 +533,8 @@ Var* VarCurrySet(Var* object, Var* index, Var* method){
     }
     VarFunction* fMethod = (VarFunction*) method -> value;
     Var* tempScope = VarNewList();
-    VarRawSet(tempScope, VarNewString("this"), object);
-    VarRawSet(tempScope, VarNewString("method"), method);
+    VarRawSet(tempScope, VarNewConstString("this"), object);
+    VarRawSet(tempScope, VarNewConstString("method"), method);
     Var* fnc = VarNewFunction(MethodWithoutCurry);
     DebugPrint("VarCurrySet: created function\n");
     VarFunction* f = (VarFunction*) fnc -> value;

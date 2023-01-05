@@ -59,9 +59,9 @@ Var* StringMatch(Var* scope, Var* args){
 }
 
 Var* _stringMatches(Var* scope, Var* args){
-    Var* haystack = VarAsString(VarRawGet(scope, VarNewString("haystack")));
-    Var* needle = VarAsString(VarRawGet(scope, VarNewString("needle")));
-    Var* offVar = VarRawGet(scope, VarNewString("offset"));
+    Var* haystack = VarAsString(VarRawGet(scope, VarNewConstString("haystack")));
+    Var* needle = VarAsString(VarRawGet(scope, VarNewConstString("needle")));
+    Var* offVar = VarRawGet(scope, VarNewConstString("offset"));
     if(haystack -> type != VAR_STRING || needle -> type != VAR_STRING){
         return &UNDEFINED;
     }
@@ -84,10 +84,10 @@ Var* _stringMatches(Var* scope, Var* args){
     int result = regex_match((char*) needle -> value, ((char*) haystack -> value) + offset, &groupc, &groups);
     if(result < 0){
         free(groups);
-        VarRawSet(scope, VarNewString("offset"), VarNewNumber(haystackLen + 1)); // Set offset to end of string.
+        VarRawSet(scope, VarNewConstString("offset"), VarNewNumber(haystackLen + 1)); // Set offset to end of string.
         return &UNDEFINED;
     }
-    VarRawSet(scope, VarNewString("offset"), VarNewNumber(offset + groups[0].end + 1)); // Set offset to end of match.
+    VarRawSet(scope, VarNewConstString("offset"), VarNewNumber(offset + groups[0].end + 1)); // Set offset to end of match.
     if(groupc == 1){ // No groups, return just a string.
         size_t out_len = groups[0].end - groups[0].start;
         char* out = malloc(out_len + 1);
@@ -128,9 +128,9 @@ Var* StringMatches(Var* scope, Var* args){
     Var* matchFunc = VarNewFunction(_stringMatches);
     VarFunction* matchFunc_ = (VarFunction*) matchFunc -> value;
     matchFunc_ -> scope = VarNewList();
-    VarRawSet(matchFunc_ -> scope, VarNewString("haystack"), haystack);
-    VarRawSet(matchFunc_ -> scope, VarNewString("needle"), needle);
-    VarRawSet(matchFunc_ -> scope, VarNewString("offset"), VarNewNumber(offset));
+    VarRawSet(matchFunc_ -> scope, VarNewConstString("haystack"), haystack);
+    VarRawSet(matchFunc_ -> scope, VarNewConstString("needle"), needle);
+    VarRawSet(matchFunc_ -> scope, VarNewConstString("offset"), VarNewNumber(offset));
     return matchFunc;
 }
 
@@ -438,7 +438,7 @@ Var* StringLower(Var* scope, Var* args){
 }
 
 void PopulateStringLib(Var* string){
-    VarRawSet(&MetatableString, VarNewString("get"), string);
+    VarRawSet(&MetatableString, VarNewConstString("get"), string);
 
     CONSTANT(match, VarNewFunction(StringMatch));
     CONSTANT(matches, VarNewFunction(StringMatches));

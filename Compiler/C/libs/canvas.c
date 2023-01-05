@@ -192,7 +192,8 @@ EM_JS(double, canvasMeasureTextWidth, (char* text), {
 });
 
 EM_JS(double, canvasMeasureTextHeight, (char* text), {
-    return Module.ctx.measureText(UTF8ToString(text)).height;
+    var measure = Module.ctx.measureText(UTF8ToString(text));
+    return measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent;
 });
 
 EM_JS(void, canvasLineWidth, (double width), {
@@ -880,7 +881,7 @@ Var* drawTable;
 
 EMSCRIPTEN_KEEPALIVE
 int DrawHook(){
-    Var* frameMethod = VarGet(drawTable, VarNewString("frame"));
+    Var* frameMethod = VarGet(drawTable, VarNewConstString("frame"));
     if(ISUNDEFINED(frameMethod))
         return 1;
     tgc_run(&gc);

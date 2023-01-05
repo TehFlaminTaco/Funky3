@@ -675,7 +675,7 @@ Var* ListToList(Var* scope, Var* args){
 
 void PopulateListLib(Var* list){
     // Set the default getter for List's to point to this library.
-    VarRawSet(&MetatableList, VarNewString("get"), list);
+    VarRawSet(&MetatableList, VarNewConstString("get"), list);
 
     CONSTANT(where, VarNewFunction(ListWhere));
     CONSTANT(map, VarNewFunction(ListMap));

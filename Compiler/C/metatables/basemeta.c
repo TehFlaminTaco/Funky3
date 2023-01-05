@@ -31,7 +31,7 @@ Var* BaseTryRight(Var* scope, Var* args){
     Var* right = ArgVarGet(args, 1, "right");
     Var* inverted = ArgVarGet(args, 2, "inverted");
 
-    Var* metaMethod = VarRawGet(scope, VarNewString("metamethod"));
+    Var* metaMethod = VarRawGet(scope, VarNewConstString("metamethod"));
     if(ISUNDEFINED(metaMethod) || metaMethod -> type != VAR_STRING || VarTruthy(inverted)){
         return &NIL;
     }
@@ -47,7 +47,7 @@ void GenerateTryRight(Var* metatable, char* metamethod){
     VarFunction* func = (VarFunction*)tryRight -> value;
     func -> scope = VarNewList();
     Var* metaMethod = VarNewString(metamethod);
-    VarRawSet(func -> scope, VarNewString("metamethod"), metaMethod);
+    VarRawSet(func -> scope, VarNewConstString("metamethod"), metaMethod);
     VarRawSet(metatable, metaMethod, tryRight);
 }
 
@@ -64,12 +64,12 @@ Var* BaseConcat(Var* scope, Var* args){
             Var* rMetaMethod = VarGetMeta(right, "concat");
             if(!ISUNDEFINED(rMetaMethod)){
                 Var* nArgs = VarNewList();
-                VarRawSet(nArgs, VarNewString("left"), right);
-                VarRawSet(nArgs, VarNewString("right"), left);
+                VarRawSet(nArgs, VarNewConstString("left"), right);
+                VarRawSet(nArgs, VarNewConstString("right"), left);
                 VarRawSet(nArgs, VarNewNumber(0), right);
                 VarRawSet(nArgs, VarNewNumber(1), left);
-                VarRawSet(nArgs, VarNewString("inverted"), VarNewNumber(1));
-                VarRawSet(nArgs, VarNewNumber(2), VarNewString("inverted"));
+                VarRawSet(nArgs, VarNewConstString("inverted"), VarNewNumber(1));
+                VarRawSet(nArgs, VarNewNumber(2), VarNewConstString("inverted"));
                 return VarFunctionCall(rMetaMethod, nArgs);
             }
             return &NIL;
@@ -123,18 +123,18 @@ Var* BaseOr(Var* scope, Var* args){
 
 Var* BaseDispose(Var* scope, Var* args){
     Var* obj = ArgVarGet(args, 0, "obj");
-    return VarFunctionCall(VarRawGet(obj, VarNewString("dispose")), args);
+    return VarFunctionCall(VarRawGet(obj, VarNewConstString("dispose")), args);
 }
 
 void PopulateBaseMeta(Var* metatable){
-    VarRawSet(metatable, VarNewString("dispose"), VarNewFunction(BaseDispose));
-    VarRawSet(metatable, VarNewString("truthy"), VarNewFunction(BaseTruthy));
-    VarRawSet(metatable, VarNewString("eq"), VarNewFunction(BaseEq));
-    VarRawSet(metatable, VarNewString("not"), VarNewFunction(BaseNot));
-    VarRawSet(metatable, VarNewString("ge"), VarNewFunction(BaseGe));
-    VarRawSet(metatable, VarNewString("le"), VarNewFunction(BaseLe));
-    VarRawSet(metatable, VarNewString("concat"), VarNewFunction(BaseConcat));
-    VarRawSet(metatable, VarNewString("unp"), VarNewFunction(BaseUnp));
+    VarRawSet(metatable, VarNewConstString("dispose"), VarNewFunction(BaseDispose));
+    VarRawSet(metatable, VarNewConstString("truthy"), VarNewFunction(BaseTruthy));
+    VarRawSet(metatable, VarNewConstString("eq"), VarNewFunction(BaseEq));
+    VarRawSet(metatable, VarNewConstString("not"), VarNewFunction(BaseNot));
+    VarRawSet(metatable, VarNewConstString("ge"), VarNewFunction(BaseGe));
+    VarRawSet(metatable, VarNewConstString("le"), VarNewFunction(BaseLe));
+    VarRawSet(metatable, VarNewConstString("concat"), VarNewFunction(BaseConcat));
+    VarRawSet(metatable, VarNewConstString("unp"), VarNewFunction(BaseUnp));
 
     GenerateTryRight(metatable, "add");
     GenerateTryRight(metatable, "sub");

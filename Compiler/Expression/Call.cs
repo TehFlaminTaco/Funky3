@@ -117,7 +117,7 @@ public class Call : Expression, ILeftProvider
                     sb.AppendLine($"\t// Named {i}");
                     sb.AppendLine(Tabbed(Tabbed(enBody)));
                 }
-                sb.AppendLine($"\tVarRawSet({vArgs}, VarNewString(\"{en.Name}\"), {valueStackName});");
+                sb.AppendLine($"\tVarRawSet({vArgs}, VarNewConstString(\"{en.Name}\"), {valueStackName});");
             }
             else if (entry is EntrySplat es)
             {
@@ -141,7 +141,7 @@ public class Call : Expression, ILeftProvider
                 sb.AppendLine($"\tVar* {BodyStore} = {valueStackName};");
                 foreach (string s in eu.Names)
                 {
-                    sb.AppendLine($"\tVarRawSet({vArgs}, VarNewString(\"{s}\"), VarGet({BodyStore}, VarNewString(\"{s}\")));");
+                    sb.AppendLine($"\tVarRawSet({vArgs}, VarNewConstString(\"{s}\"), VarGet({BodyStore}, VarNewConstString(\"{s}\")));");
                 }
             }
         }

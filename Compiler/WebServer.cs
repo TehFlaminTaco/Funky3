@@ -13,6 +13,7 @@ public class WebServer
     public static Dictionary<string, (string compiled, DateTime submitted)> CompiledHeader = new();
     public static Dictionary<string, (string compiled, DateTime submitted)> CompiledBody = new();
     public static Dictionary<string, (byte[] compiled, DateTime submitted)> CompiledWasm = new();
+    public static Dictionary<string, (string compiled, DateTime submitted)> CompiledJS = new();
     public static Dictionary<string, StringBuilder> Error = new();
 
     public static readonly Regex SafeFile = new(@"^[a-zA-Z0-9_]+$");
@@ -30,12 +31,12 @@ public class WebServer
             Compiler.Compile(code);
             if (!Error[CurrentSession].ToString().StartsWith("Compilation successful"))
             {
-                Console.WriteLine("Error in compiling example:");
+                Console.WriteLine("Error in compiling example " + CurrentSession + ":");
                 Console.WriteLine(Error[CurrentSession]);
-                Console.WriteLine("// header.c");
-                Console.WriteLine(CompiledHeader[CurrentSession]);
-                Console.WriteLine("// main.c");
-                Console.WriteLine(CompiledBody[CurrentSession]);
+                //Console.WriteLine("// header.c");
+                //Console.WriteLine(CompiledHeader[CurrentSession]);
+                //Console.WriteLine("// main.c");
+                //Console.WriteLine(CompiledBody[CurrentSession]);
             }
             CurrentSession = "";
         }
@@ -176,6 +177,7 @@ public class WebServer
                     CompiledHeader[session] = CompiledHeader[example];
                     CompiledBody[session] = CompiledBody[example];
                     CompiledWasm[session] = CompiledWasm[example];
+                    CompiledJS[session] = CompiledJS[example];
                     Error[session] = new StringBuilder(Error[example].ToString());
                     response.StatusCode = 200;
                     response.ContentType = "text/plain";
@@ -229,6 +231,22 @@ public class WebServer
                     response.Close();
 
                     Console.WriteLine("Sent!");
+                    continue;
+                }
+
+                if (url!.LocalPath == "/funky3.js")
+                {
+                    if (!UserCodes.ContainsKey(session))
+                    {
+                        response.ContentType = "text/javascript";
+                        response.OutputStream.Write(Encoding.UTF8.GetBytes(CompiledJS["helloworld.fnk"].compiled));
+                        response.Close();
+                        continue;
+                    }
+                    response.ContentType = "application/wasm";
+                    response.OutputStream.Write(Encoding.UTF8.GetBytes(CompiledJS[session].compiled));
+                    response.Close();
+
                     continue;
                 }
 

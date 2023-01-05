@@ -53,7 +53,7 @@ public class While : Loop
         sb.AppendLine($"\tVar* {result} = &NIL;");
         sb.AppendLine($"\t{labelStart}:;");
         Block.PushCurrentScope();
-        sb.AppendLine($"\ttgc_run(&gc);");
+        //sb.AppendLine($"\ttgc_run(&gc);");
         // First condition iteration
         string conditionBody = Condition.GenerateInline(header, out string conditionHolder);
         if (!String.IsNullOrEmpty(conditionBody))
@@ -169,7 +169,7 @@ public class For : Loop
         }
         sb.AppendLine($"\t{labelStart}:;");
         Block.PushCurrentScope();
-        sb.AppendLine($"\ttgc_run(&gc);");
+        //sb.AppendLine($"\ttgc_run(&gc);");
         // Condition
         if (Condition != null)
         {
@@ -311,7 +311,7 @@ public class ForIn : Loop
         sb.AppendLine($"\t}}");
 
         sb.AppendLine($"\t{labelStart}:;");
-        sb.AppendLine($"\ttgc_run(&gc);");
+        //sb.AppendLine($"\ttgc_run(&gc);");
         // Get the next item
         sb.AppendLine($"\t{argHolder} = VarNewList();");
         sb.AppendLine($"\tArgVarSet({argHolder}, 0, \"obj\", {collectionHolder});");

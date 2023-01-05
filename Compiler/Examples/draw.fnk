@@ -1,60 +1,55 @@
 var i = 0;
 var r = 50;
-var pi180 = math.pi / 180;
-var road = 512 * 2 / 3;
-
-function draw.frame(){
-    draw.strokeStyle("#FFF");
-    var lastFrame = os.clock();
+var lastFrame = os.clock();
+function draw.frame() {
+    draw.setFont("20px monospace")!;
     
-    function draw.frame() {
-        var draw = draw;
+    var frames = []!;
+    var pi180 = (math.pi / 180)!;
+    var road = (512 * 2 / 3)!;
+    var sqrt2 = (math.sqrt(2))!;
     
-        var x = 256;
-        var dt = os.clock() - lastFrame;
-        lastFrame = os.clock();
-        draw.clear!();
-        
-        var a = ((i/90)^3*90)+45;
-        
-        var cornerX = math.cos(a * (pi180)) * r;
-        var cornerY = math.sin(a * (pi180)) * r;
-        var y = road - math.max(cornerX, cornerY, -cornerX, -cornerY)
-        
-        $$ Sky
-        draw.beginPath();
-        draw.moveTo(0, 0);
-        draw.lineTo(512, 0);
-        draw.lineTo(512,512);
-        draw.lineTo(0,512);
-        draw.lineTo(0,0);
-        draw.fillStyle("#08F")
-        draw.fill();
-        
-        $$ Road
-        draw.beginPath();
-        draw.moveTo(0, road);
-        draw.lineTo(512, road);
-        draw.lineTo(512,512);
-        draw.lineTo(0,512);
-        draw.lineTo(0,road);
-        draw.fillStyle("#888")
-        draw.fill();
-        
-        $$ Cube
-        draw.beginPath();
-        draw.moveTo(x + cornerX, y + cornerY);
-        draw.lineTo(x + cornerY, y - cornerX);
-        draw.lineTo(x - cornerX, y - cornerY);
-        draw.lineTo(x - cornerY, y + cornerX);
-        draw.lineTo(x + cornerX, y + cornerY);
-        draw.fill();
-        draw.stroke();
-        
-        i+=dt * 90;
-        while (i >= 90)i -= 90;
-        return 1;
+    var x = 256;
+    var dt = os.clock() - lastFrame;
+    lastFrame = os.clock();
+    
+    draw.clear();
+    
+    var a = ((i/90)^3*90)+45; $$ Use an exponential curve to control the angle for that nice "Thump Thump" feel.
+    
+    var y = road - math.max(
+        math.abs(math.cos(a * pi180))
+        math.abs(math.sin(a * pi180))
+    ) * r * sqrt2;
+    
+    $$ Sky
+    draw.setColor(0,127,255);
+    draw.box(0,0,512,512);
+    
+    $$ Road
+    draw.setColor(127,127,127);
+    draw.box(0,road,512,512);
+    
+    using draw.push() {
+        draw.translate(x,y);
+        draw.rotate((a+45)*pi180);
+        draw.translate(-r,-r);
+        draw.box(0,0,r*2,r*2);
+        draw.setColor(255,255,255);
+        draw.boxOutline(0,0,r*2,r*2);
     }
     
+    $$ FPS Counter
+    frames:push(#frames, os.clock())
+    while(#frames && frames[0] < os.clock()-1){
+        frames:pop();
+    }
+    draw.setColor(0,0,0);
+    draw.printOutline(`FPS: [#frames]`);
+    draw.setColor(255,255,255);
+    draw.print(`FPS: [#frames]`);
+
+    i+=dt * 90;
+    while (i >= 90)i -= 90;
     return 1;
 }

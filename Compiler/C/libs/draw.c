@@ -27,7 +27,7 @@ Var* DrawPop(Var* scope, Var* args){
 Var* DrawPush(Var* scope, Var* args){
     canvasSave();
     Var* oVar = VarNewList();
-    VarRawSet(oVar, VarNewString("dispose"), VarNewFunction(DrawPop));
+    VarRawSet(oVar, VarNewConstString("dispose"), VarNewFunction(DrawPop));
     return oVar;
 }
 
@@ -99,7 +99,7 @@ Var* DrawPushViewport(Var* scope, Var* args){
     canvasTranslate(-dx, -dy);
     
     Var* oVar = VarNewList();
-    VarRawSet(oVar, VarNewString("dispose"), VarNewFunction(DrawPop));
+    VarRawSet(oVar, VarNewConstString("dispose"), VarNewFunction(DrawPop));
     ArgVarSet(oVar, 0, "left", x);
     ArgVarSet(oVar, 1, "top", y);
     ArgVarSet(oVar, 2, "right", w);
@@ -205,7 +205,7 @@ int _ParseCamera(Var* cam, int argOffset, double* dX, double* dY, double* dWidth
     }else if(vSize -> type == VAR_LIST){
         Var* vWidth = ArgVarGet(vSize, 0, "w");
         Var* vHeight = ArgVarGet(vSize, 1, "h");
-        Var* vAspectRatio = VarRawGet(vSize, VarNewString("aspectRatio"));
+        Var* vAspectRatio = VarRawGet(vSize, VarNewConstString("aspectRatio"));
         double dAspectRatio = 1.0;
         if(vAspectRatio -> type == VAR_NUMBER){
             memcpy(&dAspectRatio, &vAspectRatio->value, sizeof(double));
@@ -247,7 +247,7 @@ Var* DrawPushCamera(Var* scope, Var* args){
     canvasTranslate(-dX, -dY);
 
     Var* oVar = VarNewList();
-    VarRawSet(oVar, VarNewString("dispose"), VarNewFunction(DrawPop));
+    VarRawSet(oVar, VarNewConstString("dispose"), VarNewFunction(DrawPop));
     ArgVarSet(oVar, 0, "position", ArgVarGet(args, 0, "position"));
     ArgVarSet(oVar, 1, "size", ArgVarGet(args, 1, "size"));
     ArgVarSet(oVar, 2, "angle", ArgVarGet(args, 2, "angle"));
@@ -336,6 +336,44 @@ double lastGreen = 0;
 double lastBlue = 0;
 double lastAlpha = 0;
 
+Var* _RestoreLastColor(Var* scope, Var* args){
+    Var* vRed = VarRawGet(scope, VarNewConstString("r"));
+    if(vRed -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double dr;
+    memcpy(&dr, &vRed->value, sizeof(double));
+    Var* vGreen = VarRawGet(scope, VarNewConstString("g"));
+    if(vGreen -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double dg;
+    memcpy(&dg, &vGreen->value, sizeof(double));
+    Var* vBlue = VarRawGet(scope, VarNewConstString("b"));
+    if(vBlue -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double db;
+    memcpy(&db, &vBlue->value, sizeof(double));
+    Var* vAlpha = VarRawGet(scope, VarNewConstString("a"));
+    if(vAlpha -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double da;
+    memcpy(&da, &vAlpha->value, sizeof(double));
+    lastRed = dr;
+    lastGreen = dg;
+    lastBlue = db;
+    lastAlpha = da;
+    char* styleString;
+    if(0 >= asprintf(&styleString, "rgba(%.2f,%.2f,%.2f,%.3f)", dr, dg, db, da/255))
+        return &NIL;
+    canvasStrokeStyle(styleString);
+    canvasFillStyle(styleString);
+    free(styleString);
+    return &NIL;
+}
+
 Var* DrawSetColor(Var* scope, Var* args){
     Var* vRed = ArgVarGet(args, 0, "r");
     if(vRed -> type == VAR_LIST){
@@ -366,10 +404,20 @@ Var* DrawSetColor(Var* scope, Var* args){
     double da;
     memcpy(&da, &vAlpha->value, sizeof(double));
 
+    double oldRed = lastRed;
+    double oldGreen = lastGreen;
+    double oldBlue = lastBlue;
+    double oldAlpha = lastAlpha;
+    
     lastRed = dr;
     lastGreen = dg;
     lastBlue = db;
     lastAlpha = da;
+    Var* oldList = VarNewList();
+    VarRawSet(oldList, VarNewConstString("r"), VarNewNumber(oldRed));
+    VarRawSet(oldList, VarNewConstString("g"), VarNewNumber(oldGreen));
+    VarRawSet(oldList, VarNewConstString("b"), VarNewNumber(oldBlue));
+    VarRawSet(oldList, VarNewConstString("a"), VarNewNumber(oldAlpha));
     char* styleString;
     if(0 >= asprintf(&styleString, "rgba(%.2f,%.2f,%.2f,%.3f)", dr, dg, db, da/255))
         return &NIL;
@@ -381,6 +429,9 @@ Var* DrawSetColor(Var* scope, Var* args){
     ArgVarSet(oVar, 1, "g", vGreen);
     ArgVarSet(oVar, 2, "b", vBlue);
     ArgVarSet(oVar, 3, "a", vAlpha);
+    Var* dispose = VarNewFunction(_RestoreLastColor);
+    ((VarFunction*)(dispose -> value)) -> scope = oldList;
+    VarRawSet(oVar, VarNewConstString("dispose"), dispose);
     return oVar;
 }
 
@@ -467,8 +518,8 @@ Var* DrawScreenSize(Var* scope, Var* args){
 }
 
 double lastLineWidth = 1.0;
-Var* DrawSetLineWidth(Var* scope, Var* args){
-    Var* w = ArgVarGet(args, 0, "width");
+Var* _RestoreLastLineWidth(Var* scope, Var* args){
+    Var* w = VarRawGet(scope, VarNewConstString("width"));
     if(w -> type != VAR_NUMBER){
         return &NIL;
     }
@@ -477,9 +528,210 @@ Var* DrawSetLineWidth(Var* scope, Var* args){
     return &NIL;
 }
 
+Var* DrawSetLineWidth(Var* scope, Var* args){
+    Var* w = ArgVarGet(args, 0, "width");
+    if(w -> type != VAR_NUMBER){
+        return &NIL;
+    }
+    double oldLineWidth = lastLineWidth;
+    Var* oldWidth = VarNewList();
+    VarRawSet(oldWidth, VarNewConstString("width"), VarNewNumber(oldLineWidth));
+    memcpy(&lastLineWidth, &w->value, sizeof(double));
+    canvasLineWidth(lastLineWidth);
+    Var* disposable = VarNewList();
+    Var* dispose = VarNewFunction(_RestoreLastLineWidth);
+    ((VarFunction*)(dispose->value))->scope = oldWidth;
+    VarRawSet(disposable, VarNewConstString("dispose"), dispose);
+    return disposable;
+}
+
 Var* DrawGetLineWidth(Var* scope, Var* args){
     return VarNewNumber(lastLineWidth);
 }
+
+Var* DrawCircle(Var* scope, Var* args){
+    Var* x = ArgVarGet(args, 0, "x");
+    if(x->type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* y = ArgVarGet(args, 1, "y");
+    if(y->type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* r = ArgVarGet(args, 2, "r");
+    if(r->type != VAR_NUMBER){
+        return &NIL;
+    }
+    double dx;
+    memcpy(&dx, &x->value, sizeof(double));
+    double dy;
+    memcpy(&dy, &y->value, sizeof(double));
+    double dr;
+    memcpy(&dr, &r->value, sizeof(double));
+
+    canvasBeginPath();
+    canvasMoveTo(dx, dy);
+    canvasArc(dx, dy, dr, 0, 2 * M_PI, 1);
+    canvasFill();
+    return &NIL;
+}
+
+Var* DrawCircleOutline(Var* scope, Var* args){
+    Var* x = ArgVarGet(args, 0, "x");
+    if(x->type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* y = ArgVarGet(args, 1, "y");
+    if(y->type != VAR_NUMBER){
+        return &NIL;
+    }
+    Var* r = ArgVarGet(args, 2, "r");
+    if(r->type != VAR_NUMBER){
+        return &NIL;
+    }
+
+    double dx;
+    memcpy(&dx, &x->value, sizeof(double));
+    double dy;
+    memcpy(&dy, &y->value, sizeof(double));
+    double dr;
+    memcpy(&dr, &r->value, sizeof(double));
+
+    canvasBeginPath();
+    canvasMoveTo(dx, dy);
+    canvasArc(dx, dy, dr, 0, 2 * M_PI, 1);
+    canvasStroke();
+    return &NIL;
+}
+
+Var* DrawPrint(Var* scope, Var* args){
+    Var* text = ArgVarGet(args, 0, "text");
+    if(text->type != VAR_STRING){
+        return &NIL;
+    }
+    Var* x = ArgVarGet(args, 1, "x");
+    if(x->type != VAR_NUMBER){
+        x = VarNewNumber(0.0);
+    }
+    Var* y = ArgVarGet(args, 2, "y");
+    if(y->type != VAR_NUMBER){
+        y = VarNewNumber(0.0);
+    }
+    Var* ox = ArgVarGet(args, 3, "ox");
+    if(ox->type != VAR_NUMBER){
+        ox = VarNewNumber(0.0);
+    }
+    Var* oy = ArgVarGet(args, 4, "oy");
+    if(oy->type != VAR_NUMBER){
+        oy = VarNewNumber(0.0);
+    }
+    double dx;
+    memcpy(&dx, &x->value, sizeof(double));
+    double dy;
+    memcpy(&dy, &y->value, sizeof(double));
+    double dox;
+    memcpy(&dox, &ox->value, sizeof(double));
+    double doy;
+    memcpy(&doy, &oy->value, sizeof(double));
+
+    canvasTextAlign("left");
+    canvasTextBaseline("top");
+    if(fabs(dox) > 0.0001){
+        dx -= (dox * canvasMeasureTextWidth(text->value));
+    }
+    if(fabs(doy) > 0.0001){
+        dy -= (doy * canvasMeasureTextHeight(text->value));
+    }
+    
+    canvasFillText(text->value, dx, dy);
+    return text;
+}
+
+Var* DrawPrintOutline(Var* scope, Var* args){
+    Var* text = ArgVarGet(args, 0, "text");
+    if(text->type != VAR_STRING){
+        return &NIL;
+    }
+    Var* x = ArgVarGet(args, 1, "x");
+    if(x->type != VAR_NUMBER){
+        x = VarNewNumber(0.0);
+    }
+    Var* y = ArgVarGet(args, 2, "y");
+    if(y->type != VAR_NUMBER){
+        y = VarNewNumber(0.0);
+    }
+    Var* ox = ArgVarGet(args, 3, "ox");
+    if(ox->type != VAR_NUMBER){
+        ox = VarNewNumber(0.0);
+    }
+    Var* oy = ArgVarGet(args, 4, "oy");
+    if(oy->type != VAR_NUMBER){
+        oy = VarNewNumber(0.0);
+    }
+    double dx;
+    memcpy(&dx, &x->value, sizeof(double));
+    double dy;
+    memcpy(&dy, &y->value, sizeof(double));
+    double dox;
+    memcpy(&dox, &ox->value, sizeof(double));
+    double doy;
+    memcpy(&doy, &oy->value, sizeof(double));
+
+    canvasTextAlign("left");
+    canvasTextBaseline("top");
+    if(fabs(dox) > 0.0001){
+        dx -= (dox * canvasMeasureTextWidth(text->value));
+    }
+    if(fabs(doy) > 0.0001){
+        dy -= (doy * canvasMeasureTextHeight(text->value));
+    }
+    
+    canvasStrokeText(text->value, dx, dy);
+    return text;
+}
+
+char* lastFont = NULL;
+Var* _RestoreLastFont(Var* scope, Var* args){
+    Var* font = VarRawGet(scope, VarNewConstString("font"));
+    if(font->type != VAR_STRING){
+        return &NIL;
+    }
+    canvasFont(font->value);
+    if(lastFont != NULL){
+        free(lastFont);
+    }
+    lastFont = calloc(strlen(font->value), sizeof(char));
+    strcpy(lastFont, font->value);
+    return &NIL;
+}
+
+Var* DrawSetFont(Var* scope, Var* args){
+    Var* font = ArgVarGet(args, 0, "font");
+    if(font->type != VAR_STRING){
+        return &NIL;
+    }
+    canvasFont(font->value);
+    Var* oldFont = VarNewList();
+    VarRawSet(oldFont, VarNewConstString("font"), VarNewString(lastFont == NULL ? "10px sans-serif" : lastFont));
+    if(lastFont != NULL){
+        free(lastFont);
+    }
+    lastFont = calloc(strlen(font->value), sizeof(char));
+    strcpy(lastFont, font->value);
+    Var* disposable = VarNewList();
+    Var* dispose = VarNewFunction(_RestoreLastFont);
+    ((VarFunction*)(dispose->value))->scope = lastFont;
+    VarRawSet(disposable, VarNewConstString("dispose"), dispose);
+    return disposable;
+}
+
+Var *DrawGetFont(Var* scope, Var* args){
+    if(lastFont == NULL){
+        return VarNewConstString("10px sans-serif");
+    }
+    return VarNewString(lastFont);
+}
+
 
 #endif
 
@@ -489,10 +741,15 @@ void PopulateDrawLib(Var* draw){
     CONSTANT(box, VarNewFunction(DrawBox));
     CONSTANT(boxOutline, VarNewFunction(DrawBoxOutline));
     CONSTANT(cameraToScreen, VarNewFunction(DrawCameraToScreen));
+    CONSTANT(circle, VarNewFunction(DrawCircle));
+    CONSTANT(circleOutline, VarNewFunction(DrawCircleOutline));
     CONSTANT(clear, VarNewFunction(DrawClear));
     CONSTANT(getColor, VarNewFunction(DrawGetColor));
+    CONSTANT(getFont, VarNewFunction(DrawGetFont));
     CONSTANT(getLineWidth, VarNewFunction(DrawGetLineWidth));
     CONSTANT(pop, VarNewFunction(DrawPop));
+    CONSTANT(print, VarNewFunction(DrawPrint));
+    CONSTANT(printOutline, VarNewFunction(DrawPrintOutline));
     CONSTANT(push, VarNewFunction(DrawPush));
     CONSTANT(pushCamera, VarNewFunction(DrawPushCamera));
     CONSTANT(pushViewport, VarNewFunction(DrawPushViewport));
@@ -504,6 +761,7 @@ void PopulateDrawLib(Var* draw){
     CONSTANT(screenToViewport, VarNewFunction(DrawScreenToViewport));
     CONSTANT(screenWidth, VarNewFunction(DrawScreenWidth));
     CONSTANT(setColor, VarNewFunction(DrawSetColor));
+    CONSTANT(setFont, VarNewFunction(DrawSetFont));
     CONSTANT(setLineWidth, VarNewFunction(DrawSetLineWidth));
     CONSTANT(translate, VarNewFunction(DrawTranslate));
     CONSTANT(viewportToScreen, VarNewFunction(DrawViewportToScreen));

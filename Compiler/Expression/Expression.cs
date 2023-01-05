@@ -277,6 +277,13 @@ public abstract class Expression
                             return result;
                         return RightParse(If.TryParse(result.expression, tokens, result.index), tokens, result);
                     case "!":
+                        // Maybe Math
+                        if (!IsBlocked<Math>())
+                        {
+                            (Expression? expression, int index) math4 = Math.TryParse(result.expression, tokens, result.index);
+                            if (math4.expression != null)
+                                return RightParse(math4, tokens, result);
+                        }
                         // Cache
                         if (IsBlocked<Cache>())
                             return result;

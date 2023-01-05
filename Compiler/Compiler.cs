@@ -20,7 +20,7 @@ public static class Compiler
         try
         {
             // Copy all the C code into the folder
-            foreach (var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c => c.StartsWith("Funky3_Compiler.C.")).Where(c => c.EndsWith(".c") || c.EndsWith(".h")))
+            foreach (var s in Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(c => c.StartsWith("Funky3_Compiler.C.")).Where(c => c.EndsWith(".c") || c.EndsWith(".h") || c.EndsWith("preamble.js")))
             {
                 // Get a local folder name from s
                 var targetFile = s["Funky3_Compiler.C.".Length..].Replace('.', Path.DirectorySeparatorChar);
@@ -66,12 +66,12 @@ public static class Compiler
             // If Windows
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=128MB -sEXPORTED_FUNCTIONS=[\"_main\",\"_DrawHook\"] -o output/funky3.js");
+                File.WriteAllText(Path.Combine(folder, "build.bat"), "emcc funky3.c -w -fweb --pre-js 'preamble.js' -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sINITIAL_MEMORY=1gb -sEXPORTED_FUNCTIONS=[\"_main\",\"_DrawHook\"] -o output/funky3.js");
                 compilerStart = new("cmd", "/c build.bat");
             }
             else
             {
-                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -W -Wno-everything -fweb -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sTOTAL_MEMORY=128MB -sEXPORTED_FUNCTIONS='[\"_main\",\"_DrawHook\"]' -o output/funky3.js");
+                File.WriteAllText(Path.Combine(folder, "build.sh"), "emcc funky3.c -W -Wno-everything -fweb --pre-js 'preamble.js' -s LLD_REPORT_UNDEFINED -s NO_EXIT_RUNTIME -sINITIAL_MEMORY=1gb -sEXPORTED_FUNCTIONS='[\"_main\",\"_DrawHook\"]' -o output/funky3.js");
                 compilerStart = new("bash", "build.sh");
             }
             compilerStart.WorkingDirectory = folder + Path.DirectorySeparatorChar;
@@ -79,6 +79,7 @@ public static class Compiler
             compilerStart.RedirectStandardOutput = true;
             compilerStart.RedirectStandardError = true;
             compilerStart.CreateNoWindow = true;
+            Console.WriteLine("Compiling...");
             Process compiler = Process.Start(compilerStart)!;
             compiler.WaitForExit();
             if (compiler.ExitCode != 0)
@@ -87,6 +88,7 @@ public static class Compiler
                 WebServer.WriteError(compiler.StandardError.ReadToEnd());
                 throw new Exception("Compilation failed");
             }
+            Console.WriteLine("Done!");
 
             // Copy result to the output folder
             if (Directory.Exists("Funky3Compiled2"))
@@ -96,6 +98,7 @@ public static class Compiler
             Directory.CreateDirectory("Funky3Compiled2");
             CopyDirectory(Path.Combine(folder, "output"), Path.Combine("Funky3Compiled2"), true);
             WebServer.CompiledWasm[WebServer.CurrentSession] = (File.ReadAllBytes(Path.Combine(folder, "output", "funky3.wasm")), DateTime.Now);
+            WebServer.CompiledJS[WebServer.CurrentSession] = (File.ReadAllText(Path.Combine(folder, "output", "funky3.js")), DateTime.Now);
             WebServer.WriteError("Compilation successful");
         }
         catch (Exception e)
@@ -146,9 +149,11 @@ public static class Compiler
         CHeader.HeaderCodeChunks.Clear();
         CInline.InlineCodeChunks.Clear();
         Define.Macros.Clear();
+        Console.WriteLine("Preprocessing...");
         string preprocessedCode = Preprocessor.Process(sourceCode);
         WebServer.PreCompiled[WebServer.CurrentSession] = (preprocessedCode, DateTime.Now);
         CurrentCode = preprocessedCode;
+        Console.WriteLine("Tokenizing...");
         var tokens = Tokenizer.Tokenize(preprocessedCode);
 
         foreach (var headCode in CHeader.HeaderCodeChunks)
@@ -156,6 +161,7 @@ public static class Compiler
             headerOutput.WriteLine(headCode);
         }
 
+        Console.WriteLine("Parsing...");
         Parser.Parse(tokens, bodyOutput, headerOutput);
     }
 }

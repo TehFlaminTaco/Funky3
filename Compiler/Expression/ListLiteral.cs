@@ -73,7 +73,7 @@ public class ListLiteral : Expression
                     sb.AppendLine($"\t// Named {i}");
                     sb.AppendLine(Tabbed(Tabbed(enBody)));
                 }
-                sb.AppendLine($"\tVarRawSet({newListName}, VarNewString(\"{en.Name}\"), {valueStackName});");
+                sb.AppendLine($"\tVarRawSet({newListName}, VarNewConstString(\"{en.Name}\"), {valueStackName});");
             }
             else if (entry is EntrySplat es)
             {
@@ -97,7 +97,7 @@ public class ListLiteral : Expression
                 sb.AppendLine($"\tVar* {BodyStore} = {valueStackName};");
                 foreach (string s in eu.Names)
                 {
-                    sb.AppendLine($"\tVarRawSet({newListName}, VarNewString(\"{s}\"), VarGet({BodyStore}, VarNewString(\"{s}\")));");
+                    sb.AppendLine($"\tVarRawSet({newListName}, VarNewConstString(\"{s}\"), VarGet({BodyStore}, VarNewConstString(\"{s}\")));");
                 }
             }
             i++;

@@ -14,12 +14,12 @@ Var* NullToString(Var* scope, Var* args){
     // undefined
     if(null -> value == 0x00){
         DebugPrint("NullToString: undefined\n");
-        return VarNewString("undefined");
+        return VarNewConstString("undefined");
     }
     // nil
     if(null -> value == 0x01){
         DebugPrint("NullToString: nil\n");
-        return VarNewString("nil");
+        return VarNewConstString("nil");
     }
     // unknown
     DebugPrint("How did we get here?");
@@ -31,9 +31,9 @@ Var* NullTruthy(Var* scope, Var* args){
 }
 
 void PopulateNullMeta(Var* metatable){
-    VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(NullToString));
-    VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(NullToString));
-    VarRawSet(metatable, VarNewString("truthy"),   VarNewFunction(NullTruthy));
+    VarRawSet(metatable, VarNewConstString("tostring"), VarNewFunction(NullToString));
+    VarRawSet(metatable, VarNewConstString("tocode"),   VarNewFunction(NullToString));
+    VarRawSet(metatable, VarNewConstString("truthy"),   VarNewFunction(NullTruthy));
 }
 
 #endif

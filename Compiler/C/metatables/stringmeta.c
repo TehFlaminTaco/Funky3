@@ -98,8 +98,8 @@ Var* StringToCode(Var* scope, Var* args){
 
 Var* _stringIter(Var* scope, Var* args){
     DebugPrint("_stringIter\n");
-    Var* str = VarRawGet(scope, VarNewString("str"));
-    Var* index = VarRawGet(scope, VarNewString("index"));
+    Var* str = VarRawGet(scope, VarNewConstString("str"));
+    Var* index = VarRawGet(scope, VarNewConstString("index"));
     if(str -> type != VAR_STRING){
         DebugPrint("_stringIter: str is not a string\n");
         return &UNDEFINED;
@@ -122,7 +122,7 @@ Var* _stringIter(Var* scope, Var* args){
     DebugPrint("_stringIter: %s\n", oneLetter);
     Var* result = VarNewString(oneLetter);
     tgc_free(&gc, oneLetter);
-    VarRawSet(scope, VarNewString("index"), VarNewNumber(i + 1));
+    VarRawSet(scope, VarNewConstString("index"), VarNewNumber(i + 1));
     DebugPrint("_stringIter: Sent\n");
     return result;
 }
@@ -135,8 +135,8 @@ Var* StringIterator(Var* scope, Var* args){
     Var* func = VarNewFunction(_stringIter);
     VarFunction* funcObj = (VarFunction*)func -> value;
     funcObj -> scope = VarNewList();
-    VarRawSet(funcObj -> scope, VarNewString("str"), string);
-    VarRawSet(funcObj -> scope, VarNewString("index"), VarNewNumber(0));
+    VarRawSet(funcObj -> scope, VarNewConstString("str"), string);
+    VarRawSet(funcObj -> scope, VarNewConstString("index"), VarNewNumber(0));
     return func;
 }
 
@@ -202,13 +202,13 @@ Var* StringLen(Var* scope, Var* args){
 }
 
 void PopulateStringMeta(Var* metatable){
-    VarRawSet(metatable, VarNewString("tocode"), VarNewFunction(StringToCode));
-    VarRawSet(metatable, VarNewString("add"), VarNewFunction(BaseConcat));
-    VarRawSet(metatable, VarNewString("iter"), VarNewFunction(StringIterator));
-    VarRawSet(metatable, VarNewString("unp"), VarNewFunction(StringUnp));
-    VarRawSet(metatable, VarNewString("lt"), VarNewFunction(StringLt));
-    VarRawSet(metatable, VarNewString("gt"), VarNewFunction(StringGt));
-    VarRawSet(metatable, VarNewString("len"), VarNewFunction(StringLen));
+    VarRawSet(metatable, VarNewConstString("tocode"), VarNewFunction(StringToCode));
+    VarRawSet(metatable, VarNewConstString("add"), VarNewFunction(BaseConcat));
+    VarRawSet(metatable, VarNewConstString("iter"), VarNewFunction(StringIterator));
+    VarRawSet(metatable, VarNewConstString("unp"), VarNewFunction(StringUnp));
+    VarRawSet(metatable, VarNewConstString("lt"), VarNewFunction(StringLt));
+    VarRawSet(metatable, VarNewConstString("gt"), VarNewFunction(StringGt));
+    VarRawSet(metatable, VarNewConstString("len"), VarNewFunction(StringLen));
 }
 
 #endif

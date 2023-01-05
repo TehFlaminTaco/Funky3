@@ -270,7 +270,7 @@ Var* MathATan(Var* scope, Var* args){
 void PopulateMathLib(Var* math){
     srand (time ( NULL));
 
-    VarRawSet(&MetatableNumber, VarNewString("get"), math);
+    VarRawSet(&MetatableNumber, VarNewConstString("get"), math);
 
     CONSTANT(abs, VarNewFunction(MathAbs));
     CONSTANT(round, VarNewFunction(MathRound));

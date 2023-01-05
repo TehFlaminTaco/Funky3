@@ -42,6 +42,7 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
             "abs|round|floor|ceil|min|max|clamp|sqrt|rad|deg|random|randomSeed|pi|e|huge|inf|nan|epsilon|sin|cos|tan|asin|acos|atan|"+
             "clock|"+
             "match|matches|replace|find|sub|reverse|upper|lower|"+
+            "box|boxOutline|cameraToScreen|circle|circleOutline|clear|getColor|getFont|getLineWidth|pop|print|printOutline|push|pushCamera|pushViewport|rotate|scale|screenHeight|screenSize|screenToCamera|screenToViewport|screenWidth|setColor|setFont|setLineWidth|translate|viewportToScreen|"+
             "beginPath|clear|moveTo|lineTo|stroke|fill|strokeStyle|fillStyle|strokeText|fillText|font|textAlign|textBaseline|fillRect|strokeRect|arc|arcTo|bezierCurveTo|quadraticCurveTo|rect|closePath|clip|isPointInPath|isPointInStroke|scale|rotate|translate|transform|setTransform|resetTransform|drawImage|drawImage2|save|restore|reset|roundRect|measureText|lineWidth|"+
             "base|function|number|string|list|null|methods|"+
           // metamethods
@@ -129,10 +130,8 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
                         if(stack[0] <= 0){
                             this.next = "interpolated";
                             stack.shift();
-                            console.log("«", stack);
                             return "string.interpolated";
                         }
-                        console.log("«»", stack);
                         stack[0]--;
                     }
                     this.next = "start";
@@ -235,7 +234,6 @@ define('ace/mode/funky3_highlight_rules', function(require, exports, module) {
                    next: "start",
                    onMatch: function(value, currentState, stack){
                        stack.unshift(0);
-                       console.log("^", stack);
                        return "string.interpolated";
                    }
                 },

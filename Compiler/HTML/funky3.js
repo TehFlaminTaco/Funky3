@@ -1752,7 +1752,7 @@ function canvasIsPointInPath(x,y){ return Module.ctx.isPointInPath(x, y) ? 1 : 0
 function canvasIsPointInStroke(x,y){ return Module.ctx.isPointInStroke(x, y) ? 1 : 0; }
 function canvasLineTo(x,y){ Module.ctx.lineTo(x, y); }
 function canvasLineWidth(width){ Module.ctx.lineWidth = width; }
-function canvasMeasureTextHeight(text){ return Module.ctx.measureText(UTF8ToString(text)).height; }
+function canvasMeasureTextHeight(text){ var measure = Module.ctx.measureText(UTF8ToString(text)); return measure.actualBoundingBoxAscent + measure.actualBoundingBoxDescent; }
 function canvasMeasureTextWidth(text){ return Module.ctx.measureText(UTF8ToString(text)).width; }
 function canvasMoveTo(x,y){ Module.ctx.moveTo(x, y); }
 function canvasPutImageData(img,x,y){ var image = new Image(); image.src = UTF8ToString(img); Module.ctx.putImageData(image, x, y); }

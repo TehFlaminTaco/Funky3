@@ -21,7 +21,7 @@ Var* MetaSetMeta(Var* scope, Var* args){
 }
 
 Var* MetaDoMethod(Var* scope, Var* args){
-    Var* methodName = VarRawGet(scope, VarNewString("method"));
+    Var* methodName = VarRawGet(scope, VarNewConstString("method"));
     if(methodName -> type != VAR_STRING){
         return &NIL;
     }
@@ -34,8 +34,8 @@ Var* MetaDoMethod(Var* scope, Var* args){
 Var* _AddMetaMethod(Var* methods, char* name){
     Var* methodName = VarNewString(name);
     Var* methodScope = VarNewList();
-    VarRawSet(methodScope, VarNewString("method"), methodName);
-    return VarNewFunctionWithScope(MetaDoMethod, methodScope, "<C Function>");
+    VarRawSet(methodScope, VarNewConstString("method"), methodName);
+    return VarRawSet(methods, VarNewString(name), VarNewFunctionWithScope(MetaDoMethod, methodScope, "<C Function>"));
 }
 
 void PopulateMetaLib(Var* meta){

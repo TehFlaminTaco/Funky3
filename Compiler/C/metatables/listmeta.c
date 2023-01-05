@@ -9,7 +9,6 @@
 #include "../linkedlist.h"
 
 Var* ListToString(Var* scope, Var* args){
-    tgc_run(&gc);
     DebugPrint("ListToString\n");
     Var* list = ArgVarGet(args, 0, "obj");
     if(list -> type != VAR_LIST){
@@ -19,7 +18,7 @@ Var* ListToString(Var* scope, Var* args){
     DebugPrint("ListToString: %p\n", list);
     HashMap* map = (HashMap*)list -> value;
     LinkedVarList* strings = LinkedListNew();
-    LinkedListPush(strings, VarNewString("["));
+    LinkedListPush(strings, VarNewConstString("["));
 
     // Iterate through all integer elements in the map.
     int highestInt = 0;
@@ -33,13 +32,13 @@ Var* ListToString(Var* scope, Var* args){
         totalStringLength += strlen((char*) curString -> value);
         current = HashMapGet(map, VarNewNumber(++highestInt));
         if(!ISUNDEFINED(current)){
-            LinkedListPush(strings, VarNewString(", "));
+            LinkedListPush(strings, VarNewConstString(", "));
             totalStringLength += 2;
         }
     }
     highestInt--;
 
-    LinkedListPush(strings, VarNewString("]"));
+    LinkedListPush(strings, VarNewConstString("]"));
     totalStringLength++;
     DebugPrint("ListToString: Total Length %i\n", totalStringLength);
     // Create a new string with the concatenated strings.
@@ -63,8 +62,8 @@ Var* ListToString(Var* scope, Var* args){
 
 Var* _listIter(Var* scope, Var* args){
     DebugPrint("_listIter\n");
-    Var* keys = VarRawGet(scope, VarNewString("keys"));
-    Var* index = VarRawGet(scope, VarNewString("index"));
+    Var* keys = VarRawGet(scope, VarNewConstString("keys"));
+    Var* index = VarRawGet(scope, VarNewConstString("index"));
     if(keys -> type != VAR_LIST){
         DebugPrint("_listIter: not a list\n");
         return &UNDEFINED;
@@ -81,7 +80,7 @@ Var* _listIter(Var* scope, Var* args){
         DebugPrint("_listIter: end\n");
         return &UNDEFINED;
     }
-    VarRawSet(scope, VarNewString("index"), VarNewNumber(i + 1));
+    VarRawSet(scope, VarNewConstString("index"), VarNewNumber(i + 1));
     DebugPrint("_listIter: Sent\n");
     return val;
 }
@@ -109,8 +108,8 @@ Var* ListIterator(Var* scope, Var* args){
     Var* func = VarNewFunction(_listIter);
     VarFunction* funcObj = (VarFunction*)func -> value;
     funcObj -> scope = VarNewList();
-    VarRawSet(funcObj -> scope, VarNewString("keys"), keysList);
-    VarRawSet(funcObj -> scope, VarNewString("index"), VarNewNumber(0));
+    VarRawSet(funcObj -> scope, VarNewConstString("keys"), keysList);
+    VarRawSet(funcObj -> scope, VarNewConstString("index"), VarNewNumber(0));
     return func;
 }
 
@@ -128,11 +127,11 @@ Var* ListLen(Var* scope, Var* args){
 }
 
 void PopulateListMeta(Var* metatable){
-    VarRawSet(metatable, VarNewString("tostring"), VarNewFunction(ListToString));
-    VarRawSet(metatable, VarNewString("tocode"),   VarNewFunction(ListToString));
+    VarRawSet(metatable, VarNewConstString("tostring"), VarNewFunction(ListToString));
+    VarRawSet(metatable, VarNewConstString("tocode"),   VarNewFunction(ListToString));
 
-    VarRawSet(metatable, VarNewString("iter"), VarNewFunction(ListIterator));
-    VarRawSet(metatable, VarNewString("len"), VarNewFunction(ListLen));
+    VarRawSet(metatable, VarNewConstString("iter"), VarNewFunction(ListIterator));
+    VarRawSet(metatable, VarNewConstString("len"), VarNewFunction(ListLen));
 }
 
 #endif

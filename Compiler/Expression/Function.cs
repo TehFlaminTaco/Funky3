@@ -204,7 +204,7 @@ public class Function : Expression
         headerSB.AppendLine("\tVar* _ = &NIL;"); // _ acts as a dummy value for various things.
         headerSB.AppendLine("\tscope = VarSubScope(scope);");
         // Try loading "this" into the scope... Just if it exists.
-        headerSB.AppendLine("\tVarRawSet(scope, VarNewString(\"this\"), VarRawGet(args, VarNewString(\"this\")));");
+        headerSB.AppendLine("\tVarRawSet(scope, VarNewConstString(\"this\"), VarRawGet(args, VarNewConstString(\"this\")));");
         if (Arguments.Count > 0)
         {
             string argIndex = UniqueValueName($"argIndex");
@@ -226,7 +226,7 @@ public class Function : Expression
                     // Remove all arguments by name from the list.
                     for (int j = 0; j < Arguments.Count; j++)
                     {
-                        headerSB.AppendLine($"\t\tVarRawSet({argName}, VarNewString(\"{Arguments[j].Name}\"), &UNDEFINED);");
+                        headerSB.AppendLine($"\t\tVarRawSet({argName}, VarNewConstString(\"{Arguments[j].Name}\"), &UNDEFINED);");
                     }
                 }
                 else
@@ -250,7 +250,7 @@ public class Function : Expression
                     }
                     headerSB.AppendLine("\t\t}");
                 }
-                headerSB.AppendLine($"\t\tVarRawSet(scope, VarNewString(\"{Arguments[i].Name}\"), {argName});");
+                headerSB.AppendLine($"\t\tVarRawSet(scope, VarNewConstString(\"{Arguments[i].Name}\"), {argName});");
             }
         }
         string body = Body.GenerateInline(header, out string retVal);
